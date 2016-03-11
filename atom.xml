@@ -4,7 +4,7 @@
   <title><![CDATA[regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-03-11T23:44:17+08:00</updated>
+  <updated>2016-03-12T00:50:05+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,5 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode229 Majority Element II]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/12/leetcode229-majority-element-ii/"/>
+    <updated>2016-03-12T00:46:19+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/12/leetcode229-majority-element-ii</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
   
 </feed>
