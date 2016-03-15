@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Dfs | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/dfs/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-15T23:39:08+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode93 Restore IP Addresses [DFS]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode93-restore-ip-addresses-dfs/"/>
+    <updated>2016-03-15T23:30:49+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode93-restore-ip-addresses-dfs</id>
+    <content type="html"><![CDATA[<p>给定一个只包含数符的字符串，得到全部合法IP地址</p>
+
+<p>样例:
+字符串"25525511135"  IP地址:[&ldquo;255.255.11.135&rdquo;, &ldquo;255.255.111.35&rdquo;]</p>
+
+<p>Difficulty: Medium</p>
+
+<p><img src="/images/93.jpg"></p>
+
+<pre><code class="java">
+package com.hypo.DFS;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class RestoreIPAddresses_T93
+{
+    public List&lt;String&gt; restoreIpAddresses(String s) 
+    {
+        ArrayList&lt;String&gt; res = new ArrayList&lt;String&gt;();//最后结果
+
+        ArrayList&lt;String&gt; path = new ArrayList&lt;String&gt;();//一种IP
+
+        dfs(s , 0 , 0 , path , res);
+
+        return res;
+    }
+
+    private void dfs(String s ,int start , int step , ArrayList&lt;String&gt; path , ArrayList&lt;String&gt; res)
+    {
+        if(step == 4 &amp;&amp; start == s.length())//终止条件,产生一种正确ip
+        {
+            StringBuffer sb = new StringBuffer();
+
+            for(String str : path)
+            {
+                sb.append(str + ".");
+            }
+
+            sb.deleteCharAt(sb.length() - 1);
+
+            res.add(sb.toString());
+
+            return;
+        }
+
+        if((s.length() - start) &gt; (4 - step) * 3)//剪枝,剩余太多
+        {
+            return;
+        }
+
+        if((s.length() - start) &lt; (4 - step))//剪枝,剩余太少
+        {
+            return;
+        }
+
+        for(int i = 1 ; i &lt;= 3 &amp;&amp; (start + i) &lt;= s.length() ; ++i)
+        {
+            String mid = s.substring(start , start + i);
+
+            if(mid.length() &gt; 1 &amp;&amp; mid.charAt(0) == '0')//不允许前缀为0，单允许单独的0
+            {
+                continue;
+            }
+
+            if(Integer.parseInt(mid) &lt;= 255)//当前结点合法，则继续往下递归.
+            {
+                path.add(mid);
+
+                dfs(s, start + i, step + 1, path, res);
+
+                path.remove(path.size() - 1);//一步一步清空path，以备下次使用.
+            }
+        }
+    }
+
+//  test
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        RestoreIPAddresses_T93 ripa93 = new RestoreIPAddresses_T93();
+        String s = "010010";
+        String s2 = "25525511135";
+
+        ArrayList&lt;String&gt; result2 = (ArrayList)ripa93.restoreIpAddresses(s2);
+        ArrayList&lt;String&gt; result = (ArrayList)ripa93.restoreIpAddresses(s);
+
+        for(String n : result2)
+        {
+            System.out.println(n + " ");
+
+        }
+    }
+}
+</code></pre>
+
+<p>运行结果:
+<img src="/images/93_2.jpg"></p>
+]]></content>
+  </entry>
+  
+</feed>

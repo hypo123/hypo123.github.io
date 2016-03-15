@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Array | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/array/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-15T23:39:08+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode54 Spiral Matrix [Array]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode54-spiral-matrix-array/"/>
+    <updated>2016-03-15T15:50:47+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode54-spiral-matrix-array</id>
+    <content type="html"><![CDATA[<p>Given a matrix of m x n elements (m rows, n columns), return all elements of the matrix in spiral order.</p>
+
+<p>For example,
+Given the following matrix:</p>
+
+<p>[
+ [ 1, 2, 3 ],
+ [ 4, 5, 6 ],
+ [ 7, 8, 9 ]
+]
+You should return [1,2,3,6,9,8,7,4,5].</p>
+
+<p>Difficulty: Medium</p>
+
+<p><img src="/images/54.jpg"></p>
+
+<pre><code class="java">package com.hypo.Array;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class SpiralMatrix_T54
+{
+    private List&lt;Integer&gt; spiralOrder(int[][] matrix) 
+    {
+        List&lt;Integer&gt; result = new ArrayList&lt;Integer&gt;();
+
+        if(matrix.length == 0) return result;
+
+        int rowBegin = 0;
+        int rowEnd = matrix.length - 1;
+        int colBegin = 0;
+        int colEnd = matrix[0].length - 1;
+
+//      先向右遍历，一行遍历完，rowBegin加1 Step1;
+//      再向下遍历，一列遍历完，colEnd减1   Step2;
+//      再向左遍历，一行遍历完，rowEnd减1   Step3;
+//      再向上遍历，一列遍历完，colBegin加1 Step4;
+//      然后重复上面4步，直到二维数组全部遍历完.
+        while(rowBegin &lt;= rowEnd &amp;&amp; colBegin &lt;= colEnd)
+        {
+            //向右
+            for(int r = colBegin ; r &lt;= colEnd ; r++)
+            {
+                result.add(matrix[rowBegin][r]);
+            }
+            rowBegin++;//一行遍历完
+
+            //向下
+            for(int d = rowBegin ; d &lt;= rowEnd ; d++)
+            {
+                result.add(matrix[d][colEnd]);
+            }
+            colEnd--;//一列遍历完
+
+            //向左
+            if(rowBegin &lt;= rowEnd)
+            {
+                for(int l = colEnd ; l &gt;= colBegin ; l--)
+                {
+                    result.add(matrix[rowEnd][l]);
+                }
+            }
+            rowEnd--;//一行遍历完
+
+            //向上
+            if(colBegin &lt;= colEnd)
+            {
+                for(int u = rowEnd ; u &gt;= rowBegin ; u--)
+                {
+                    result.add(matrix[u][colBegin]);
+                }
+            }
+            colBegin++;//一列遍历完
+        }
+
+        return result;
+    }
+
+//    test
+    public static void main(String[] args)
+    {
+        SpiralMatrix_T54 t54  = new SpiralMatrix_T54();
+
+        int[][] matrix = {
+                            { 1, 2, 3 },
+                            { 4, 5, 6 },
+                            { 7, 8, 9 }
+                          };
+
+        List&lt;Integer&gt; result = t54.spiralOrder(matrix);
+        for(int i : result)
+        {
+            System.out.print(i + " ");
+        }
+    }
+}
+</code></pre>
+
+<p>运行结果:
+<img src="/images/54_2.jpg"></p>
+]]></content>
+  </entry>
+  
+</feed>

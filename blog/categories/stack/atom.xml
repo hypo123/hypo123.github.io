@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Stack | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/stack/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-15T23:39:08+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode224 Basic Calculator [Stack]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode224-basic-calculator-stack/"/>
+    <updated>2016-03-15T15:16:04+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode224-basic-calculator-stack</id>
+    <content type="html"><![CDATA[<p>Implement a basic calculator to evaluate a simple expression string.</p>
+
+<p>The expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers and empty spaces .</p>
+
+<p>You may assume that the given expression is always valid.</p>
+
+<p>Some examples:
+&ldquo;1 + 1&rdquo; = 2
+&ldquo; 2-1 + 2 &rdquo; = 3
+&ldquo;(1+(4+5+2)-3)+(6+8)&rdquo; = 23
+Note: Do not use the eval built-in library function.</p>
+
+<p>Difficulty: Medium</p>
+
+<pre><code class="java">package com.hypo.String;
+
+import java.util.Stack;
+
+public class BasicCalculator_T224
+{
+    private int calculate2(String s)
+    {
+        int len = s.length();
+
+        if(s == null || len == 0) return 0;
+        Stack&lt;Integer&gt; stack = new Stack&lt;Integer&gt;();
+
+        int result = 0;
+        int number = 0;
+        int sign = 1;//1为正,-1为负
+
+        for(int i = 0 ; i &lt; len ; i++)
+        {
+            char c = s.charAt(i);
+
+            if(Character.isDigit(c))
+            {
+                number = number * 10 + (int)(c - '0');
+            }
+            else if(c == '+')
+            {
+                result += sign * number;
+                number = 0;
+                sign = 1;//下个数符号为正
+            }
+            else if(c == '-')
+            {
+                result += sign * number;
+                number = 0;
+                sign = -1;//下个数符号为负
+            }
+            else if(c == '(')
+            {
+                stack.push(result);//左括号前所求的运算值
+                stack.push(sign);//左括号前的符号
+                result = 0;
+                sign = 1;
+            }
+            else if(c == ')')
+            {
+                result += sign * number;
+                number = 0;
+                result *= stack.pop();//弹出左括号前符号与括号内的运算值相乘
+                result += stack.pop();//弹出括号前所求的运算值
+            }
+        }
+
+        if(number != 0)//以数符结束字符串要特殊处理
+        {
+            result += sign * number;
+        }
+        return result;
+    }
+
+//  test
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        BasicCalculator_T224 t224 = new BasicCalculator_T224();
+
+        String s = "(1+(4+5+2)-3)+(6+8)";
+        String s2 = "1 + 1";
+        String s3 = "2-(5-6)";
+        String s4 = "0-2147483647";
+        String s5 = " 2-1 + 2 ";
+
+        System.out.println(t224.calculate2(s));
+        System.out.println(t224.calculate2(s2));
+        System.out.println(t224.calculate2(s3));
+        System.out.println(t224.calculate2(s4));
+        System.out.println(t224.calculate2(s5));
+    }
+
+}
+</code></pre>
+
+<p>运行结果:
+<img src="/images/224.jpg"></p>
+]]></content>
+  </entry>
+  
+</feed>

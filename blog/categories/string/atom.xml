@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: String | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/string/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-15T23:39:08+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode214 Shortest Palindrome [String]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode214-shortest-palindrome-string/"/>
+    <updated>2016-03-15T20:36:54+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode214-shortest-palindrome-string</id>
+    <content type="html"><![CDATA[<p>给定一个字符串S,通过在其前面加字符，使其变成回文字符串;找到最短的回文字符串</p>
+
+<p>样例: <br/>
+给定 &ldquo;aacecaaa&rdquo;, 返回 &ldquo;aaacecaaa&rdquo;.
+给定 &ldquo;abcd&rdquo;,     返回 &ldquo;dcbabcd&rdquo;.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode71 Simplify Path [String]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode71-simplify-path-string/"/>
+    <updated>2016-03-15T17:02:57+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode71-simplify-path-string</id>
+    <content type="html"><![CDATA[<p>给定一个文档(Unix-style)的完全路径，将路径进行简化。
+样例:
+path = &ldquo;/home/&rdquo;, => &ldquo;/home&rdquo;
+path = &ldquo;/a/./b/../../c/&rdquo;, => &ldquo;/c&rdquo;</p>
+
+<p>边界情况:
+path = &ldquo;/../&rdquo; , => &ldquo;/&rdquo;
+path = &ldquo;/home//foo/&rdquo; , => &ldquo;/home/foo&rdquo;</p>
+
+<p>Difficulty: Medium</p>
+
+<p><img src="/images/71.jpg"></p>
+
+<ul>
+<li>分析：</li>
+<li>当遇到“/../&ldquo;则需要返回上级目录，需检查上级目录是否为空</li>
+<li>当遇到"/./&ldquo;则表示是本级目录，无需做任何特殊操作</li>
+<li>当遇到"//&ldquo;则表示是本级目录，无需做任何操作 这儿&rdquo;//&ldquo;表示&rdquo;/&ldquo;和&rdquo;/&ldquo;之间为空(&rdquo;&ldquo;)</li>
+<li>当遇到其他字符则表示是文件夹名，无需简化</li>
+<li>当字符串是空或者遇到”/../”，则需要返回一个"/"</li>
+<li>当遇见"/a//b"，则需要简化为"/a/b"</li>
+</ul>
+
+
+<pre><code class="java">
+import java.util.ArrayList;
+
+public class Simplify_Path
+{
+    public String simplifyPath2(String path)
+    {
+        String result = "/";
+        String[] stubs = path.split("/+");
+        ArrayList&lt;String&gt; paths = new ArrayList&lt;String&gt;();
+        for(String s : stubs)
+        {
+            if(s.equals(".."))
+            {
+                if(paths.size() &gt; 0)
+                {
+                    paths.remove(paths.size() - 1);//".."不是上级目录，要向上级目录回退
+                }
+            }
+            else if(!s.equals(".") &amp;&amp; !s.equals(""))// "."为当前目录不用管，""为空不用管
+            {
+                paths.add(s);
+            }
+        }
+
+        for(String i : paths)
+        {
+            result += i + "/" ;
+        }
+
+        if(result.length() &gt; 1)//去掉最后一个多加的"/"
+        {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result.toString();
+    }
+
+//  test
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        Simplify_Path sp = new Simplify_Path();
+
+        String path = "/home/";
+        String path2 = "/a/./b/../../c/";
+        String path3 = "/../";
+        String path4 = "/home//foo/";
+
+        System.out.println(sp.simplifyPath2(path));
+        System.out.println(sp.simplifyPath2(path2));
+        System.out.println(sp.simplifyPath2(path3));
+        System.out.println(sp.simplifyPath2(path4));
+    }
+}
+</code></pre>
+
+<p>运行结果:
+<img src="/images/71_2.jpg"></p>
+]]></content>
+  </entry>
+  
+</feed>

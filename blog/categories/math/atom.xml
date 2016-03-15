@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Math | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/math/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-15T23:39:08+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode168 Excel Sheet Column Title [Math]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode168-excel-sheet-column-title-math/"/>
+    <updated>2016-03-15T15:43:14+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode168-excel-sheet-column-title-math</id>
+    <content type="html"><![CDATA[<p>Given a positive integer, return its corresponding column title as appear in an Excel sheet.</p>
+
+<p>For example:</p>
+
+<pre><code>1 -&gt; A
+2 -&gt; B
+3 -&gt; C
+...
+26 -&gt; Z
+27 -&gt; AA
+28 -&gt; AB 
+</code></pre>
+
+<p>Difficulty: Easy</p>
+
+<p><img src="/images/168.jpg"></p>
+
+<pre><code class="java">package com.hypo.Math;
+
+public class ExcelSheetColumnTitle_T168
+{
+//  ---------------------方案一---------------------------
+    private String convertToTitle(int n) 
+    {
+        StringBuffer sb = new StringBuffer();
+
+        int m = n;
+
+        while(m &gt;= 26)
+        {
+            int left = m % 26;
+            if(left == 0) //注意被26时，left不应该为0 ，而应该为26  1-&gt;A , 26-&gt;Z
+            {   
+                left = 26;
+                m -= 26;
+            }
+            sb.append((char)(left + 64));
+            m = m / 26;
+        }
+
+        if(m &gt; 0)//m为0时，不用添加
+        {
+            sb.append((char)(m + 64));
+        }
+
+        return sb.reverse().toString();
+    }
+
+//---------------------方案二---------------------------
+    private String convertToTitle2(int n)
+    {
+        StringBuilder result = new StringBuilder();
+
+        while(n &gt; 0)
+        {
+            --n;//1-&gt;A
+
+            result.insert(0, (char)('A' + n % 26 ));
+
+            n /= 26;
+        }
+
+        return result.toString();
+    }
+
+//    test
+    public static void main(String[] args)
+    {
+        ExcelSheetColumnTitle_T168 t168 = new ExcelSheetColumnTitle_T168();
+
+        int n = 52;
+
+        System.out.println(t168.convertToTitle2(n));
+    }
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode171 Excel Sheet Column Number [Math]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode171-excel-sheet-column-number-math/"/>
+    <updated>2016-03-15T15:42:34+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode171-excel-sheet-column-number-math</id>
+    <content type="html"><![CDATA[<p>Related to question Excel Sheet Column Title</p>
+
+<p>Given a column title as appear in an Excel sheet, return its corresponding column number.</p>
+
+<p>For example:</p>
+
+<pre><code>A -&gt; 1
+B -&gt; 2
+C -&gt; 3
+...
+Z -&gt; 26
+AA -&gt; 27
+AB -&gt; 28 
+</code></pre>
+
+<p>Difficulty: Easy</p>
+
+<p><img src="/images/171.jpg"></p>
+
+<pre><code class="java">package com.hypo.Math;
+
+public class ExcelSheetColumnNumber
+{
+    private int titleToNumber(String s) 
+    {
+        //'A' = 65 'Z'= 90 
+        int len = s.length();
+        if(s == null || s.length() == 0) return 0;
+        int multibase = 1;
+        int sum = 0;
+
+        for(int i = len-1 ; i &gt;= 0 ; --i)
+        {
+            sum += (s.charAt(i) - 64)*multibase;
+            multibase *= 26;
+        }
+
+        return sum;
+    }
+
+//    test
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        ExcelSheetColumnNumber escn = new ExcelSheetColumnNumber();
+
+        String s = "AB";
+
+        System.out.println(escn.titleToNumber(s));
+    }
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>
