@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://www.regenthypo.com/blog/2016/03/16/leetcode63-unique-paths-ii-dp/</loc>
+<lastmod>2016-03-16T21:05:09+08:00</lastmod>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/2016/03/16/leetcode62-unique-paths-dp/</loc>
+<lastmod>2016-03-16T21:04:30+08:00</lastmod>
+</url>
+<url>
 <loc>http://www.regenthypo.com/blog/2016/03/15/leetcode93-restore-ip-addresses-dfs/</loc>
 <lastmod>2016-03-15T23:30:49+08:00</lastmod>
 </url>
@@ -68,6 +76,9 @@
 <loc>http://www.regenthypo.com/leetcode/</loc>
 </url>
 <url>
+<loc>http://www.regenthypo.com/blog/categories/array/</loc>
+</url>
+<url>
 <loc>http://www.regenthypo.com/blog/categories/bfs/</loc>
 </url>
 <url>
@@ -83,12 +94,12 @@
 <loc>http://www.regenthypo.com/blog/categories/binarysearch/</loc>
 </url>
 <url>
-<loc>http://www.regenthypo.com/blog/categories/array/</loc>
-</url>
-<url>
 <loc>http://www.regenthypo.com/blog/categories/string/</loc>
 </url>
 <url>
 <loc>http://www.regenthypo.com/blog/categories/dfs/</loc>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/categories/dp/</loc>
 </url>
 </urlset>

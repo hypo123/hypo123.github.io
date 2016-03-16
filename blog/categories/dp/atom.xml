@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Dp | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/dp/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-17T00:27:29+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode63 Unique Paths II [DP]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/16/leetcode63-unique-paths-ii-dp/"/>
+    <updated>2016-03-16T21:05:09+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/16/leetcode63-unique-paths-ii-dp</id>
+    <content type="html"><![CDATA[<p>给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动.
+其中二维数组中值有1和0,1表示该处为障碍,0可以通行</p>
+
+<p>例如：<br>
+[<br>
+  [0,0,0],<br>
+  [0,1,0],<br>
+  [0,0,0]<br>
+]<br>
+有2条不同路径<br></p>
+
+<p><font color=#FF0000>Difficulty: Medium</font><br>
+<img src="/images/63.jpg"></p>
+
+<p>分析:
+可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
+即到(i,j)点路径的种类，由到(i-1,j)点和到(i,j-1)点路径数量的和.<br></p>
+
+<pre><code class="java">package com.hypo.DP;
+
+public class T63_UniquePathsII
+{
+    private int uniquePathsWithObstacles(int[][] grid) 
+    {
+        int row = grid.length;
+        int col = grid[0].length;
+
+        int[][] f = new int[row][col];
+
+        if(grid[0][0] != 1) f[0][0] = 1;
+
+        for(int i = 0 ; i &lt; row ; i++ )
+        {
+            for(int j = 0 ; j &lt; col ; j++)
+            {
+                if(grid[i][j] == 1)//障碍
+                {
+                    f[i][j] = 0;
+                    continue;
+                }
+
+                if(i == 0 &amp;&amp; j == 0)//起点
+                {
+                    continue;
+                }
+
+                if(i == 0)//第一行
+                {
+                    f[i][j] += f[i][j-1];
+                    continue;
+                }
+                if(j == 0 )//第一列
+                {
+                    f[i][j] += f[i-1][j];
+                    continue;
+                }
+
+                f[i][j] = f[i-1][j] + f[i][j-1];//来自上边或左边
+            }
+        }
+        return f[row-1][col-1];
+    }
+//    test
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        T63_UniquePathsII t63 = new T63_UniquePathsII();
+
+        int[][] grid = {  {0,0,0},
+                          {0,1,0},
+                          {0,0,0}};
+
+        int[][] grid2 = 1;
+
+        System.out.println(t63.uniquePathsWithObstacles(grid));
+    }
+}
+</code></pre>
+
+<p>运行时间:
+<img src="/images/63_2.jpg"></p>
+
+<p>代码简化，但运行时间更长</p>
+
+<pre><code class="java">
+    private int uniquePathsWithObstacles(int[][] grid) 
+    {
+        int row = grid.length;
+        int col = grid[0].length;
+        int[][] mark = new int[row][col];
+
+        if(grid[0][0] != 1) mark[0][0] = 1;
+
+        for(int i = 0 ; i &lt; row ; ++i)
+        {
+            for(int j = 0 ; j &lt; col ; ++j)
+            {
+                if(grid[i][j] == 1)//此处是障碍
+                {
+                    mark[i][j] = 0;
+                }
+                else
+                {
+                    //某一个cell有2种可能到达，从上面来，以及从左边来，
+                    //只需要把每一个cell的可能数计算好，并且把它们相加即可
+                    if(i != 0)//左边来
+                    {
+                        mark[i][j] += mark[i-1][j];
+                    }
+
+                    if(j != 0)//上面来
+                    {
+                        mark[i][j] += mark[i][j-1];
+                    }
+                }
+            }
+        }
+
+        return mark[row-1][col-1];
+    }
+</code></pre>
+
+<p>运行时间:</p>
+
+<p><img src="/images/63_3.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode62 Unique Paths [DP]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/16/leetcode62-unique-paths-dp/"/>
+    <updated>2016-03-16T21:04:30+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/16/leetcode62-unique-paths-dp</id>
+    <content type="html"><![CDATA[<p>给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动.
+<img src="/images/62.jpg"></p>
+
+<p><font color=#FF0000>Difficulty: Medium</font><br>
+<img src="/images/62_2.jpg"></p>
+
+<p>分析:
+可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
+即到(i,j)点路径的种类，由到(i-1,j)点和到(i,j-1)点路径数量的和.<br></p>
+
+<pre><code class="java">
+package com.hypo.DP;
+
+import java.util.Arrays;
+
+public class T62_UniquePaths
+{
+    private int uniquePaths(int m, int n) 
+    {
+        int[][] f = new int[m][n];
+
+        for(int i = 0 ; i &lt; m ; i++ )
+        {
+            Arrays.fill(f[i], 1);
+        }
+
+        //只能向下或向右
+        for(int i = 0 ; i &lt; m ; i++)
+        {
+            for(int j = 0 ; j &lt; n ; j++ )
+            {
+                if(i == 0 &amp;&amp; j == 0 )
+                {
+                    continue;
+                }
+
+                if(i == 0)//第一行,从左边来
+                {
+                    f[i][j] = f[i][j-1];
+                    continue;
+                }
+
+                if(j == 0)//第一列,从上边来
+                {
+                    f[i][j] = f[i-1][j];
+                    continue;
+                }
+
+                f[i][j] = f[i-1][j] + f[i][j-1];//状态转移方程
+            }
+        }
+
+        return f[m-1][n-1];
+    }
+
+//    test
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        T62_UniquePaths t62 = new T62_UniquePaths();
+
+        int m = 3;
+        int n = 3;
+
+        System.out.println(t62.uniquePaths(m, n));
+    }
+}
+</code></pre>
+
+<p>代码简化
+```java
+    private int uniquePaths(int m, int n)
+    {
+        int[][] f = new int[m][n];</p>
+
+<pre><code>    //只能向下或向右
+    for(int i = 0 ; i &lt; m ; i++)
+    {
+        for(int j = 0 ; j &lt; n ; j++ )
+        {
+            if(i == 0 || j == 0) 
+            {
+                f[i][j] = 1;
+                continue;
+            }
+            f[i][j] = f[i-1][j] + f[i][j-1];
+        }
+    }
+
+    return f[m-1][n-1];
+}
+</code></pre>
+
+<p>```</p>
+
+<p><img src="/images/62_3.jpg"></p>
+
+<p>还有数学公式的方法更优</p>
+]]></content>
+  </entry>
+  
+</feed>
