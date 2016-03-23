@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Linkedlist | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/linkedlist/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-23T15:53:50+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode61 Rotate List [LinkedList]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/17/leetcode61-rotate-list-linkedlist/"/>
+    <updated>2016-03-17T16:24:07+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/17/leetcode61-rotate-list-linkedlist</id>
+    <content type="html"><![CDATA[<p>给定一个单链表，和非负整数k,将单链表的后k个结点翻转到链表的左边;</p>
+
+<p>例如:</p>
+
+<p>给定 1->2->3->4->5->6->NULL and k = 2,<br>
+返回 5->6->1->2->3->4->NULL.</p>
+
+<p><font color=#FF0000>需注意的一点是k的值可能比链表的长度还要大</font><br></p>
+
+<p>例如:</p>
+
+<p>给定 1->2->3->4->5->6->NULL and k = 14,<br>
+返回 5->6->1->2->3->4->NULL.</p>
+
+<p><font color=#FF0000>Difficulty: Medium</font><br></p>
+
+<p><img src="/images/61.jpg"></p>
+
+<pre><code class="java">package com.hypo.LinkedList;
+
+public class T61_RotateList
+{
+    private ListNode rotateRight(ListNode head, int k) 
+    {
+        if(head == null) return head;
+
+        ListNode dummy = new ListNode(Integer.MIN_VALUE);//哨兵
+        dummy.next = head;
+
+        ListNode fast = head;
+        ListNode slow = head;
+
+        ListNode cusor = head;
+        int countnode = 0;//链表长度
+        while(cusor != null)
+        {
+            countnode++;
+            cusor = cusor.next;
+        }
+
+        int count = k % countnode;//k的值可能比链表的长度要大，要先求余
+
+        while(--count &gt;= 0)//使fast指针指向顺数第(k%countnode)个结点的下一个结点
+        {
+            if(fast == null) return dummy.next;
+            fast = fast.next;
+        }
+
+        if(fast == null) return dummy.next ;
+
+        while(fast.next != null)//快慢指针使slow指向倒数第(k%countnode)个结点的前一个结点
+        {
+            fast = fast.next;
+            slow = slow.next;
+        }
+
+        fast.next = dummy.next;
+
+        dummy.next = slow.next;
+
+        slow.next = null;
+
+        return dummy.next;
+    }
+
+//  test
+    public static void main(String[] args)
+    {
+        T61_RotateList tt61 = new T61_RotateList();
+        //建链表 1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;6-&gt;null
+        ListNode head = new ListNode(1);
+        ListNode two = new ListNode(2);
+        head.next = two;
+        ListNode three = new ListNode(3);
+        two.next = three;
+        ListNode four = new ListNode(4);
+        three.next = four;
+        ListNode five = new ListNode(5);
+        four.next = five;
+        ListNode six = new ListNode(6);
+        five.next = six;
+        six.next = null;
+
+        int k  = 14;
+
+        ListNode result = tt61.rotateRight(head, k);
+
+        while(result != null)//打印
+        {
+            System.out.print(result.val +"-&gt;");
+            result = result.next;
+        }
+    }
+}
+</code></pre>
+
+<p>运行时间:</p>
+
+<p><img src="/images/61_2.jpg"></p>
+]]></content>
+  </entry>
+  
+</feed>

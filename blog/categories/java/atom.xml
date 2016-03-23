@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-03-23T15:53:50+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Comparator接口和Comparable接口]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/21/comparator-and-comparable/"/>
+    <updated>2016-03-21T19:22:29+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/21/comparator-and-comparable</id>
+    <content type="html"><![CDATA[<p>当需要排序的集合或数组不是单纯的数字型时，通常可以使用Comparator或Comparable接口，以简单的方式实现对象排序或自定义排序.<br></p>
+
+<p>Comparator接口源代码<br></p>
+
+<pre><code class="java">
+package java.util;
+
+public interface Comparator&lt;T&gt;
+{
+    int compare(T o1, T o2);
+
+    boolean equals(Object obj);
+}
+</code></pre>
+
+<p>Comparator接口:<br>
+强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br></p>
+
+<p>Collections类中有两个重载的sort方法:<br>
+<img src="/images/cc5.jpg">
+<img src="/images/cc2.jpg"></p>
+
+<p><img src="/images/cc6.jpg">
+<img src="/images/cc3.jpg"></p>
+
+<p><font color=#FF0000>其实Collections类中的两个重载sort方法在源代码实现上是调用了Arrays类中的sort方法(见上两图红框中调用).</font><br></p>
+
+<p>Arrays类中有很多重载的sort方法:<br>
+分为两大类，一类是对基本数据类型的数组的排序方法，采用DualPivotQuicksort(多路快排)进行排序;<br>
+另一类是引用类型的数组的排序排序方法，采用MergeSort(归并排序)来进行排序;<br></p>
+
+<p>Arrays中sort方法可以传Comparator参数的两个方法：
+<img src="/images/cc9.jpg">
+<img src="/images/cc7.jpg"></p>
+
+<p><img src="/images/cc10.jpg">
+<img src="/images/cc8.jpg"></p>
+
+<p>Comparator接口使用实例：<br>
+<figure class='code'><figcaption><span>hashmapSort.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">hypo</span><span class="o">.</span><span class="na">collection</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Collections</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Comparator</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.HashMap</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//HashMap根据值排序</span>
+</span><span class='line'><span class="c1">//通过把HashMap中的所有Entry存入一个List,然后调用collection的sort进行排序操作.</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">hashmapSort</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">HashMap</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">hm</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;b&#39;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;a&#39;</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;c&#39;</span><span class="o">,</span> <span class="mi">5</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;d&#39;</span><span class="o">,</span> <span class="mi">2</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;e&#39;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;f&#39;</span><span class="o">,</span><span class="mi">4</span> <span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//Map.Entry&amp;lt;K,V&amp;gt;是接口，其方法有getKey(),getValue()等.</span>
+</span><span class='line'>    <span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">info</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;(</span><span class="n">hm</span><span class="o">.</span><span class="na">entrySet</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//排序前</span>
+</span><span class='line'>    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">info</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">;</span><span class="n">i</span><span class="o">++)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">).</span><span class="na">toString</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//排序</span>
+</span><span class='line'>    <span class="c1">//通过把HashMap中的所有Entry存入一个List,然后调用collection的sort进行排序操作.</span>
+</span><span class='line'>    <span class="n">Collections</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">info</span><span class="o">,</span> <span class="k">new</span> <span class="n">Comparator</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">o1</span><span class="o">,</span>
+</span><span class='line'>                <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Character</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">o2</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="c1">// TODO Auto-generated method stub</span>
+</span><span class='line'>            <span class="k">return</span> <span class="o">(</span><span class="n">o1</span><span class="o">.</span><span class="na">getValue</span><span class="o">()</span> <span class="o">-</span> <span class="n">o2</span><span class="o">.</span><span class="na">getValue</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">});</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;===============================&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="c1">//排序后</span>
+</span><span class='line'>    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">info</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">).</span><span class="na">toString</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure>
+hashmapSort.java运行结果：<br>
+<img src="/images/cc4.jpg"></p>
+
+<p>可以看程序中Collections.sort调用的关系:<br>
+<img src="/images/cc1.jpg"></p>
+
+<p>Comparable接口源代码<br></p>
+
+<pre><code class="java ">
+package java.lang;
+import java.util.*;
+
+public interface Comparable&lt;T&gt; 
+{
+    public int compareTo(T o);
+}
+</code></pre>
+
+<p>Comparable接口：此接口强行对实现它的每个类的对象进行整体排序。这种排序被称为类的自然排序，类的 compareTo 方法被称为它的自然比较方法。实现此接口的对象列表（和数组）可以通过 Collections.sort（和 Arrays.sort）进行
+<font color=#FF0000>自动排序</font>
+实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br></p>
+
+<p>Comparable接口使用实例:<br></p>
+
+<pre><code class="java comparableTest.java">
+package hypo.collection;
+
+import java.util.Arrays;
+
+class Student implements Comparable&lt;Student&gt;
+{
+    private String name;
+    private int age;
+    private float score;
+
+    public Student(String name , int age ,float score)
+    {
+        // TODO Auto-generated constructor stub
+        this.name = name;
+        this.age = age;
+        this.score = score;
+    }
+
+    @Override
+    public String toString()
+    {
+        // TODO Auto-generated method stub
+        return name + "\t" + age +"\t" + score;
+    }
+
+    @Override
+    public int compareTo(Student o)
+    {
+        // TODO Auto-generated method stub
+        if(this.score &gt; o.score)
+        {
+            return -1;
+        }
+        else if(this.score &lt; o.score)
+        {
+            return 1;
+        }
+        else
+        {
+            if(this.age &gt; o.age)
+            {
+                return 1;
+            }
+            else if(this.age &lt; o.age)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+}
+
+
+public class comparableTest
+{
+
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        Student student[] = {
+                new Student("Lily", 20 , 90.0f),
+                new Student("Suny" ,22 , 91.0f),
+                new Student("Sady" ,23 , 90.0f),
+                new Student("Tomy" ,25 , 88.0f),
+                new Student("Jimy" ,25 , 99.0f)
+        };
+
+        System.out.println("===排序前===");
+        for(Student s : student)
+        {
+            System.out.println(s);
+        }
+
+        Arrays.sort(student);
+
+        System.out.println("===排序后===");
+        for(Student s : student)
+        {
+            System.out.println(s);
+        }
+    }
+
+}
+</code></pre>
+
+<p>comparableTest.java运行结果：<br>
+<img src="/images/cc11.jpg"></p>
+
+<p>总结:<br>
+两种方法各有优劣, 用Comparable 简单, 只要实现Comparable 接口的对象直接就成为一个可以比较的对象,
+但是需要修改源代码, 用Comparator 的好处是不需要修改源代码, 而是另外实现一个比较器, 当某个自定义
+的对象需要作比较的时候,把比较器和对象一起传递过去就可以比大小了, 并且在Comparator 里面用户可以自
+己实现复杂的可以通用的逻辑,使其可以匹配一些比较简单的对象,那样就可以节省很多重复劳动了</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java集合]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/21/java-collection/"/>
+    <updated>2016-03-21T19:07:56+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/21/java-collection</id>
+    <content type="html"><![CDATA[<p>Java集合框架图<br>
+<img src="/images/jc1.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java正则表达式]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/20/java-regex/"/>
+    <updated>2016-03-20T10:32:51+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/20/java-regex</id>
+    <content type="html"><![CDATA[<p><img src="/images/regex1.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java虚拟机]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/18/jvm/"/>
+    <updated>2016-03-18T16:50:36+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/18/jvm</id>
+    <content type="html"><![CDATA[<h2>java语法糖<br></h2>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java设计模式]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/18/design-pattern/"/>
+    <updated>2016-03-18T09:32:47+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/18/design-pattern</id>
+    <content type="html"><![CDATA[<h3>设计模式分类<br></h3>
+
+<p><img src="/images/dp2.jpg"></p>
+
+<p>设计模式之间的关系<br>
+<img src="/images/dp.jpg"></p>
+
+<p>设计模式所支持的设计可变方面<br>
+<img src="/images/dp3.jpg"></p>
+
+<h3>软件设计原则<br></h3>
+
+<p><img src="/images/dp4.jpg"></p>
+]]></content>
+  </entry>
+  
+</feed>
