@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-03-23T15:53:50+08:00</updated>
+  <updated>2016-03-25T23:07:33+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,130 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Java Puzzlers读书笔记]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/24/java-puzzlers/"/>
+    <updated>2016-03-24T21:11:35+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/24/java-puzzlers</id>
+    <content type="html"><![CDATA[<h2>解惑3：长整形相除<br></h2>
+
+<p><img src="/images/jp3.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java单例模式深入解析]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/24/java-singleton/"/>
+    <updated>2016-03-24T14:23:33+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/24/java-singleton</id>
+    <content type="html"><![CDATA[<p>作为对象的创建模式，单例模式确保某一个类只有一个实例，而且自行实例化并向整个系统提供这个实例。这个类称为单例类.</p>
+
+<p>单例模式有以下特点:<br>
+1. 单例类只能有一个实例<br>
+2. 单例类必须自己创建自己的唯一的实例<br>
+3. 单例类必须给所有其他对象提供这一个实例.<br></p>
+
+<h3>最简单的单例类</h3>
+
+<pre><code class="java">package DP1_4.Singleton;
+
+public class EagerSingleton
+{
+    private static final EagerSingleton instance = new EagerSingleton();
+
+    //私有构造函数
+    private EagerSingleton()
+    {
+    }
+
+    //静态工厂方法
+    public static EagerSingleton getInstance()
+    {
+        return instance;
+    }
+}
+</code></pre>
+
+<p>在这个类被加载时，静态变量instance会被初始化，此时类的私有构造函数会被调用。此时，单例类的唯一实例就别创建出来了.<br>
+Java语言中单例类的一个重要特点是类的构造函数是私有的，从而避免外界利用构造函数直接创建出任意多的实例。<br>
+值得注意的是，由于构造函数是私有的，因此该类不能被继承.<br>
+<font color=#FF0000>注意类的静态变量当且仅当类初次加载时会被初始化，所以EagerSingleton类中的instance静态变量只会在类加载时初始化一次，
+即只会产生一个对象,而且这个对象一定会产生出来.</font><br></p>
+
+<h3>lazy loaded单例类</h3>
+
+<pre><code class="java">package DP1_4.Singleton;
+
+public class LazySingleton
+{
+    private static LazySingleton instance= null;
+
+    //私有构造方法
+    private LazySingleton()
+    {
+    }
+
+    //静态工厂方法
+    public static LazySingleton getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new LazySingleton();
+        }
+        return instance;
+    }
+}
+</code></pre>
+
+<p>代码的变化有两处——首先，把instance初始化为null，直到第一次使用的时候通过判断是否为null来创建对象。因为创建过程不在声明处，所以那个final的修饰必须去掉。<br>
+要使用LazySingleton，调用getInstance()方法。第一次的时候发现instance是null，然后就新建一个对象，返回出去；第二次再使用的时候，因为这个instance是static的，所以已经不是null了，因此不会再创建对象，直接将其返回。<br>
+这个过程就成为lazy loaded，也就是迟加载——直到使用的时候才进行加载.<br></p>
+
+<h3>同步的单例类</h3>
+
+<p>线程A希望使用LazySingleton，调用getInstance()方法。因为是第一次调用，A就发现instance是null的，于是它开始创建实例，就在这个时候，CPU发生时间片切换，线程B开始执行，它要使用LazySingleton，调用getInstance()方法，同样检测到instance是null——注意，这是在A检测完之后切换的，也就是说A并没有来得及创建对象——因此B开始创建。B创建完成后，切换到A继续执行，因为它已经检测完了，所以A不会再检测一遍，它会直接创建对象。这样，线程A和B各自拥有一个LazySingleton的对象——单例失败.</p>
+
+<pre><code class="java">package DP1_4.Singleton;
+
+public class SynchronizedSingleton
+{
+    private static SynchronizedSingleton instance= null;
+
+    //私有构造方法
+    private SynchronizedSingleton()
+    {
+    }
+
+    //加synchronized关键字的静态工厂方法
+    public synchronized static SynchronizedSingleton getInstance()
+    {
+        if(instance == null)
+        {
+            instance = new SynchronizedSingleton();
+        }
+        return instance;
+    }
+}
+</code></pre>
+
+<p>给getInstance方法加上synchronzied方法，一个线程必须等待另一个线程创建完后才能调用该方法，这时单例类的对象已经产生，再判断instance == null就会失败，保证了单例的唯一性.<br></p>
+
+<h3>同步单例类性能提升</h3>
+
+<p>参考资料:<br>
+1. <a href="http://devbean.blog.51cto.com/448512/203501">http://devbean.blog.51cto.com/448512/203501</a><br></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java String对象的内存机制]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/24/java-string/"/>
+    <updated>2016-03-24T13:59:12+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/24/java-string</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Comparator接口和Comparable接口]]></title>
@@ -34,7 +158,9 @@ public interface Comparator&lt;T&gt;
 </code></pre>
 
 <p>Comparator接口:<br>
-强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br></p>
+强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br>
+Comparator接口中有两个未实现的方法，但是不一定要实现equals方法，除非有特殊的性能需要，因为无论何时创建一个类，都是间接继承自Object,而Object带有equals方法。所以只需要默认的Object的equals方法就可以满足接口的要求了.<br>
+<font color=#FF0000>基本类型无法使用Comparator进行排序.</font><br></p>
 
 <p>Collections类中有两个重载的sort方法:<br>
 <img src="/images/cc5.jpg">
@@ -47,7 +173,7 @@ public interface Comparator&lt;T&gt;
 
 <p>Arrays类中有很多重载的sort方法:<br>
 分为两大类，一类是对基本数据类型的数组的排序方法，采用DualPivotQuicksort(多路快排)进行排序;<br>
-另一类是引用类型的数组的排序排序方法，采用MergeSort(归并排序)来进行排序;<br></p>
+另一类是引用类型的数组的排序排序方法，采用MergeSort(稳定归并排序)来进行排序;<br></p>
 
 <p>Arrays中sort方法可以传Comparator参数的两个方法：
 <img src="/images/cc9.jpg">
@@ -192,7 +318,9 @@ public interface Comparable&lt;T&gt;
 
 <p>Comparable接口：此接口强行对实现它的每个类的对象进行整体排序。这种排序被称为类的自然排序，类的 compareTo 方法被称为它的自然比较方法。实现此接口的对象列表（和数组）可以通过 Collections.sort（和 Arrays.sort）进行
 <font color=#FF0000>自动排序</font>
-实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br></p>
+实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br>
+java.lang.Comparable接口，使你的类具有“天生”的比较能力.此接口很简单，只有compareTo()一个方法.此方法接受另一个Object为参数，
+如果当前对象小于参数则返回负值，如果相等则返回零，如果当前对象大于参数则返回正值.</p>
 
 <p>Comparable接口使用实例:<br></p>
 
@@ -303,45 +431,6 @@ public class comparableTest
     <id>http://www.regenthypo.com/blog/2016/03/21/java-collection</id>
     <content type="html"><![CDATA[<p>Java集合框架图<br>
 <img src="/images/jc1.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java正则表达式]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/03/20/java-regex/"/>
-    <updated>2016-03-20T10:32:51+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/03/20/java-regex</id>
-    <content type="html"><![CDATA[<p><img src="/images/regex1.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java虚拟机]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/03/18/jvm/"/>
-    <updated>2016-03-18T16:50:36+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/03/18/jvm</id>
-    <content type="html"><![CDATA[<h2>java语法糖<br></h2>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java设计模式]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/03/18/design-pattern/"/>
-    <updated>2016-03-18T09:32:47+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/03/18/design-pattern</id>
-    <content type="html"><![CDATA[<h3>设计模式分类<br></h3>
-
-<p><img src="/images/dp2.jpg"></p>
-
-<p>设计模式之间的关系<br>
-<img src="/images/dp.jpg"></p>
-
-<p>设计模式所支持的设计可变方面<br>
-<img src="/images/dp3.jpg"></p>
-
-<h3>软件设计原则<br></h3>
-
-<p><img src="/images/dp4.jpg"></p>
 ]]></content>
   </entry>
   

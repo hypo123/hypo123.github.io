@@ -119,7 +119,9 @@ package java.util; public interface Comparator &hellip;">
 
 
 <p>Comparator接口:<br>
-强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br></p>
+强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br>
+Comparator接口中有两个未实现的方法，但是不一定要实现equals方法，除非有特殊的性能需要，因为无论何时创建一个类，都是间接继承自Object,而Object带有equals方法。所以只需要默认的Object的equals方法就可以满足接口的要求了.<br>
+<font color=#FF0000>基本类型无法使用Comparator进行排序.</font><br></p>
 
 <p>Collections类中有两个重载的sort方法:<br>
 <img src="/images/cc5.jpg">
@@ -132,7 +134,7 @@ package java.util; public interface Comparator &hellip;">
 
 <p>Arrays类中有很多重载的sort方法:<br>
 分为两大类，一类是对基本数据类型的数组的排序方法，采用DualPivotQuicksort(多路快排)进行排序;<br>
-另一类是引用类型的数组的排序排序方法，采用MergeSort(归并排序)来进行排序;<br></p>
+另一类是引用类型的数组的排序排序方法，采用MergeSort(稳定归并排序)来进行排序;<br></p>
 
 <p>Arrays中sort方法可以传Comparator参数的两个方法：
 <img src="/images/cc9.jpg">
@@ -283,7 +285,9 @@ package java.util; public interface Comparator &hellip;">
 
 <p>Comparable接口：此接口强行对实现它的每个类的对象进行整体排序。这种排序被称为类的自然排序，类的 compareTo 方法被称为它的自然比较方法。实现此接口的对象列表（和数组）可以通过 Collections.sort（和 Arrays.sort）进行
 <font color=#FF0000>自动排序</font>
-实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br></p>
+实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br>
+java.lang.Comparable接口，使你的类具有“天生”的比较能力.此接口很简单，只有compareTo()一个方法.此方法接受另一个Object为参数，
+如果当前对象小于参数则返回负值，如果相等则返回零，如果当前对象大于参数则返回正值.</p>
 
 <p>Comparable接口使用实例:<br></p>
 
@@ -509,6 +513,8 @@ package java.util; public interface Comparator &hellip;">
         <a class="basic-alignment left" href="/blog/2016/03/21/java-collection/" title="Previous Post: java集合">&laquo; java集合</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/03/24/java-string/" title="Next Post: java String对象的内存机制">java String对象的内存机制 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -522,23 +528,23 @@ package java.util; public interface Comparator &hellip;">
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/03/25/leetcode43-multiply-strings-string/">Leetcode43 Multiply Strings[String]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/java-puzzlers/">Java Puzzlers读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/java-singleton/">Java单例模式深入解析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/java-string/">Java String对象的内存机制</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/03/21/comparator-and-comparable/">Comparator接口和Comparable接口</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/21/java-collection/">Java集合</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/20/java-regex/">Java正则表达式</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/18/jvm/">Java虚拟机</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/18/design-pattern/">Java设计模式</a>
       </li>
     
   </ul>

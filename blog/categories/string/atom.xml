@@ -4,7 +4,7 @@
   <title><![CDATA[Category: String | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/string/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-03-23T15:53:50+08:00</updated>
+  <updated>2016-03-25T23:07:33+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,76 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Leetcode43 Multiply Strings[String]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/25/leetcode43-multiply-strings-string/"/>
+    <updated>2016-03-25T22:26:25+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/25/leetcode43-multiply-strings-string</id>
+    <content type="html"><![CDATA[<p>这其实是一道大数相乘的题目<br>
+这个要注意一个小技巧:即nums[i]*nums[j]产生的积在[i+j,i+j+1]位上，如下图<br>
+<img src="/images/jc43.jpg"></p>
+
+<pre><code class="java">package tencent;
+
+import java.util.Scanner;
+
+public class BigNumberMultiply
+{
+    private static String mulitply(String num1 , String num2)
+    {
+        int m = num1.length();
+        int n = num2.length();
+
+        int p[] = new int[m+n];
+
+        StringBuffer result = new StringBuffer(m+n);
+
+
+        for(int i = m - 1; i &gt;= 0 ; i--)
+        {
+            for(int j = n - 1 ; j &gt;= 0 ; j--)
+            {
+                int index1 = i + j;
+                int index2 = i + j + 1;
+
+                int sum = (num1.charAt(i) - '0') * (num2.charAt(j) - '0');
+
+                sum += p[index2];
+
+                p[index1] += sum / 10;
+                p[index2] = sum % 10;
+            }
+        }
+
+        for(int i : p)
+        {
+            //得到的数组p可能是从0开始的，这个0要去掉
+            //注意StringBuffer的length()方法是返回StringBuffer中已有字符的个数.
+            if(!(result.length() == 0 &amp;&amp; i == 0))
+            {
+                result.append(i);
+            }
+        }
+
+        return result.toString();
+    }
+    public static void main(String[] args)
+    {
+        // TODO Auto-generated method stub
+        Scanner scan  = new Scanner(System.in);
+        String num1 = scan.next();
+        String num2 = scan.next();
+
+        System.out.println(BigNumberMultiply.mulitply(num1, num2));
+    }
+
+}
+</code></pre>
+
+<p><img src="/images/jc43_2.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Leetcode214 Shortest Palindrome [String]]]></title>

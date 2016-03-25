@@ -9,7 +9,8 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="当需要排序的集合或数组不是单纯的数字型时，通常可以使用Comparator或Comparable接口，以简单的方式实现对象排序或自定义排序. Comparator接口源代码 1
+  <meta name="description" content="这其实是一道大数相乘的题目
+这个要注意一个小技巧:即nums[i]*nums[j]产生的积在[i+j,i+j+1]位上，如下图 1
 2
 3
 4
@@ -17,7 +18,29 @@
 6
 7
 8
-package java.util; public interface Comparator &hellip;">
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -82,6 +105,398 @@ package java.util; public interface Comparator &hellip;">
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2016/03/25/leetcode43-multiply-strings-string/">Leetcode43 Multiply Strings[String]</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-25T22:26:25+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:26 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这其实是一道大数相乘的题目<br>
+这个要注意一个小技巧:即nums[i]*nums[j]产生的积在[i+j,i+j+1]位上，如下图<br>
+<img src="/images/jc43.jpg"></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">tencent</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Scanner</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BigNumberMultiply</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">mulitply</span><span class="o">(</span><span class="n">String</span> <span class="n">num1</span> <span class="o">,</span> <span class="n">String</span> <span class="n">num2</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="n">num1</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">num2</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">p</span><span class="o">[]</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">m</span><span class="o">+</span><span class="n">n</span><span class="o">];</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">StringBuffer</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuffer</span><span class="o">(</span><span class="n">m</span><span class="o">+</span><span class="n">n</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span><span class="o">--)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span><span class="o">--)</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="kt">int</span> <span class="n">index1</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="o">;</span>
+</span><span class='line'>              <span class="kt">int</span> <span class="n">index2</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="o">(</span><span class="n">num1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="o">)</span> <span class="o">*</span> <span class="o">(</span><span class="n">num2</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">j</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="o">);</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="n">sum</span> <span class="o">+=</span> <span class="n">p</span><span class="o">[</span><span class="n">index2</span><span class="o">];</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="n">p</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">+=</span> <span class="n">sum</span> <span class="o">/</span> <span class="mi">10</span><span class="o">;</span>
+</span><span class='line'>              <span class="n">p</span><span class="o">[</span><span class="n">index2</span><span class="o">]</span> <span class="o">=</span> <span class="n">sum</span> <span class="o">%</span> <span class="mi">10</span><span class="o">;</span>
+</span><span class='line'>          <span class="o">}</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">p</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="c1">//得到的数组p可能是从0开始的，这个0要去掉</span>
+</span><span class='line'>          <span class="c1">//注意StringBuffer的length()方法是返回StringBuffer中已有字符的个数.</span>
+</span><span class='line'>          <span class="k">if</span><span class="o">(!(</span><span class="n">result</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">))</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="n">result</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+</span><span class='line'>          <span class="o">}</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
+</span><span class='line'>      <span class="n">Scanner</span> <span class="n">scan</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">Scanner</span><span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">in</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">String</span> <span class="n">num1</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">String</span> <span class="n">num2</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">BigNumberMultiply</span><span class="o">.</span><span class="na">mulitply</span><span class="o">(</span><span class="n">num1</span><span class="o">,</span> <span class="n">num2</span><span class="o">));</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="/images/jc43_2.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/24/java-puzzlers/">Java Puzzlers读书笔记</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-24T21:11:35+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:11 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>解惑3：长整形相除<br></h2>
+
+<p><img src="/images/jp3.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/24/java-singleton/">Java单例模式深入解析</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-24T14:23:33+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:23 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>作为对象的创建模式，单例模式确保某一个类只有一个实例，而且自行实例化并向整个系统提供这个实例。这个类称为单例类.</p>
+
+<p>单例模式有以下特点:<br>
+1. 单例类只能有一个实例<br>
+2. 单例类必须自己创建自己的唯一的实例<br>
+3. 单例类必须给所有其他对象提供这一个实例.<br></p>
+
+<h3>最简单的单例类</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">DP1_4</span><span class="o">.</span><span class="na">Singleton</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">EagerSingleton</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">EagerSingleton</span> <span class="n">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EagerSingleton</span><span class="o">();</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//私有构造函数</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="nf">EagerSingleton</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//静态工厂方法</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">EagerSingleton</span> <span class="nf">getInstance</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">instance</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在这个类被加载时，静态变量instance会被初始化，此时类的私有构造函数会被调用。此时，单例类的唯一实例就别创建出来了.<br>
+Java语言中单例类的一个重要特点是类的构造函数是私有的，从而避免外界利用构造函数直接创建出任意多的实例。<br>
+值得注意的是，由于构造函数是私有的，因此该类不能被继承.<br>
+<font color=#FF0000>注意类的静态变量当且仅当类初次加载时会被初始化，所以EagerSingleton类中的instance静态变量只会在类加载时初始化一次，
+即只会产生一个对象,而且这个对象一定会产生出来.</font><br></p>
+
+<h3>lazy loaded单例类</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">DP1_4</span><span class="o">.</span><span class="na">Singleton</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">LazySingleton</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">LazySingleton</span> <span class="n">instance</span><span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//私有构造方法</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="nf">LazySingleton</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//静态工厂方法</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">LazySingleton</span> <span class="nf">getInstance</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">instance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">LazySingleton</span><span class="o">();</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">instance</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>代码的变化有两处——首先，把instance初始化为null，直到第一次使用的时候通过判断是否为null来创建对象。因为创建过程不在声明处，所以那个final的修饰必须去掉。<br>
+要使用LazySingleton，调用getInstance()方法。第一次的时候发现instance是null，然后就新建一个对象，返回出去；第二次再使用的时候，因为这个instance是static的，所以已经不是null了，因此不会再创建对象，直接将其返回。<br>
+这个过程就成为lazy loaded，也就是迟加载——直到使用的时候才进行加载.<br></p>
+
+<h3>同步的单例类</h3>
+
+<p>线程A希望使用LazySingleton，调用getInstance()方法。因为是第一次调用，A就发现instance是null的，于是它开始创建实例，就在这个时候，CPU发生时间片切换，线程B开始执行，它要使用LazySingleton，调用getInstance()方法，同样检测到instance是null——注意，这是在A检测完之后切换的，也就是说A并没有来得及创建对象——因此B开始创建。B创建完成后，切换到A继续执行，因为它已经检测完了，所以A不会再检测一遍，它会直接创建对象。这样，线程A和B各自拥有一个LazySingleton的对象——单例失败.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">DP1_4</span><span class="o">.</span><span class="na">Singleton</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SynchronizedSingleton</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">SynchronizedSingleton</span> <span class="n">instance</span><span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//私有构造方法</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="nf">SynchronizedSingleton</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//加synchronized关键字的静态工厂方法</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="n">SynchronizedSingleton</span> <span class="nf">getInstance</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">instance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SynchronizedSingleton</span><span class="o">();</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">instance</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>给getInstance方法加上synchronzied方法，一个线程必须等待另一个线程创建完后才能调用该方法，这时单例类的对象已经产生，再判断instance == null就会失败，保证了单例的唯一性.<br></p>
+
+<h3>同步单例类性能提升</h3>
+
+<p>参考资料:<br>
+1. <a href="http://devbean.blog.51cto.com/448512/203501">http://devbean.blog.51cto.com/448512/203501</a><br></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/24/java-string/">Java String对象的内存机制</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-24T13:59:12+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:59 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2016/03/21/comparator-and-comparable/">Comparator接口和Comparable接口</a></h1>
     
     
@@ -122,7 +537,9 @@ package java.util; public interface Comparator &hellip;">
 
 
 <p>Comparator接口:<br>
-强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br></p>
+强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br>
+Comparator接口中有两个未实现的方法，但是不一定要实现equals方法，除非有特殊的性能需要，因为无论何时创建一个类，都是间接继承自Object,而Object带有equals方法。所以只需要默认的Object的equals方法就可以满足接口的要求了.<br>
+<font color=#FF0000>基本类型无法使用Comparator进行排序.</font><br></p>
 
 <p>Collections类中有两个重载的sort方法:<br>
 <img src="/images/cc5.jpg">
@@ -135,7 +552,7 @@ package java.util; public interface Comparator &hellip;">
 
 <p>Arrays类中有很多重载的sort方法:<br>
 分为两大类，一类是对基本数据类型的数组的排序方法，采用DualPivotQuicksort(多路快排)进行排序;<br>
-另一类是引用类型的数组的排序排序方法，采用MergeSort(归并排序)来进行排序;<br></p>
+另一类是引用类型的数组的排序排序方法，采用MergeSort(稳定归并排序)来进行排序;<br></p>
 
 <p>Arrays中sort方法可以传Comparator参数的两个方法：
 <img src="/images/cc9.jpg">
@@ -286,7 +703,9 @@ package java.util; public interface Comparator &hellip;">
 
 <p>Comparable接口：此接口强行对实现它的每个类的对象进行整体排序。这种排序被称为类的自然排序，类的 compareTo 方法被称为它的自然比较方法。实现此接口的对象列表（和数组）可以通过 Collections.sort（和 Arrays.sort）进行
 <font color=#FF0000>自动排序</font>
-实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br></p>
+实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br>
+java.lang.Comparable接口，使你的类具有“天生”的比较能力.此接口很简单，只有compareTo()一个方法.此方法接受另一个Object为参数，
+如果当前对象小于参数则返回负值，如果相等则返回零，如果当前对象大于参数则返回正值.</p>
 
 <p>Comparable接口使用实例:<br></p>
 
@@ -2829,814 +3248,6 @@ package java.util; public interface Comparator &hellip;">
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/17/java-cheat-sheet/">Java-cheat-sheet</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-17T19:14:33+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:14 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java语言的"编译期"其实是一段"不确定"的操作过程,因为它可能指以下几个:<br>
-1. 前端编译器，把<em>.java文件转变为</em>.class文件的过程;<br>
-2. 虚拟机的后端运行期编译器(JIT编译器)把字节码转变为机器码的过程;<br>
-3. 使用静态提前编译器(AOT编译器)直接把*.java文件编译成本地机器代码的过程;<br></p>
-
-<h2>Java访问权限修饰词:<br></h2>
-
-<h3>类的访问控制</h3>
-
-<p>类访问的含义是：若一个类(类A)访问另一个类(类B)时，其所指类A有以下3中操作:<br>
-1. 在类A中创建类B的对象;<br>
-2. 使用类B中某些方法和成员变量;<br>
-3. 继承类B;<br></p>
-
-<p>类的访问权限有两种，分别是：<br>
-1. 公有级别访问(public)<br>
-2. 默认访问级别 (可看作包访问)<br></p>
-
-<h3>类的成员访问控制<br></h3>
-
-<ol>
-<li>public：被public修饰的方法或者变量,所有其他类，无论该类属于那个包，均能访问该成员 <br></li>
-<li>默认访问权限(包访问权限): 对同一个包中的类，默认类型相当于public,而对于包外的类则相当于private <br></li>
-<li>protected 如果一个类的方法或者变量被protected修饰，对于同一个包的类，这个类的方法或变量是可以被访问的。对于不同包的类，只有继承于该类的类才可以访问到该类的方法或者变量<br></li>
-<li>private：如果一个类的方法或者变量被private修饰，那么这个类的方法或者变量只能在该类本身中被访问，及其不能被该成员所在类之外的任何类中的代码访问.</li>
-</ol>
-
-
-<h2>final关键字<br></h2>
-
-<p>用final修饰变量的基本含义是,改变量一旦被显示初始化之后其值就不能再被修改. 但对基本类型和引用类型要区别理解.<br></p>
-
-<p>对于基本类型,final使其数值恒定不变<br>
-对于引用类型,final使改引用恒定不变，即一旦引用被初始化指向一个对象，就无法再把它改为指向另一个对象;但是,被指向对象本身却是可以修改的.<br></p>
-
-<p><strong>空白final</strong><br>
-待写部分</p>
-
-<p><strong>final参数</strong><br>
-Java允许在参数列表中以声明的方式将参数指明为final,这意味着无法再方法中更改参数引用所指向的对象.</p>
-
-<p><strong>final修饰方法</strong><br>
-把方法锁定,以防止任何继承类修改它的含义.这确保了在继承中使方法行为保持不变,并且不会被覆盖(override).</p>
-
-<p><strong>final修饰类</strong><br>
-final类禁止继承,所以final类中所有方法都隐式指定为final的，因为无法覆盖(override)它们.</p>
-
-<h2>static关键字<br></h2>
-
-<p>static关键字只能修饰成员.</p>
-
-<ol>
-<li><p>static方法</p></li>
-<li><p>static变量</p></li>
-<li><p>static代码块</p></li>
-</ol>
-
-
-<h2>java接口</h2>
-
-<h3>java接口定义</h3>
-
-<p>&lt;访问限制修饰符> [abstract] interface &lt;接口名><br>
-{<br>
-<br>
-}<br></p>
-
-<ol>
-<li>其中访问限制修饰符与类的访问限制修饰符相同,可以是public或不写(即默认包访问权限),<br>
- 使用public修饰的接口必须必须接口名是在与其同名的文件中(与public 类一样).<br></li>
-<li>[abstract]可选，可写可不写，如果不写，系统在进行编译时也会自动加上，也就是说接口一定是抽象的<br></li>
-</ol>
-
-
-<p><strong>接口不能有构造函数</strong><br></p>
-
-<p><font color=#FF0000>因为接口声明中隐含了abstract，所以不能用final关键字来修饰接口.</font><br></p>
-
-<h3>java接口中的成员变量:<br></h3>
-
-<p><font color=#FF0000>接口也可以包含域(成员变量)，但是这些域隐式地是static和final的</font><br>
-<font color=#FF0000>可以在接口中不必显示地使用public,static,final关键字，及时不使用这些修饰符,
-    编译时也会为其自动加上.</font><br>
-<font color=#FF0000>接口中的变量隐含是"public static final"的</font><br></p>
-
-<h3>java接口中的方法:<br></h3>
-
-<ol>
-<li>所有接口方法隐含都是公有的(public)和抽象的(abstract)，不需要显示声明;<br></li>
-<li>接口方法一定不能是静态的(static)，也一定不能是final的；也不能用public修饰符之外的其他访问限制符进行修饰;
-也就是说，<font color=#FF0000>要给接口中的方法写修饰符,只能写public和abstract</font><br></li>
-</ol>
-
-
-<h3>Java接口常用方法：<br></h3>
-
-<ol>
-<li>单方法接口 <br>
-一个单方法接口中只有一个方法<br></li>
-<li>标识接口 <br>
-标识接口是没有任何方法和属性的接口.标识接口不对实现它的任何类有任何语义上的要求,它仅仅表明实现它的类属于一个特定的类型.<br>
-标识接口在java语言中有一些很著名的应用,比如java.io.Serializable便是标识接口.<br>
-java jdk7中java.io.Serializable接口源代码<br></li>
-</ol>
-
-
-<figure class='code'><figcaption><span>java.io.Serializable.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">;</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Serializable</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>3.常量接口<br>
-所谓常量接口，是指用Java接口来声明一些常量，然后由实现这些接口的类使用这些常量.<br>
-<img src="/images/java2.jpg">
-凡是实现了这个接口的Java类都会自动继承这些常量，并且都可以像使用自己的常量一样使用这些常量<br>
-<font color=#FF0000>不过实际使用中不建议这样使用常量接口</font><br></p>
-
-<h2>抽象类<br></h2>
-
-<p>参考资料:<br>
-1. <a href="http://www.cnblogs.com/dolphin0520/p/3799052.html">http://www.cnblogs.com/dolphin0520/p/3799052.html</a><br></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/17/leetcode61-rotate-list-linkedlist/">Leetcode61 Rotate List [LinkedList]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-17T16:24:07+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:24 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>给定一个单链表，和非负整数k,将单链表的后k个结点翻转到链表的左边;</p>
-
-<p>例如:</p>
-
-<p>给定 1->2->3->4->5->6->NULL and k = 2,<br>
-返回 5->6->1->2->3->4->NULL.</p>
-
-<p><font color=#FF0000>需注意的一点是k的值可能比链表的长度还要大</font><br></p>
-
-<p>例如:</p>
-
-<p>给定 1->2->3->4->5->6->NULL and k = 14,<br>
-返回 5->6->1->2->3->4->NULL.</p>
-
-<p><font color=#FF0000>Difficulty: Medium</font><br></p>
-
-<p><img src="/images/61.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">LinkedList</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">T61_RotateList</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">ListNode</span> <span class="nf">rotateRight</span><span class="o">(</span><span class="n">ListNode</span> <span class="n">head</span><span class="o">,</span> <span class="kt">int</span> <span class="n">k</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">head</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="n">head</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">dummy</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="n">Integer</span><span class="o">.</span><span class="na">MIN_VALUE</span><span class="o">);</span><span class="c1">//哨兵</span>
-</span><span class='line'>      <span class="n">dummy</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">fast</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">slow</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">cusor</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">countnode</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span><span class="c1">//链表长度</span>
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">cusor</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">countnode</span><span class="o">++;</span>
-</span><span class='line'>          <span class="n">cusor</span> <span class="o">=</span> <span class="n">cusor</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">k</span> <span class="o">%</span> <span class="n">countnode</span><span class="o">;</span><span class="c1">//k的值可能比链表的长度要大，要先求余</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(--</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//使fast指针指向顺数第(k%countnode)个结点的下一个结点</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">fast</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>          <span class="n">fast</span> <span class="o">=</span> <span class="n">fast</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">fast</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span> <span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">fast</span><span class="o">.</span><span class="na">next</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span><span class="c1">//快慢指针使slow指向倒数第(k%countnode)个结点的前一个结点</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">fast</span> <span class="o">=</span> <span class="n">fast</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>          <span class="n">slow</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>      <span class="n">fast</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">dummy</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">slow</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>        <span class="k">return</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//  test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">T61_RotateList</span> <span class="n">tt61</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">T61_RotateList</span><span class="o">();</span>
-</span><span class='line'>      <span class="c1">//建链表 1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;6-&gt;null</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">head</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">two</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">head</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">two</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">three</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">two</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">three</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">four</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">4</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">three</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">four</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">five</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">5</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">four</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">five</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">six</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">6</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">five</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">six</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">six</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">k</span>  <span class="o">=</span> <span class="mi">14</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">ListNode</span> <span class="n">result</span> <span class="o">=</span> <span class="n">tt61</span><span class="o">.</span><span class="na">rotateRight</span><span class="o">(</span><span class="n">head</span><span class="o">,</span> <span class="n">k</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span><span class="c1">//打印</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">val</span> <span class="o">+</span><span class="s">&quot;-&gt;&quot;</span><span class="o">);</span>
-</span><span class='line'>          <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行时间:</p>
-
-<p><img src="/images/61_2.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/16/leetcode63-unique-paths-ii-dp/">Leetcode63 Unique Paths II [DP]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-16T21:05:09+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:05 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动.
-其中二维数组中值有1和0,1表示该处为障碍,0可以通行</p>
-
-<p>例如：<br>
-[<br>
-  [0,0,0],<br>
-  [0,1,0],<br>
-  [0,0,0]<br>
-]<br>
-有2条不同路径<br></p>
-
-<p><font color=#FF0000>Difficulty: Medium</font><br>
-<img src="/images/63.jpg"></p>
-
-<p>分析:
-可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
-即到(i,j)点路径的种类，由到(i-1,j)点和到(i,j-1)点路径数量的和.<br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">DP</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">T63_UniquePathsII</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">uniquePathsWithObstacles</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">grid</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">row</span><span class="o">][</span><span class="n">col</span><span class="o">];</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="o">)</span> <span class="n">f</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">row</span> <span class="o">;</span> <span class="n">i</span><span class="o">++</span> <span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">col</span> <span class="o">;</span> <span class="n">j</span><span class="o">++)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span><span class="c1">//障碍</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//起点</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//第一行</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">)</span><span class="c1">//第一列</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">];</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>              <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span><span class="c1">//来自上边或左边</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">f</span><span class="o">[</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">T63_UniquePathsII</span> <span class="n">t63</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">T63_UniquePathsII</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">grid</span> <span class="o">=</span> <span class="o">{</span>  <span class="o">{</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">},</span>
-</span><span class='line'>                        <span class="o">{</span><span class="mi">0</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">0</span><span class="o">},</span>
-</span><span class='line'>                        <span class="o">{</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">}};</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">grid2</span> <span class="o">=</span> <span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t63</span><span class="o">.</span><span class="na">uniquePathsWithObstacles</span><span class="o">(</span><span class="n">grid</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行时间:
-<img src="/images/63_2.jpg"></p>
-
-<p>代码简化，但运行时间更长</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">uniquePathsWithObstacles</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">grid</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">mark</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">row</span><span class="o">][</span><span class="n">col</span><span class="o">];</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="o">)</span> <span class="n">mark</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">row</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">col</span> <span class="o">;</span> <span class="o">++</span><span class="n">j</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span><span class="c1">//此处是障碍</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              <span class="k">else</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="c1">//某一个cell有2种可能到达，从上面来，以及从左边来，</span>
-</span><span class='line'>                  <span class="c1">//只需要把每一个cell的可能数计算好，并且把它们相加即可</span>
-</span><span class='line'>                  <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//左边来</span>
-</span><span class='line'>                  <span class="o">{</span>
-</span><span class='line'>                      <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">];</span>
-</span><span class='line'>                  <span class="o">}</span>
-</span><span class='line'>                  
-</span><span class='line'>                  <span class="k">if</span><span class="o">(</span><span class="n">j</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//上面来</span>
-</span><span class='line'>                  <span class="o">{</span>
-</span><span class='line'>                      <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>                  <span class="o">}</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>        <span class="k">return</span> <span class="n">mark</span><span class="o">[</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>    <span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行时间:</p>
-
-<p><img src="/images/63_3.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/16/leetcode62-unique-paths-dp/">Leetcode62 Unique Paths [DP]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-16T21:04:30+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:04 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动.
-<img src="/images/62.jpg"></p>
-
-<p><font color=#FF0000>Difficulty: Medium</font><br>
-<img src="/images/62_2.jpg"></p>
-
-<p>分析:
-可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
-即到(i,j)点路径的种类，由到(i-1,j)点和到(i,j-1)点路径数量的和.<br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">DP</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">T62_UniquePaths</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">uniquePaths</span><span class="o">(</span><span class="kt">int</span> <span class="n">m</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">];</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span> <span class="o">;</span> <span class="n">i</span><span class="o">++</span> <span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">Arrays</span><span class="o">.</span><span class="na">fill</span><span class="o">(</span><span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="mi">1</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//只能向下或向右</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span> <span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">;</span> <span class="n">j</span><span class="o">++</span> <span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//第一行,从左边来</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//第一列,从上边来</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">];</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span><span class="c1">//状态转移方程</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">f</span><span class="o">[</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">T62_UniquePaths</span> <span class="n">t62</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">T62_UniquePaths</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t62</span><span class="o">.</span><span class="na">uniquePaths</span><span class="o">(</span><span class="n">m</span><span class="o">,</span> <span class="n">n</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>代码简化</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">int</span> <span class="nf">uniquePaths</span><span class="o">(</span><span class="kt">int</span> <span class="n">m</span><span class="o">,</span> <span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kt">int</span><span class="o">[][]</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">];</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//只能向下或向右</span>
-</span><span class='line'>  <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">m</span> <span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">;</span> <span class="n">j</span><span class="o">++</span> <span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>              <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="k">return</span> <span class="n">f</span><span class="o">[</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><img src="/images/62_3.jpg"></p>
-
-<p>还有数学公式的方法更优</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -3652,23 +3263,23 @@ java jdk7中java.io.Serializable接口源代码<br></li>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/03/25/leetcode43-multiply-strings-string/">Leetcode43 Multiply Strings[String]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/java-puzzlers/">Java Puzzlers读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/java-singleton/">Java单例模式深入解析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/java-string/">Java String对象的内存机制</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/03/21/comparator-and-comparable/">Comparator接口和Comparable接口</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/21/java-collection/">Java集合</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/20/java-regex/">Java正则表达式</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/18/jvm/">Java虚拟机</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/18/design-pattern/">Java设计模式</a>
       </li>
     
   </ul>
