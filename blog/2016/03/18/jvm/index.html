@@ -9,8 +9,8 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="java语法糖
-">
+  <meta name="description" content="Java运行时数据区内存分布 Java对象在堆中的内存结构 Java对象再内存中是怎样分配的呢? 一旦对象在堆中分配了空间，那本质上是一系列的字节，那么如何才能找到对象中的某个特定的属性域呢?
+编译器通过一个内部表来保存每个域的偏移量. 下图是Base类的一个对象内存分布图. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -88,7 +88,37 @@
   </header>
 
 
-<div class="entry-content"><h2>java语法糖<br></h2>
+<div class="entry-content"><h2>Java运行时数据区内存分布</h2>
+
+<p><img src="/images/jvm_1.jpg"></p>
+
+<h2>Java对象在堆中的内存结构</h2>
+
+<h3>Java对象再内存中是怎样分配的呢?<br></h3>
+
+<p>一旦对象在堆中分配了空间，那本质上是一系列的字节，那么如何才能找到对象中的某个特定的属性域呢?<br>
+编译器通过一个内部表来保存每个域的偏移量.<br></p>
+
+<p>下图是Base类的一个对象内存分布图.Base类没有定义任何方法.<br>
+<img src="/images/jvm_2.jpg"></p>
+
+<p>如果还有另一个子类Derived继承了Base类，那么内存分布如下图:<br>
+<img src="/images/jvm_3.jpg"></p>
+
+<p>子类对象和父类对象拥有同样的内存分布.当然,子类对象需要更多的空间来存放新的属性.<br>
+<font color=#FF0000>这种分配的好处在于Base类型的引用如果引用了Derived的对象，仍然在开头的地方"看见"Base对象</font><br>
+<font color=#FF0000>因此，使用父类(Base)引用来操作子类(Derived)对象,保证是安全的.因此在运行时不需要动态地检查</font><br>
+<font color=#FF0000>Base引用的实际类型.</font><br></p>
+
+<p>同样的道理，方法也可以放到object空间的开始处,如下图:<br>
+<img src="/images/jvm_4.jpg"></p>
+
+<p>然而这种实现方式是没有效率的.假若一个类有很多方法(例如20个),那么每个对象就要持有20个指针,相应的,每个对象都需要20个指针的内存空间,这会导致创建对象变慢,所占空间更大<br></p>
+
+<p>优化手段是创建一个 虚拟函数表(vtable,虚表),虚表是一个指向特定类的成员函数的指针数组. 如下图:<br>
+<img src="/images/jvm_5.jpg"></p>
+
+<h2>java语法糖<br></h2>
 </div>
 
 
@@ -143,6 +173,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/03/30/java-memory-leak/">Java内存泄露</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/03/25/leetcode43-multiply-strings-string/">Leetcode43 Multiply Strings[String]</a>
       </li>
     
@@ -156,10 +190,6 @@
     
       <li class="post">
         <a href="/blog/2016/03/24/java-string/">Java String对象的内存机制</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/21/comparator-and-comparable/">Comparator接口和Comparable接口</a>
       </li>
     
   </ul>

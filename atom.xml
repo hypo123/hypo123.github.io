@@ -4,7 +4,7 @@
   <title><![CDATA[regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-03-25T23:07:33+08:00</updated>
+  <updated>2016-03-30T20:44:06+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,33 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Java内存泄露]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/03/30/java-memory-leak/"/>
+    <updated>2016-03-30T18:37:49+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/03/30/java-memory-leak</id>
+    <content type="html"><![CDATA[<p>Java语言中虽然有垃圾收集机制，但仍然可能存在内存泄露的情况.<br></p>
+
+<h2>什么是内存泄露<br></h2>
+
+<p>内存泄露的定义:对象已经没有被应用程序使用，但是垃圾回收器没办法移除它们，因为它们还在被引用着.<br>
+要先理解一下无用对象和未被引用对象.</p>
+
+<p><img src="http://www.regenthypo.com/images/jml_1.jpg"></p>
+
+<p>上图中未被引用对象会被垃圾回收器回收，而被引用对象却不会.未被引用的对象当然是不再被使用的对象，因为没有对象再引用它;
+而无用对象却不全是未被引用对象,其中还有被引用的.这种情况将导致内存泄露.<br></p>
+
+<h2>为什么会发生内存泄露<br></h2>
+
+<p>来先看看下面的例子，为什么会发生内存泄漏。下面这个例子中，A对象引用B对象，A对象的生命周期（t1-t4）比B对象的生命周期（t2-t3）长的多。当B对象没有被应用程序使用之后，A对象仍然在引用着B对象。这样，垃圾回收器就没办法将B对象从内存中移除，从而导致内存问题，因为如果A引用更多这样的对象，那将有更多的未被引用对象存在，并消耗内存空间。<br></p>
+
+<p>B对象也可能会持有许多其他的对象，那这些对象同样也不会被垃圾回收器回收。所有这些没在使用的对象将持续的消耗之前分配的内存空间。<br></p>
+
+<p><img src="http://www.regenthypo.com/images/jml_2.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Leetcode43 Multiply Strings[String]]]></title>
@@ -736,7 +763,37 @@ java.lang.Comparable接口，使你的类具有“天生”的比较能力.此�
     <link href="http://www.regenthypo.com/blog/2016/03/18/jvm/"/>
     <updated>2016-03-18T16:50:36+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/03/18/jvm</id>
-    <content type="html"><![CDATA[<h2>java语法糖<br></h2>
+    <content type="html"><![CDATA[<h2>Java运行时数据区内存分布</h2>
+
+<p><img src="http://www.regenthypo.com/images/jvm_1.jpg"></p>
+
+<h2>Java对象在堆中的内存结构</h2>
+
+<h3>Java对象再内存中是怎样分配的呢?<br></h3>
+
+<p>一旦对象在堆中分配了空间，那本质上是一系列的字节，那么如何才能找到对象中的某个特定的属性域呢?<br>
+编译器通过一个内部表来保存每个域的偏移量.<br></p>
+
+<p>下图是Base类的一个对象内存分布图.Base类没有定义任何方法.<br>
+<img src="http://www.regenthypo.com/images/jvm_2.jpg"></p>
+
+<p>如果还有另一个子类Derived继承了Base类，那么内存分布如下图:<br>
+<img src="http://www.regenthypo.com/images/jvm_3.jpg"></p>
+
+<p>子类对象和父类对象拥有同样的内存分布.当然,子类对象需要更多的空间来存放新的属性.<br>
+<font color=#FF0000>这种分配的好处在于Base类型的引用如果引用了Derived的对象，仍然在开头的地方"看见"Base对象</font><br>
+<font color=#FF0000>因此，使用父类(Base)引用来操作子类(Derived)对象,保证是安全的.因此在运行时不需要动态地检查</font><br>
+<font color=#FF0000>Base引用的实际类型.</font><br></p>
+
+<p>同样的道理，方法也可以放到object空间的开始处,如下图:<br>
+<img src="http://www.regenthypo.com/images/jvm_4.jpg"></p>
+
+<p>然而这种实现方式是没有效率的.假若一个类有很多方法(例如20个),那么每个对象就要持有20个指针,相应的,每个对象都需要20个指针的内存空间,这会导致创建对象变慢,所占空间更大<br></p>
+
+<p>优化手段是创建一个 虚拟函数表(vtable,虚表),虚表是一个指向特定类的成员函数的指针数组. 如下图:<br>
+<img src="http://www.regenthypo.com/images/jvm_5.jpg"></p>
+
+<h2>java语法糖<br></h2>
 ]]></content>
   </entry>
   
@@ -4357,180 +4414,6 @@ You should return [1,2,3,6,9,8,7,4,5].</p>
 
 <p>运行结果:
 <img src="http://www.regenthypo.com/images/54_2.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Leetcode74 Search a 2D Matrix [BinarySearch]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode74-search-a-2d-matrix-binarysearch/"/>
-    <updated>2016-03-15T15:49:40+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/03/15/leetcode74-search-a-2d-matrix-binarysearch</id>
-    <content type="html"><![CDATA[<p>Write an efficient algorithm that searches for a value in an m x n matrix. This matrix has the following properties:</p>
-
-<p>Integers in each row are sorted from left to right.
-The first integer of each row is greater than the last integer of the previous row.
-For example,</p>
-
-<p>Consider the following matrix:</p>
-
-<p>[
-  [1,   3,  5,  7],
-  [10, 11, 16, 20],
-  [23, 30, 34, 50]
-]
-Given target = 3, return true.</p>
-
-<p>Difficulty: Medium</p>
-
-<p><img src="http://www.regenthypo.com/images/74.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">BinarySearch</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Search2DMatrix_T74</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">searchMatrix</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">matrix</span><span class="o">,</span> <span class="kt">int</span> <span class="n">target</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">matrix</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">||</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">)</span> <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">row</span> <span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">BinarySearch</span><span class="o">(</span><span class="n">matrix</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">,</span> <span class="n">target</span><span class="o">);</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">ret</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">ret</span> <span class="o">==</span> <span class="o">-</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">BinarySearch</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">a</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">key</span><span class="o">)</span><span class="c1">//二分查找模板2JDK版</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="kt">int</span> <span class="n">low</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>        <span class="kt">int</span> <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="k">while</span> <span class="o">(</span><span class="n">low</span> <span class="o">&lt;=</span> <span class="n">high</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">{</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">mid</span> <span class="o">=</span> <span class="o">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="o">)</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">midVal</span> <span class="o">=</span> <span class="n">a</span><span class="o">[</span><span class="n">mid</span><span class="o">];</span>
-</span><span class='line'>
-</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">midVal</span> <span class="o">&lt;</span> <span class="n">key</span><span class="o">)</span>
-</span><span class='line'>                <span class="n">low</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">midVal</span> <span class="o">&gt;</span> <span class="n">key</span><span class="o">)</span>
-</span><span class='line'>                <span class="n">high</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">else</span>
-</span><span class='line'>                <span class="k">return</span> <span class="n">mid</span><span class="o">;</span> <span class="c1">// key found</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>        <span class="k">return</span> <span class="o">-(</span><span class="n">low</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>  <span class="c1">// key not found.</span>
-</span><span class='line'><span class="c1">//   如果它包含在数组中，则返回搜索键的索引；否则返回 (-(插入点) - 1)。插入点 被定义为将键插入数组的那一点：</span>
-</span><span class='line'><span class="c1">//   即第一个大于此键的元素索引，如果数组中的所有元素都小于指定的键，则为 a.length。</span>
-</span><span class='line'><span class="c1">//   注意，这保证了当且仅当此键被找到时，返回的值将 &gt;= 0。</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">Search2DMatrix_T74</span> <span class="n">t74</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Search2DMatrix_T74</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">matrix</span> <span class="o">=</span> <span class="o">{</span>
-</span><span class='line'>              
-</span><span class='line'>                <span class="o">{</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">3</span><span class="o">,</span>  <span class="mi">5</span><span class="o">,</span>  <span class="mi">7</span><span class="o">},</span>
-</span><span class='line'>                <span class="o">{</span><span class="mi">10</span><span class="o">,</span> <span class="mi">11</span><span class="o">,</span> <span class="mi">16</span><span class="o">,</span> <span class="mi">20</span><span class="o">},</span>
-</span><span class='line'>                <span class="o">{</span><span class="mi">23</span><span class="o">,</span> <span class="mi">30</span><span class="o">,</span> <span class="mi">34</span><span class="o">,</span> <span class="mi">50</span><span class="o">}</span>
-</span><span class='line'>      <span class="o">};</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">target</span> <span class="o">=</span> <span class="mi">9</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t74</span><span class="o">.</span><span class="na">searchMatrix</span><span class="o">(</span><span class="n">matrix</span><span class="o">,</span> <span class="n">target</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果:
-<img src="http://www.regenthypo.com/images/74_2.jpg"></p>
 ]]></content>
   </entry>
   

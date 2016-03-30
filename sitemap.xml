@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://www.regenthypo.com/blog/2016/03/30/java-memory-leak/</loc>
+<lastmod>2016-03-30T18:37:49+08:00</lastmod>
+</url>
+<url>
 <loc>http://www.regenthypo.com/blog/2016/03/25/leetcode43-multiply-strings-string/</loc>
 <lastmod>2016-03-25T22:26:25+08:00</lastmod>
 </url>
