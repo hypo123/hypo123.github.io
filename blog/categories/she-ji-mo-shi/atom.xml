@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-05-04T08:58:49+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[设计模式之装饰器模式]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/22/decorator/"/>
+    <updated>2016-04-22T19:10:35+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/22/decorator</id>
+    <content type="html"><![CDATA[<h2>1.意图<br></h2>
+
+<p>动态地给一个对象添加一些额外的职责。就增加功能来说，Decorator模式相比生成子类更为灵活.<br></p>
+]]></content>
+  </entry>
+  
+</feed>

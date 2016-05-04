@@ -87,7 +87,7 @@
   </header>
 
 
-<div class="entry-content"><p>public class CopyOnWriteArrayList<E> extends Object implements List<E>, RandomAccess, Cloneable, SerializableArrayList 的一个线程安全的变体，其中所有可变操作（add、set 等等）都是通过对底层数组进行一次新的复制来实现的。</p>
+<div class="entry-content"><p>public class CopyOnWriteArrayList<E> extends Object implements List<E>, RandomAccess, Cloneable, SerializableArrayList  <br>的一个线程安全的变体，其中所有可变操作（add、set 等等）都是通过对底层数组进行一次新的复制来实现的。</p>
 
 <p>这一般需要很大的开销，但是当遍历操作的数量大大超过可变操作的数量时，这种方法可能比其他替代方法更 有效。在不能或不想进行同步遍历，但又需要从并发线程中排除冲突时，它也很有用。“快照”风格的迭代器方法在创建迭代器时使用了对数组状态的引用。此数组在迭代器的生存期内不会更改，因此不可能发生冲突，并且迭代器保证不会抛出 ConcurrentModificationException。创建迭代器以后，迭代器就不会反映列表的添加、移除或者更改。在迭代器上进行的元素更改操作（remove、set 和 add）不受支持。这些方法将抛出 UnsupportedOperationException。</p>
 
@@ -101,8 +101,8 @@
 
 <p>使用场景：读取频繁，写较少。 理由：底层的安全性 本质上是依赖于线程读取的数据副本来实现的。因此每次写都是要复制底层数组数据的，如果写频繁势必会造成大量的性能消耗。</p>
 
-<p>CopyOnWriteArrayList要修改时，都是将旧数组先复制到新数组中，再在新数组上修改，修改完了，再将旧数组的引用指向新数组.
-不管是set方法，还是add方法,remove方法都是这样的.<br></p>
+<p><font color=#FF0000>CopyOnWriteArrayList要修改时，都是将旧数组先复制到新数组中，再在新数组上修改，修改完了，再将旧数组的引用指向新数组.
+不管是set方法，还是add方法,remove方法都是这样的.</font><br></p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -237,7 +237,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-
+<p>set方法<br></p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -312,7 +312,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-
+<p>add方法<br></p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -363,7 +363,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-
+<p>remove方法<br></p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -688,6 +688,8 @@
         <a class="basic-alignment left" href="/blog/2016/04/12/java-runtime-data-memory/" title="Previous Post: Java运行时数据区">&laquo; Java运行时数据区</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/04/17/concurrenthashmap-analyse/" title="Next Post: ConcurrentHashMap源码解析">ConcurrentHashMap源码解析 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -701,23 +703,23 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/04/17/copyonwritearraylist-analyse/">CopyOnWriteArrayList类源码解析</a>
+        <a href="/blog/2016/04/23/lintcode417-valid-number/">Lintcode417 有效数字</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/04/12/java-runtime-data-memory/">Java运行时数据区</a>
+        <a href="/blog/2016/04/23/lintcode130-heapsort/">Lintcode130 堆排序</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/04/12/java-exception/">Java异常</a>
+        <a href="/blog/2016/04/23/lintcode124-longest-consecutive-sequence/">Lintcode124 最长连续序列</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/04/12/java-class-lifecycle/">Java类型生命周期</a>
+        <a href="/blog/2016/04/22/decorator/">设计模式之装饰器模式</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/03/30/java-memory-leak/">Java内存泄露</a>
+        <a href="/blog/2016/04/22/java-io/">Java IO总结</a>
       </li>
     
   </ul>

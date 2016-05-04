@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Lintcode | regenthypo's Blog]]></title>
+  <link href="http://www.regenthypo.com/blog/categories/lintcode/atom.xml" rel="self"/>
+  <link href="http://www.regenthypo.com/"/>
+  <updated>2016-05-04T08:58:49+08:00</updated>
+  <id>http://www.regenthypo.com/</id>
+  <author>
+    <name><![CDATA[regenthypo]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Lintcode417 有效数字]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/23/lintcode417-valid-number/"/>
+    <updated>2016-04-23T20:26:52+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/23/lintcode417-valid-number</id>
+    <content type="html"><![CDATA[<p>题目:给定一个字符串，验证其是否为数字<br></p>
+
+<p>例子:<br>
+&ldquo;0&rdquo; => true <br>
+&ldquo; 0.1 &rdquo; => true <br>
+&ldquo;abc&rdquo; => false <br>
+&ldquo;1 a&rdquo; => false <br>
+&ldquo;2e10&rdquo; => true <br></p>
+
+<p>解题思路:使用有限状态自动机解题.<br></p>
+
+<p>1.整数:<br></p>
+
+<p><img src="/images/lintcode417_1.jpg"></p>
+
+<p>该有限自动机(DFA)有s1,s2,s3三个状态。s1为起始状态,s3为合法结束状态.<br>
+如果输入字符串最后停在状态s3(同心圆),则该字符串表示的数字时合法的.<br>
+如果输入字符串最后没有停在状态s3(同心圆),则该字符串是非法的.<br>
+如果输入的字符串出现了未在DFA中表示的字符,则跳到错误状态，表示该字符串不合法.<br></p>
+
+<p>2.整数和小数<br></p>
+
+<p><img src="/images/lintcode417_2.jpg"></p>
+
+<p>需注意,&ldquo;.3"或"3."都是合法的小数(分别表示0.3和3.0)，但单独一个”.”符号则是非法的。</p>
+
+<p>3.整数、小数和科学计数法<br></p>
+
+<p><img src="/images/lintcode417_3.jpg"></p>
+
+<p>表示有限状态自动机的方法有很多，可以用一个二维数组，数组中存储的是相应的输入所应该跳转到的状态位置。或者是用函数表示法，每个状态用一个函数表示，状态的转移用函数的调用表示.<br></p>
+
+<p>解法一:使用函数表示<br></p>
+
+<pre><code class="java">
+//用有限自动机解题DFA
+public class ValidNumber
+{
+    public boolean isNumber(String s) 
+    {
+        return state1(s , 0);//进入起始状态state 1
+    }
+
+    boolean state1(String s1 , int index1)
+    {
+        //处理空格
+        while(index1 &lt; s1.length() &amp;&amp; s1.charAt(index1) == ' ')
+        {
+            index1++;
+        }
+
+        //在state1结束 即全部为空格
+        if(index1 == s1.length())
+        {
+            return false;
+        }
+
+        //转到state 2
+        if(s1.charAt(index1) == '+' || s1.charAt(index1) == '-')
+        {
+            return state2(s1,index1);
+        }
+        //转到state 3
+        else if(Character.isDigit(s1.charAt(index1)))
+        {
+            return state3(s1, index1);
+        }
+        //转到state 4
+        else if(s1.charAt(index1) == '.')
+        {
+            return state4(s1, index1);
+        }
+        //不合法字符
+        else
+        {
+            return false;
+        }
+
+    }
+
+    boolean state2(String s2 , int index2)//+或-符号转到state2
+    {
+        //在state2结束 不合法
+        if(++index2 == s2.length())
+        {
+            return false;
+        }
+
+        //遇数字转到state 3
+        if(Character.isDigit(s2.charAt(index2)))
+        {
+            return state3(s2, index2);
+        }
+        //遇小数点转到state 4
+        else if(s2.charAt(index2) == '.')
+        {
+            return state4(s2 , index2);
+        }
+        //不合法字符
+        else
+        {
+            return false;
+        }
+    }
+    boolean state3(String s3 , int index3)//数字转到state3
+    {
+        index3++;
+        while(index3 &lt; s3.length() &amp;&amp; Character.isDigit(s3.charAt(index3)))
+        {
+            index3++;
+        }
+
+        //在state3结束合法
+        if(index3 == s3.length())
+        {
+            return true;
+        }
+
+        //遇小数点转到state 5
+        if(s3.charAt(index3) == '.')
+        {
+            return state5(s3, index3);
+        }
+        //遇科学计数法e转到state 6
+        else if(s3.charAt(index3) == 'e')
+        {
+            return state6(s3 , index3);
+        }
+        //遇空格转到state 9
+        else if(s3.charAt(index3) == ' ')
+        {
+            return state9(s3 , index3);
+        }
+        //不合法字符
+        else
+        {
+            return false;
+        }
+
+    }
+    boolean state4(String s4 , int index4)//"."转到state4
+    {
+        ////在state4结束不合法
+        if(++index4 == s4.length())
+        {
+            return false;
+        }
+
+        //遇数字转到state 5
+        if(Character.isDigit(s4.charAt(index4)))
+        {
+            return state5(s4 , index4);
+        }
+        //不合法字符
+        else
+        {
+            return false;
+        }
+    }
+    boolean state5(String s5 , int index5)//数字转达state 5
+    {
+        index5++;
+        while(index5 &lt; s5.length() &amp;&amp; Character.isDigit(s5.charAt(index5)))
+        {
+            index5++;
+        }
+
+        //在state5结束合法
+        if(index5 == s5.length())
+        {
+            return true;
+        }
+
+        //遇科学计数法e转到state 6
+        if(s5.charAt(index5) == 'e')
+        {
+            return state6(s5 , index5);
+        }
+        //遇空格转到state 9
+        else if(s5.charAt(index5) == ' ')
+        {
+            return state9(s5 , index5);
+        }
+        //不合法字符
+        else
+        {
+            return false;
+        }
+    }
+
+    boolean state6(String s6 , int index6)//遇科学计数法e转到state 6
+    {
+        //在state6结束不合法
+        if(++index6 == s6.length())
+        {
+            return false;
+        }
+
+        if(s6.charAt(index6) == '+' || s6.charAt(index6) == '-')
+        {
+            return state7(s6 , index6);
+        }
+        else if(Character.isDigit(s6.charAt(index6)))
+        {
+            return state8(s6 , index6);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    boolean state7(String s7 , int index7)//遇+/-转到state 7
+    {
+        if(++index7 == s7.length())//在state7结束 false
+        {
+            return false;
+        }
+
+        if(Character.isDigit(s7.charAt(index7)))
+        {
+            return state8( s7 , index7);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    boolean state8(String s8 , int index8)//遇数字转到state 8
+    {
+        index8++;
+        while(index8 &lt; s8.length() &amp;&amp; Character.isDigit(s8.charAt(index8)))
+        {
+            index8++;
+        }
+
+        if(index8 == s8.length())//在state8结束 true;
+        {
+            return true;
+        }
+        if(s8.charAt(index8) == ' ')
+        {
+            return state9(s8 , index8);
+        }
+        else
+        {
+            return false;
+        }
+    }
+    boolean state9(String s9 , int index9)//遇空格转到state 9
+    {
+        index9++;
+        while(index9 &lt; s9.length() &amp;&amp; s9.charAt(index9) == ' ')
+        {
+            index9++;
+        }
+
+        if(index9 == s9.length())//在state9结束 true;
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public static void main(String[] args)
+    {
+    }
+
+}
+</code></pre>
+
+<p>解法二:使用二维数组表示<br></p>
+
+<pre><code class="java">
+//用有限自动机解题DFA
+public class ValidNumber2
+{
+    private enum Type
+    {
+        INVALID,    // 0
+        SPACE,      // 1
+        SIGN,       // 2
+        DIGIT,      // 3
+        DOT,        // 4
+        EXPONENT,   // 5
+    }
+
+    public boolean isNumber(String s) 
+    {
+        int[][] stateTable = 
+            {
+                //INVALID SPACE SIGN DIGIT DOT EXPONMENT
+               //所在列   0    1      2    3    4     5
+                    {-1,   0,     1,   2,   3,   -1}, //state 0
+                    {-1,  -1,    -1,   2,   3,   -1}, //state 1
+                    {-1,   8,    -1,   2,   4,    5}, //state 2
+                    {-1,  -1,    -1,   4,  -1,   -1}, //state 3
+                    {-1,   8,    -1,   4,  -1,    5}, //state 4
+                    {-1,  -1,     6,   7,  -1,   -1}, //state 5
+                    {-1,  -1,    -1,   7,  -1,   -1}, //state 6
+                    {-1,   8,    -1,   7,  -1,   -1}, //state 7
+                    {-1,   8,    -1,  -1,  -1,   -1}, //state 8
+            };
+
+            int state = 0;//其实状态state0
+
+
+            for(int i = 0 ; i &lt; s.length(); i++)
+            {
+                Type type = Type.INVALID;
+                char tmp = s.charAt(i);
+
+                if(tmp == ' ')
+                {
+                    type = Type.SPACE;
+                }
+                else if(tmp == '+' || tmp == '-')
+                {
+                    type = Type.SIGN;
+                }
+                else if(Character.isDigit(tmp))
+                {
+                    type = Type.DIGIT;
+                }
+                else if(tmp == '.')
+                {
+                    type = Type.DOT;
+                }
+                else if(tmp == 'e')
+                {
+                    type = Type.EXPONENT;
+                }
+                else
+                {
+                    type = Type.INVALID;//不合法字符
+                }
+
+                //ordinal()返回此枚举常量的序数
+                state = stateTable[state][type.ordinal()];//转移到下一个状态
+
+                if(state == -1)
+                {
+                    return false;
+                }
+            }
+        return state == 2 || state == 4 || state == 7 || state == 8;
+    }
+    public static void main(String[] args)
+    {
+    }
+
+}
+</code></pre>
+
+<p>测试数据:<br></p>
+
+<pre><code class="java">    @Test
+    public void testIsNumber()
+    {
+        String s1 = "0";
+        boolean expt1 = true;
+        org.junit.Assert.assertEquals("Wrong1", expt1, vn.isNumber(s1));
+
+        String s2 = " 0.1 ";
+        boolean expt2 = true;
+        org.junit.Assert.assertEquals("Wrong2", expt2, vn.isNumber(s2));
+
+        String s3 = "abc";
+        boolean expt3 = false;
+        org.junit.Assert.assertEquals("Wrong3", expt3, vn.isNumber(s3));
+
+        String s4 = "1 a";
+        boolean expt4 = false;
+        org.junit.Assert.assertEquals("Wrong4", expt4, vn.isNumber(s4));
+
+        String s5 = "2e10";
+        boolean expt5 = true;
+        org.junit.Assert.assertEquals("Wrong5", expt5, vn.isNumber(s5));
+
+        String s6 = ".3";
+        boolean expt6 = true;
+        org.junit.Assert.assertEquals("Wrong6", expt6, vn.isNumber(s6));
+
+        String s7 = "3.";
+        boolean expt7 = true;
+        org.junit.Assert.assertEquals("Wrong7", expt7, vn.isNumber(s7));
+    }
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Lintcode130 堆排序]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/23/lintcode130-heapsort/"/>
+    <updated>2016-04-23T16:00:59+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/23/lintcode130-heapsort</id>
+    <content type="html"><![CDATA[<p>题目是给出一个整数数组，堆化操作就是把它变成一个最小堆数组;<br></p>
+
+<p>改为堆排序<br>.</p>
+
+<pre><code class="java">package com.hypo.Sort;
+
+/**
+ * 堆排序
+ */
+public class Heap_130
+{
+    //建最小堆
+    private static void build_min_heap(int[] A)
+    {
+        int heapsize = A.length;
+
+        for(int i = heapsize / 2 ; i &gt;= 1 ; i--)//数组下标规定从1开始  
+        {
+            min_heapify(A , i ,heapsize);
+        }
+    }
+
+    //保持最小堆性质
+    private static void min_heapify(int[] A , int index  , int heapsize)//数组下标规定从1开始
+    {
+        int left = index &lt;&lt; 1;
+        int right = (index &lt;&lt; 1) + 1;
+
+        int minindex = index;
+
+        if(left &lt;= heapsize &amp;&amp; A[left-1] &lt; A[index-1])
+        {
+            minindex = left;
+        }
+
+        if(right &lt;= heapsize &amp;&amp; A[right-1] &lt; A[minindex-1])
+        {
+            minindex = right;
+        }
+
+        if(minindex != index)
+        {
+            int temp = A[index-1];
+            A[index-1] = A[minindex-1];
+            A[minindex-1] = temp;
+            min_heapify(A , minindex , heapsize);
+        }
+    }
+
+    //堆排序.(最小堆是从大到小) 如果要从小到大可先建最大堆.
+    private static void heapsort(int[] A)
+    {
+        build_min_heap(A);//先建最小堆
+
+        int heapsize = A.length;
+
+        //一趟排好一个元素,排好的元素从最小堆中去除.
+        for(int i = heapsize ; i &gt;= 2; i--) 
+        {
+            //交换A[1]与A[i] 该表示是数组下标从1开始
+            int temp = A[i-1];
+            A[i-1] = A[0];
+
+            A[0] = temp;
+
+            heapsize--;
+
+            //注意这个地方堆已经变小,下一步堆调整不包括已经排好序的元素.
+            min_heapify(A , 1 , heapsize);
+        }
+    }
+
+    public static void main(String[] args)
+    {
+        int[] A = {2,3,1,4,5};
+        Heap_130.heapsort(A);
+        for(int n : A)
+        {
+            System.out.print(n+" ");
+        }
+    }
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Lintcode124 最长连续序列]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/23/lintcode124-longest-consecutive-sequence/"/>
+    <updated>2016-04-23T14:22:48+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/23/lintcode124-longest-consecutive-sequence</id>
+    <content type="html"><![CDATA[<p>给定一个未排序的整数数组，找出最长连续序列的长度。<br></p>
+
+<p>说明<br>
+要求你的算法复杂度为O(n)</p>
+
+<p>样例<br>
+给出数组[100, 4, 200, 1, 3, 2]，这个最长的连续序列是 [1, 2, 3, 4]，返回所求长度 4</p>
+
+<p>解题思路里还是有并查集的思想在里面.<br>
+1.如果HashMap含有该键,说明某个连续序列中已经包含该键，不用处理;<br>
+2.如果HashMap不含该键,分四种情况处理:<br>
+        //四种情况  并union<br>
+        //A.与左右相连的连续序列合并成一个序列, 如   左:234  右:678  插5   max=3+3+1<br>
+        //B.与左边相连的连续序列合并成一个序列, 如   左:234  右:     插5   max=3+1<br>
+        //C.与右边相连的连续序列合并成一个序列, 如   左：    右:678  插5   max=3+1<br>
+        //D.新建一个连续序列,如                      左:     右:     插5   max=1<br></p>
+
+<pre><code class="java">   private static int longestConsecutive(int[] num)
+    {
+        int result = 0;
+
+        //&lt;键值,连续序列长度&gt;
+        HashMap&lt;Integer,Integer&gt; map = new HashMap&lt;Integer,Integer&gt;();
+
+        for(int n : num)
+        {
+            if(!map.containsKey(n))//查 find
+            {
+                //由连续序列的最左边和最右边记录当前连续序列的长度.
+                int left = map.containsKey(n-1) ? map.get(n-1) : 0;
+                int right = map.containsKey(n+1) ? map.get(n+1) : 0;
+
+                int max = left + right + 1;
+
+                map.put(n, max);
+
+                result = Math.max(result, max);
+
+                map.put(n - left, max);
+                map.put(n + right , max);
+            }
+        }
+        return result;
+    }
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>

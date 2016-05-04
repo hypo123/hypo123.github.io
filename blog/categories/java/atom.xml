@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-04-17T17:29:35+08:00</updated>
+  <updated>2016-05-04T08:58:49+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -14,105 +14,404 @@
 
   
   <entry>
-    <title type="html"><![CDATA[CopyOnWriteArrayList类源码解析]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/04/17/copyonwritearraylist-analyse/"/>
-    <updated>2016-04-17T15:58:24+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/04/17/copyonwritearraylist-analyse</id>
-    <content type="html"><![CDATA[<p>public class CopyOnWriteArrayList<E> extends Object implements List<E>, RandomAccess, Cloneable, SerializableArrayList 的一个线程安全的变体，其中所有可变操作（add、set 等等）都是通过对底层数组进行一次新的复制来实现的。</p>
+    <title type="html"><![CDATA[Java IO总结]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/22/java-io/"/>
+    <updated>2016-04-22T19:07:39+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/22/java-io</id>
+    <content type="html"><![CDATA[<p><img src="/images/IO1.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java方法区]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/18/java-method-area/"/>
+    <updated>2016-04-18T15:17:37+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/18/java-method-area</id>
+    <content type="html"><![CDATA[<p>Java运行时数据区<br>
+<img src="/images/jma1.jpg"></p>
 
-<p>这一般需要很大的开销，但是当遍历操作的数量大大超过可变操作的数量时，这种方法可能比其他替代方法更 有效。在不能或不想进行同步遍历，但又需要从并发线程中排除冲突时，它也很有用。“快照”风格的迭代器方法在创建迭代器时使用了对数组状态的引用。此数组在迭代器的生存期内不会更改，因此不可能发生冲突，并且迭代器保证不会抛出 ConcurrentModificationException。创建迭代器以后，迭代器就不会反映列表的添加、移除或者更改。在迭代器上进行的元素更改操作（remove、set 和 add）不受支持。这些方法将抛出 UnsupportedOperationException。</p>
+<p><font color=#FF0000>Java方法区和堆一样是被该程序的所有线程共享的.</font><br></p>
 
-<p>允许使用所有元素，包括 null。</p>
+<p><img src="/images/jma2.jpg"></p>
 
-<p>内存一致性效果：当存在其他并发 collection 时，将对象放入 CopyOnWriteArrayList 之前的线程中的操作 happen-before 随后通过另一线程从 CopyOnWriteArrayList 中访问或移除该元素的操作。</p>
+<p><img src="/images/jma3.jpg"></p>
 
-<p>Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。从JDK1.5开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器,它们是CopyOnWriteArrayList和CopyOnWriteArraySet。CopyOnWrite容器非常有用，可以在非常多的并发场景中使用到。</p>
+<p><img src="/images/jma4.jpg"></p>
 
-<p>CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。这样做的好处是我们可以对CopyOnWrite容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。</p>
+<p><img src="/images/jma5.jpg"></p>
 
-<p>使用场景：读取频繁，写较少。 理由：底层的安全性 本质上是依赖于线程读取的数据副本来实现的。因此每次写都是要复制底层数组数据的，如果写频繁势必会造成大量的性能消耗。</p>
+<p><img src="/images/jma6.jpg"></p>
 
-<p>CopyOnWriteArrayList要修改时，都是将旧数组先复制到新数组中，再在新数组上修改，修改完了，再将旧数组的引用指向新数组.
-不管是set方法，还是add方法,remove方法都是这样的.<br>
-```java
-   private static final long serialVersionUID = 8673264195747942595L;</p>
+<p><img src="/images/jma7.jpg"></p>
 
-<pre><code>/** The lock protecting all mutators */
-transient final ReentrantLock lock = new ReentrantLock();//显示锁
+<p><img src="/images/jma8.jpg"></p>
 
-/** The array, accessed only via getArray/setArray. */
-private volatile transient Object[] array;
+<p><img src="/images/jma9.jpg"></p>
 
-/**
- * Gets the array.  Non-private so as to also be accessible
- * from CopyOnWriteArraySet class.
- * getArray()返回的引用是事实上不可变的，如果没有这个保证，那么这个操作不可能是线程安全
- */
-final Object[] getArray() 
-{
-    return array;//返回当前数组的引用
-}
+<p><img src="/images/jma10.jpg"></p>
 
-final void setArray(Object[] a)
-{
-    array = a;//将旧数组引用指向新数组
-}
+<p><img src="/images/jma11.jpg"></p>
 
-/**
- * 如果新建CopyOnWriteArrayList对象时没有指定大小，默认是空的
- */
-public CopyOnWriteArrayList() {
-    setArray(new Object[0]);
-}
-
-/**
- * Creates a list containing the elements of the specified
- * collection, in the order they are returned by the collection's
- * iterator.
- *
- * @param c the collection of initially held elements
- * @throws NullPointerException if the specified collection is null
- */
-public CopyOnWriteArrayList(Collection&lt;? extends E&gt; c) {
-    Object[] elements = c.toArray();
-    // c.toArray might (incorrectly) not return Object[] (see 6260652)
-    if (elements.getClass() != Object[].class)
-        elements = Arrays.copyOf(elements, elements.length, Object[].class);
-    setArray(elements);
-}
-
-/**
- * Creates a list holding a copy of the given array.
- *
- * @param toCopyIn the array (a copy of this array is used as the
- *        internal array)
- * @throws NullPointerException if the specified array is null
- */
-public CopyOnWriteArrayList(E[] toCopyIn) {
-    setArray(Arrays.copyOf(toCopyIn, toCopyIn.length, Object[].class));
-}
-
-
-public int size() {
-    return getArray().length;
-}
-
-public boolean isEmpty() {
-    return size() == 0;
-}
-</code></pre>
-
-<pre><code></code></pre>
-
-<pre><code>public E set(int index, E element) 
-{
-    final ReentrantLock lock = this.lock;//使用显示锁同步
-    lock.lock();
-    try 
+<p><img src="/images/jma12.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[ConcurrentHashMap源码解析]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/04/17/concurrenthashmap-analyse/"/>
+    <updated>2016-04-17T21:48:40+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/04/17/concurrenthashmap-analyse</id>
+    <content type="html"><![CDATA[<p>ConcurrentHashMap类编译时常量<br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'> <span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;-</span> <span class="n">Constants</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">ndash</span><span class="o">;</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The default initial capacity for this table,</span>
+</span><span class='line'><span class="cm"> * used when not otherwise specified in a constructor.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">DEFAULT_INITIAL_CAPACITY</span> <span class="o">=</span> <span class="mi">16</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The default load factor for this table, used when not</span>
+</span><span class='line'><span class="cm"> * otherwise specified in a constructor.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">float</span> <span class="n">DEFAULT_LOAD_FACTOR</span> <span class="o">=</span> <span class="mf">0.75f</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The default concurrency level for this table, used when not</span>
+</span><span class='line'><span class="cm"> * otherwise specified in a constructor.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">DEFAULT_CONCURRENCY_LEVEL</span> <span class="o">=</span> <span class="mi">16</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The maximum capacity, used if a higher value is implicitly</span>
+</span><span class='line'><span class="cm"> * specified by either of the constructors with arguments.  MUST</span>
+</span><span class='line'><span class="cm"> * be a power of two &amp;lt;= 1&amp;lt;&amp;lt;30 to ensure that entries are indexable</span>
+</span><span class='line'><span class="cm"> * using ints.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAXIMUM_CAPACITY</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">30</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The minimum capacity for per-segment tables.  Must be a power</span>
+</span><span class='line'><span class="cm"> * of two, at least two to avoid immediate resizing on next use</span>
+</span><span class='line'><span class="cm"> * after lazy construction.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MIN_SEGMENT_TABLE_CAPACITY</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The maximum number of segments to allow; used to bound</span>
+</span><span class='line'><span class="cm"> * constructor arguments. Must be power of two less than 1 &amp;lt;&amp;lt; 24.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAX_SEGMENTS</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">16</span><span class="o">;</span> <span class="c1">// slightly conservative</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * Number of unsynchronized retries in size and containsValue</span>
+</span><span class='line'><span class="cm"> * methods before resorting to locking. This is used to avoid</span>
+</span><span class='line'><span class="cm"> * unbounded retries if tables undergo continuous modification</span>
+</span><span class='line'><span class="cm"> * which would make it impossible to obtain an accurate result.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">RETRIES_BEFORE_LOCK</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">ConcurrentHashMap类成员变量</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>   <span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;-</span> <span class="n">Fields</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">ndash</span><span class="o">;</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * Mask value for indexing into segments. The upper bits of a</span>
+</span><span class='line'><span class="cm"> * key&#39;s hash code are used to choose the segment.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">final</span> <span class="kt">int</span> <span class="n">segmentMask</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * Shift value for indexing within segments.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">final</span> <span class="kt">int</span> <span class="n">segmentShift</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * The segments, each of which is a specialized hash table.</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">final</span> <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;[]</span> <span class="n">segments</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">transient</span> <span class="n">Set</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">keySet</span><span class="o">;</span>
+</span><span class='line'><span class="kd">transient</span> <span class="n">Set</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">entrySet</span><span class="o">;</span>
+</span><span class='line'><span class="kd">transient</span> <span class="n">Collection</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">values</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="err">```</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">]]&gt;&lt;/</span><span class="n">content</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="o">&lt;</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">title</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[</span><span class="n">CopyOnWriteArrayList类源码解析</span><span class="o">]]&gt;&lt;/</span><span class="n">title</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;http://www.regenthypo.com/blog/2016/04/17/copyonwritearraylist-analyse/&quot;</span><span class="o">/&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">updated</span><span class="o">&gt;</span><span class="mi">2016</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">17</span><span class="nl">T15:</span><span class="mi">58</span><span class="o">:</span><span class="mi">24</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">&lt;/</span><span class="n">updated</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">id</span><span class="o">&gt;</span><span class="nl">http:</span><span class="c1">//www.regenthypo.com/blog/2016/04/17/copyonwritearraylist-analyse&lt;/id&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">content</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CopyOnWriteArrayList</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">Object</span> <span class="kd">implements</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;,</span> <span class="n">RandomAccess</span><span class="o">,</span> <span class="n">Cloneable</span><span class="o">,</span> <span class="n">SerializableArrayList</span>  <span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span><span class="n">的一个线程安全的变体</span><span class="err">，</span><span class="n">其中所有可变操作</span><span class="err">（</span><span class="n">add</span><span class="err">、</span><span class="n">set</span> <span class="n">等等</span><span class="err">）</span><span class="n">都是通过对底层数组进行一次新的复制来实现的</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">这一般需要很大的开销</span><span class="err">，</span><span class="n">但是当遍历操作的数量大大超过可变操作的数量时</span><span class="err">，</span><span class="n">这种方法可能比其他替代方法更</span> <span class="n">有效</span><span class="err">。</span><span class="n">在不能或不想进行同步遍历</span><span class="err">，</span><span class="n">但又需要从并发线程中排除冲突时</span><span class="err">，</span><span class="n">它也很有用</span><span class="err">。“</span><span class="n">快照</span><span class="err">”</span><span class="n">风格的迭代器方法在创建迭代器时使用了对数组状态的引用</span><span class="err">。</span><span class="n">此数组在迭代器的生存期内不会更改</span><span class="err">，</span><span class="n">因此不可能发生冲突</span><span class="err">，</span><span class="n">并且迭代器保证不会抛出</span> <span class="n">ConcurrentModificationException</span><span class="err">。</span><span class="n">创建迭代器以后</span><span class="err">，</span><span class="n">迭代器就不会反映列表的添加</span><span class="err">、</span><span class="n">移除或者更改</span><span class="err">。</span><span class="n">在迭代器上进行的元素更改操作</span><span class="err">（</span><span class="n">remove</span><span class="err">、</span><span class="n">set</span> <span class="n">和</span> <span class="n">add</span><span class="err">）</span><span class="n">不受支持</span><span class="err">。</span><span class="n">这些方法将抛出</span> <span class="n">UnsupportedOperationException</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">允许使用所有元素</span><span class="err">，</span><span class="n">包括</span> <span class="kc">null</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">内存一致性效果</span><span class="err">：</span><span class="n">当存在其他并发</span> <span class="n">collection</span> <span class="n">时</span><span class="err">，</span><span class="n">将对象放入</span> <span class="n">CopyOnWriteArrayList</span> <span class="n">之前的线程中的操作</span> <span class="n">happen</span><span class="o">-</span><span class="n">before</span> <span class="n">随后通过另一线程从</span> <span class="n">CopyOnWriteArrayList</span> <span class="n">中访问或移除该元素的操作</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">Copy</span><span class="o">-</span><span class="n">On</span><span class="o">-</span><span class="n">Write简称COW</span><span class="err">，</span><span class="n">是一种用于程序设计中的优化策略</span><span class="err">。</span><span class="n">其基本思路是</span><span class="err">，</span><span class="n">从一开始大家都在共享同一个内容</span><span class="err">，</span><span class="n">当某个人想要修改这个内容的时候</span><span class="err">，</span><span class="n">才会真正把内容Copy出去形成一个新的内容然后再改</span><span class="err">，</span><span class="n">这是一种延时懒惰策略</span><span class="err">。</span><span class="n">从JDK1</span><span class="o">.</span><span class="mi">5</span><span class="n">开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器</span><span class="o">,</span><span class="n">它们是CopyOnWriteArrayList和CopyOnWriteArraySet</span><span class="err">。</span><span class="n">CopyOnWrite容器非常有用</span><span class="err">，</span><span class="n">可以在非常多的并发场景中使用到</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">CopyOnWrite容器即写时复制的容器</span><span class="err">。</span><span class="n">通俗的理解是当我们往一个容器添加元素的时候</span><span class="err">，</span><span class="n">不直接往当前容器添加</span><span class="err">，</span><span class="n">而是先将当前容器进行Copy</span><span class="err">，</span><span class="n">复制出一个新的容器</span><span class="err">，</span><span class="n">然后新的容器里添加元素</span><span class="err">，</span><span class="n">添加完元素之后</span><span class="err">，</span><span class="n">再将原容器的引用指向新的容器</span><span class="err">。</span><span class="n">这样做的好处是我们可以对CopyOnWrite容器进行并发的读</span><span class="err">，</span><span class="n">而不需要加锁</span><span class="err">，</span><span class="n">因为当前容器不会添加任何元素</span><span class="err">。</span><span class="n">所以CopyOnWrite容器也是一种读写分离的思想</span><span class="err">，</span><span class="n">读和写不同的容器</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">使用场景</span><span class="err">：</span><span class="n">读取频繁</span><span class="err">，</span><span class="n">写较少</span><span class="err">。</span> <span class="n">理由</span><span class="err">：</span><span class="n">底层的安全性</span> <span class="n">本质上是依赖于线程读取的数据副本来实现的</span><span class="err">。</span><span class="n">因此每次写都是要复制底层数组数据的</span><span class="err">，</span><span class="n">如果写频繁势必会造成大量的性能消耗</span><span class="err">。</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="n">FF0000</span><span class="o">&gt;</span><span class="n">CopyOnWriteArrayList要修改时</span><span class="err">，</span><span class="n">都是将旧数组先复制到新数组中</span><span class="err">，</span><span class="n">再在新数组上修改</span><span class="err">，</span><span class="n">修改完了</span><span class="err">，</span><span class="n">再将旧数组的引用指向新数组</span><span class="o">.</span>
+</span><span class='line'><span class="n">不管是set方法</span><span class="err">，</span><span class="n">还是add方法</span><span class="o">,</span><span class="n">remove方法都是这样的</span><span class="o">.&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;</span><span class="n">br</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span> <span class="n">class</span><span class="o">=</span><span class="s">&quot;java&quot;</span><span class="o">&gt;</span>   <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">serialVersionUID</span> <span class="o">=</span> <span class="mi">8673264195747942595L</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/** The lock protecting all mutators */</span>
+</span><span class='line'>    <span class="kd">transient</span> <span class="kd">final</span> <span class="n">ReentrantLock</span> <span class="n">lock</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ReentrantLock</span><span class="o">();</span><span class="c1">//显示锁</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/** The array, accessed only via getArray/setArray. */</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kd">transient</span> <span class="n">Object</span><span class="o">[]</span> <span class="n">array</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * Gets the array.  Non-private so as to also be accessible</span>
+</span><span class='line'><span class="cm">     * from CopyOnWriteArraySet class.</span>
+</span><span class='line'><span class="cm">     * getArray()返回的引用是事实上不可变的，如果没有这个保证，那么这个操作不可能是线程安全</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">Object</span><span class="o">[]</span> <span class="nf">getArray</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">array</span><span class="o">;</span><span class="c1">//返回当前数组的引用</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">final</span> <span class="kt">void</span> <span class="nf">setArray</span><span class="o">(</span><span class="n">Object</span><span class="o">[]</span> <span class="n">a</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">array</span> <span class="o">=</span> <span class="n">a</span><span class="o">;</span><span class="c1">//将旧数组引用指向新数组</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * 如果新建CopyOnWriteArrayList对象时没有指定大小，默认是空的</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">CopyOnWriteArrayList</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">setArray</span><span class="o">(</span><span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * Creates a list containing the elements of the specified</span>
+</span><span class='line'><span class="cm">     * collection, in the order they are returned by the collection&#39;s</span>
+</span><span class='line'><span class="cm">     * iterator.</span>
+</span><span class='line'><span class="cm">     *</span>
+</span><span class='line'><span class="cm">     * @param c the collection of initially held elements</span>
+</span><span class='line'><span class="cm">     * @throws NullPointerException if the specified collection is null</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">CopyOnWriteArrayList</span><span class="o">(</span><span class="n">Collection</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;?</span> <span class="kd">extends</span> <span class="n">E</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Object</span><span class="o">[]</span> <span class="n">elements</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">toArray</span><span class="o">();</span>
+</span><span class='line'>        <span class="c1">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">elements</span><span class="o">.</span><span class="na">getClass</span><span class="o">()</span> <span class="o">!=</span> <span class="n">Object</span><span class="o">[].</span><span class="na">class</span><span class="o">)</span>
+</span><span class='line'>            <span class="n">elements</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">copyOf</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">elements</span><span class="o">.</span><span class="na">length</span><span class="o">,</span> <span class="n">Object</span><span class="o">[].</span><span class="na">class</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">setArray</span><span class="o">(</span><span class="n">elements</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * Creates a list holding a copy of the given array.</span>
+</span><span class='line'><span class="cm">     *</span>
+</span><span class='line'><span class="cm">     * @param toCopyIn the array (a copy of this array is used as the</span>
+</span><span class='line'><span class="cm">     *        internal array)</span>
+</span><span class='line'><span class="cm">     * @throws NullPointerException if the specified array is null</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">CopyOnWriteArrayList</span><span class="o">(</span><span class="n">E</span><span class="o">[]</span> <span class="n">toCopyIn</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">setArray</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">copyOf</span><span class="o">(</span><span class="n">toCopyIn</span><span class="o">,</span> <span class="n">toCopyIn</span><span class="o">.</span><span class="na">length</span><span class="o">,</span> <span class="n">Object</span><span class="o">[].</span><span class="na">class</span><span class="o">));</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">size</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">getArray</span><span class="o">().</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isEmpty</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">set方法</span><span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>java
+    public E set(int index, E element)
     {
-        Object[] elements = getArray();//当前CopyOnWriteArrayList引用
+        final ReentrantLock lock = this.lock;//使用显示锁同步
+        lock.lock();
+        try
+        {
+            Object[] elements = getArray();//当前CopyOnWriteArrayList引用</p>
 
-        E oldValue = get(elements, index);//得到当前index位置上的元素引用
+<pre><code>        E oldValue = get(elements, index);//得到当前index位置上的元素引用
 
         if (oldValue != element) 
         {
@@ -141,7 +440,9 @@ public boolean isEmpty() {
 }
 </code></pre>
 
-<pre><code></code></pre>
+<pre><code>
+add方法&lt;br&gt;
+</code></pre>
 
 <pre><code>public boolean add(E e)
 {
@@ -168,7 +469,9 @@ public boolean isEmpty() {
 }
 </code></pre>
 
-<pre><code></code></pre>
+<pre><code>
+remove方法&lt;br&gt;
+</code></pre>
 
 <pre><code>public E remove(int index) 
 {
@@ -334,56 +637,6 @@ private static class COWIterator&lt;E&gt; implements ListIterator&lt;E&gt; {
     <updated>2016-04-12T21:00:34+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/04/12/java-runtime-data-memory</id>
     <content type="html"><![CDATA[<p><img src="/images/jrd_1.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java异常]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/04/12/java-exception/"/>
-    <updated>2016-04-12T19:49:37+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/04/12/java-exception</id>
-    <content type="html"><![CDATA[<p><img src="/images/je1.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java类型生命周期]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/04/12/java-class-lifecycle/"/>
-    <updated>2016-04-12T16:26:50+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/04/12/java-class-lifecycle</id>
-    <content type="html"><![CDATA[<p>Java虚拟机通过装载、连接和初始化一个Java类型，使该类型可以被正在运行的Java程序所使用。其中，
-装载就是把二进制形式的Java类型读入Java虚拟机中；<br>
-连接就是把这种已经读入虚拟机的二进制形式的类型数据合并到虚拟机的运行时状态中;<br></p>
-
-<p>连接阶段分为三个子步骤——验证、准备和解析<br>
-验证步骤确保了Java类型数据格式正确并且适于Java虚拟机使用;<br>
-准备步骤则负责为该类型分配它所需的内存，比如为它的类变量分配内存;<br>
-解析步骤则负责把常量池中的符号引用转换为直接引用;<br></p>
-
-<p>初始化阶段，都将为类变量赋以适当的初始值.<br></p>
-
-<p><img src="/images/jcc1.jpg"></p>
-
-<h2>java类的初始化 <br></h2>
-
-<p>Java虚拟机规范严格定义了类的初始化时机<br>
-所有的Java虚拟机实现必须在每个类或接口首次主动使用时初始化，以下六种情形符合主动使用的要求:<br>
-<img src="/images/jcc2.jpg"></p>
-
-<h2>Java类的装载 <br></h2>
-
-<p><img src="/images/jcc3.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java Puzzlers读书笔记]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/03/24/java-puzzlers/"/>
-    <updated>2016-03-24T21:11:35+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/03/24/java-puzzlers</id>
-    <content type="html"><![CDATA[<h2>解惑3：长整形相除<br></h2>
-
-<p><img src="/images/jp3.jpg"></p>
 ]]></content>
   </entry>
   
