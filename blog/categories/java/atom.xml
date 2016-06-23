@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-05-04T08:58:49+08:00</updated>
+  <updated>2016-06-23T09:56:56+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,33 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Java网络编程读书笔记]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/06/08/java-network-note/"/>
+    <updated>2016-06-08T11:49:25+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/06/08/java-network-note</id>
+    <content type="html"><![CDATA[<h1>第一章:基本网络概念<br></h1>
+
+<p>防火墙:位于Internet和本地网络之间的一些硬件和软件会检查所有进出的数据，以保证其合法性，这就称为防火墙.<br></p>
+
+<p>代理服务器(proxy server): 与防火墙有关，如果说防火墙会阻止一个网络上的主机和外界直接建立联系，那么代理服务器就起到了中间人的作用.
+    这样一来，如果防火墙阻止了远程Web服务器的Web页面。然后代理服务器会请求Web服务器的页面，将响应转发给最初发出请求的机器。代理还可以
+    用于FTP服务和其他连接。<br>
+    使用代理服务器的安全优势之一是外部主机只能看到代理服务器，而不会知道内部机器的主机名和IP地址，这就使得攻击内部网络更加困难。<br>
+    防火墙一般作用于传输层或网际层，而代理服务器通常工作于应用层。<br>
+    代理服务器还可以用来实现本地缓存.<br>
+    代理服务器最大的问题在于它无法应对所有的协议.<br></p>
+
+<h1>第二章:流</h1>
+
+<p>网络程序所做的很大一部分工作都是简单的输入和输出：将数据字节从一个系统移动到另一个系统。在很大程度上讲，读取服务器发送给你的数据与读取文件并没有什么不同。<br></p>
+
+<p>另有总结<br></p>
+
+<h1>第三章:线程<br></h1>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java IO总结]]></title>
@@ -628,15 +655,6 @@ private static class COWIterator&lt;E&gt; implements ListIterator&lt;E&gt; {
 <p>　　针对内存占用问题，可以通过压缩容器中的元素的方法来减少大对象的内存消耗，比如，如果元素全是10进制的数字，可以考虑把它压缩成36进制或64进制。或者不使用CopyOnWrite容器，而使用其他的并发容器，如ConcurrentHashMap。</p>
 
 <p>　　数据一致性问题。CopyOnWrite容器只能保证数据的最终一致性，不能保证数据的实时一致性。所以如果你希望写入的的数据，马上能读到，请不要使用CopyOnWrite容器。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java运行时数据区]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/04/12/java-runtime-data-memory/"/>
-    <updated>2016-04-12T21:00:34+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/04/12/java-runtime-data-memory</id>
-    <content type="html"><![CDATA[<p><img src="/images/jrd_1.jpg"></p>
 ]]></content>
   </entry>
   
