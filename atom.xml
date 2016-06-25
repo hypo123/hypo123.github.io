@@ -4,7 +4,7 @@
   <title><![CDATA[regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-06-25T16:56:01+08:00</updated>
+  <updated>2016-06-25T17:21:30+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -1218,6 +1218,30 @@ Java接口扮演;<br>
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+<p>抽象工厂模式可以向客户端提供一个接口，使得客户端在不必指定产品的具体类型的情况下，创建多个产品族中的产品对象。<br></p>
+
+<p>可分三段理解它<br></p>
+
+<p>第一段<br>
+  一个系统需要消费多个抽象产品角色,这些抽象产品角色可以用Java接口或抽象Java类实现。既然客户端需要这些抽象产品角色的实例，为什么不使用一个工厂类负责创建这些角色的实力呢?工厂类负责创建抽象产品的实例描述如下图:<br></p>
+
+<p>  <img src="http://www.regenthypo.com/images/factory9.jpg"></p>
+
+<p>但是，正如上面所指出，这些抽象产品角色是由Java接口或抽象Java类实现的，而一个Java接口或抽象
+Java类是不能实例化的。也就是说，上面的设计不能成立.<br></p>
+
+<p>第二段<br>
+    根据里氏代换原则，任何接受父类型的地方，都应当能够接受子类型。因此，实际上系统所需要的，仅仅是类型与这些抽象产品角色系统的一些实例，而不是这些 抽象产品的实例。换言之，也  <br/>
+就是这些抽象产品的具体子类的实例。工厂类负责创建抽象产品的具体子类的实例如下图:<br></p>
+
+<p>  <img src="http://www.regenthypo.com/images/factory10.jpg"></p>
+
+<p>  这是抽象工厂模式用意的基本含义。<br></p>
+
+<p>  <img src="http://www.regenthypo.com/images/factory11.jpg"></p>
+
+<p>  <font color=#FF0000>&ldquo;抽象"来自"抽象产品角色&rdquo;,而"抽象工厂"就是抽象产品角色的工厂.</font><br></p>
 ]]></content>
   </entry>
   
