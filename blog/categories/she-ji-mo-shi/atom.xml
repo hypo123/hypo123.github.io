@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-06-23T09:56:56+08:00</updated>
+  <updated>2016-06-25T16:56:01+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,657 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之工厂模式[1]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/06/25/factory-pattern/"/>
+    <updated>2016-06-25T14:43:37+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/06/25/factory-pattern</id>
+    <content type="html"><![CDATA[<p>[创建型模式]</p>
+
+<p>工厂模式专门负责将大量有共同接口的类实例化.工厂模式可以动态决定将哪一个类实例化，不必
+事先知道每次要实例化哪一个类.工厂模式有以下几种形态:<br>
+简单工厂(Simple Factory)模式: 又称静态工厂方法模式.<br>
+工厂方法(Factory Method)模式: 又称多态性工厂模式或虚拟构造子(Virtual Constructor)模式.<br>
+抽象工厂(Abstract Factory)模式:又称工具箱模式.<br></p>
+
+<h1>简单工厂模式</h1>
+
+<p>简单工厂模式 Simple Factory 又称静态工厂方法模式</p>
+
+<p>&hellip;.简单工厂模式就是一个工厂类根据传入的参量决定创建出哪一种产品类的实例.</p>
+
+<p>简单工厂涉及三个角色<br>
+&mdash;-工厂类角色     ：担任这个角色的是工厂方法模式的核心，含有与应用紧密相关的商业逻辑。工厂类在客户端的直接调用下创建产品对象。<br></p>
+
+<p>&mdash;-抽象产品角色: 担任这个角色的类是由工厂方法模式所创建的对象的父类，或他们的共同拥有的接口。可以是一个Java接口或Java抽象类<br></p>
+
+<p>&mdash;-具体产品角色:工厂方法模式所创建的任何对象都是这个角色的实例，具体产品角色由一个具体Java类实现.<br></p>
+
+<pre><code class="java Fruit.java">package DP1_1.SimpleFactory;
+
+/**
+ * 抽象产品接口/抽象类
+ */
+public interface Fruit
+{
+    void grow();//生长
+
+    void harvest();//收获
+
+    void plant();//种植
+}
+</code></pre>
+
+<p>以下三个类Apple,Grape,StrawBerry均实现了Fruit接口.<br></p>
+
+<pre><code class="java Apple.java">/**
+ *  具体产品类 
+ */
+public class Apple implements Fruit
+{
+    private int treeAge ;
+    @Override
+    public void grow()
+    {
+        log("apple is growing...");
+    }
+
+    @Override
+    public void harvest()
+    {
+        log("apple has harvested!!!");
+    }
+
+    @Override
+    public void plant()
+    {
+        log("apple has planted!!!");
+    }
+
+//  辅助方法
+    public static void log(String msg)
+    {
+        System.out.println(msg);
+    }
+
+//    树龄的取值方法
+    public int getTreeAge()
+    {
+        return treeAge;
+    }
+
+//  树龄的赋值方法
+    public void setTreeAge(int treeAge)
+    {
+        this.treeAge = treeAge;
+    }
+}
+</code></pre>
+
+<pre><code class="java Grape.java">/**
+ *  具体产品类 
+ */
+public class Grape implements Fruit
+{
+    private boolean seedless;
+    @Override
+    public void grow()
+    {
+        log("grape is growing...");
+    }
+
+    @Override
+    public void harvest()
+    {
+        log("grape has harvested!!!");
+    }
+
+    @Override
+    public void plant()
+    {
+        log("grape has planted!!!");
+    }
+
+//  辅助方法
+    public static void log(String msg)
+    {
+        System.out.println(msg);
+    }
+
+//  有无仔的取值方法    
+    private boolean getSeedless()
+    {
+        return seedless;
+    }
+
+//  有无仔的赋值方法
+    public void setSeedless(boolean seedless)
+    {
+        this.seedless = seedless;
+    }
+}
+</code></pre>
+
+<pre><code class="java StrawBerry.java">/**
+ *  具体产品类 
+ */
+public class StrawBerry implements Fruit
+{
+    @Override
+    public void grow()
+    {
+        log("strawberry is growing...");
+    }
+
+    @Override
+    public void harvest()
+    {
+        log("strawberry has harvested!!!");
+    }
+
+    @Override
+    public void plant()
+    {
+        log("strawberry has planted!!!");
+    }
+
+//  辅助方法
+    public static void log(String msg)
+    {
+        System.out.println(msg);
+    }
+}
+</code></pre>
+
+<pre><code class="java BadFruitException.java">public class BadFruitException extends Exception
+{
+    public BadFruitException(String msg)
+    {
+        super(msg);
+    }
+}
+</code></pre>
+
+<p>工厂类 <br>
+FruitGardener类会根据客户端的要求,创建出不同的水果对象,比如Apple,Grape,或StrawBerry的实例.
+而如果接到不合法的要求,FruitGardener类会抛出BadFruitException异常.<br></p>
+
+<pre><code class="java FruitGardener.java">public class FruitGardener
+{
+    /**
+     * 工厂类      静态工厂方法
+     */
+    public static Fruit factory(String which) throws BadFruitException
+    {
+        if(which.equalsIgnoreCase("apple"))
+        {
+            return new Apple();
+        }
+        else if(which.equalsIgnoreCase("grape"))
+        {
+            return new Grape();
+        }
+        else if(which.equalsIgnoreCase("strawberry"))
+        {
+            return new StrawBerry();
+        }
+        else
+        {
+            throw new BadFruitException("Bad fruit request");
+        }
+    }
+}
+</code></pre>
+
+<p>测试类<br></p>
+
+<pre><code class="java test.java">package DP1_1.SimpleFactory;
+
+public class test
+{
+    public static void main(String[] args)
+    {
+        try
+        {
+            FruitGardener.factory("apple").grow();;
+            FruitGardener.factory("grape");
+            FruitGardener.factory("strawberry");
+            //FruitGardener.factory("banana");
+        } catch (BadFruitException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+}
+</code></pre>
+
+<p>抽象产品角色可使用Java接口或Java抽象类来实现.<br>
+    如果模式所产生的具体产品类彼此之间没有共同的商业逻辑,那么抽象产品角色可以由一个
+Java接口扮演;<br>
+    相反,如果这些具体产品类彼此之间确实有共同的商业逻辑,那么这些公有的逻辑就应该移动抽象角
+色里面,这就意味着抽象角色应该由一个抽象类扮演;<br>
+    在一个类型的等级结构里面,共同的代码应当尽量向上移动,以达到共享的目的.<br></p>
+
+<p><img src="/images/factory1.jpg"></p>
+
+<p><img src="/images/factory2.jpg"></p>
+
+<h1>工厂方法模式</h1>
+
+<p>[创建型模式]</p>
+
+<p>工厂方法模式意图:定义一个用于创建对象的接口,让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类.<br></p>
+
+<p>由于使用了多态性，工厂方法模式保持了简单工厂模式的优点，而且克服了它的缺点。<br>
+  首先，在工厂方法模式中，核心的工厂类不再负责所有产品的创建，而是将具体创建的工作交给子类
+去做。这个核心类则摇身一变，成为了一个抽象工厂角色，仅负责给出具体工厂子类必须实现的接口，而不接触哪一个产品类被实例化这种细节。<br></p>
+
+<p>  这种进一步抽象化的结果，使这种工厂方法模式可以用来允许系统在不修改具体工厂角色的情况下引进新的产品，这一特点无疑使得工厂模式具有超过简单工厂模式的优越性.<br>
+<img src="/images/factory3.jpg">
+<img src="/images/factory4.jpg"></p>
+
+<p>模式结构<br>
+<img src="/images/factory5.jpg"></p>
+
+<pre><code class="java Fruit.java">/**
+ * 抽象产品接口/抽象类
+ */
+public interface Fruit
+{
+    void grow();//生长
+
+    void harvest();//收获
+
+    void plant();//种植
+}
+</code></pre>
+
+<pre><code class="java FruitGardener.java">/**
+ *  抽象工厂角色 
+ */
+public interface FruitGardener
+{
+//  工厂方法
+    public Fruit factory();//返回值是抽象产品Fruit接口的引用
+}
+</code></pre>
+
+<pre><code class="java Apple.java">package DP1_2.Factory_Method;
+
+/**
+ *  具体产品类, 实现抽象产品类(接口)
+ */
+public class Apple implements Fruit
+{
+    private int treeAge ;
+    @Override
+    public void grow()
+    {
+        log("apple is growing...");
+    }
+
+    @Override
+    public void harvest()
+    {
+        log("apple has harvested!!!");
+    }
+
+    @Override
+    public void plant()
+    {
+        log("apple has planted!!!");
+    }
+
+//  辅助方法
+    public static void log(String msg)
+    {
+        System.out.println(msg);
+    }
+
+//    树龄的取值方法
+    public int getTreeAge()
+    {
+        return treeAge;
+    }
+
+//  树龄的赋值方法
+    public void setTreeAge(int treeAge)
+    {
+        this.treeAge = treeAge;
+    }
+}
+</code></pre>
+
+<pre><code class="java AppleFactory.java">/**
+ *  具体工厂类 
+ */
+public class AppleFactory implements FruitGardener
+{
+    /**
+     * 工厂方法
+     */
+    @Override
+    public Fruit factory()//返回值是抽象产品Fruit接口的引用
+    {
+        // TODO Auto-generated method stub
+        return new Apple();
+    }
+}
+</code></pre>
+
+<pre><code class="java Grape.java">//具体产品类 
+public class Grape implements Fruit
+{
+    private boolean seedless;
+    @Override
+    public void grow()
+    {
+        log("grape is growing...");
+    }
+
+    @Override
+    public void harvest()
+    {
+        log("grape has harvested!!!");
+    }
+
+    @Override
+    public void plant()
+    {
+        log("grape has planted!!!");
+    }
+
+//  辅助方法
+    public static void log(String msg)
+    {
+        System.out.println(msg);
+    }
+
+//  有无仔的取值方法    
+    private boolean getSeedless()
+    {
+        return seedless;
+    }
+
+//  有无仔的赋值方法
+    public void setSeedless(boolean seedless)
+    {
+        this.seedless = seedless;
+    }
+}
+</code></pre>
+
+<pre><code class="java GrapeFactory.java">//具体工厂类 
+public class GrapeFactory implements FruitGardener
+{
+    @Override
+    public Fruit factory()
+    {
+        // TODO Auto-generated method stub
+        return new Grape();
+    }
+}
+</code></pre>
+
+<pre><code class="java StrawBerry.java">//具体产品类 
+public class StrawBerry implements Fruit
+{
+    @Override
+    public void grow()
+    {
+        log("strawberry is growing...");
+    }
+
+    @Override
+    public void harvest()
+    {
+        log("strawberry has harvested!!!");
+    }
+
+    @Override
+    public void plant()
+    {
+        log("strawberry has planted!!!");
+    }
+
+//  辅助方法
+    public static void log(String msg)
+    {
+        System.out.println(msg);
+    }
+}
+</code></pre>
+
+<pre><code class="java StrawBerryFactory.java">//具体工厂类 
+public class StrawBerryFactory implements FruitGardener
+{
+    @Override
+    public Fruit factory()
+    {
+        // TODO Auto-generated method stub
+        return new StrawBerry();
+    }
+}
+</code></pre>
+
+<pre><code class="java BadFruitException.java">public class BadFruitException extends Exception
+{
+    public BadFruitException(String msg)
+    {
+        super(msg);
+    }
+}
+</code></pre>
+
+<p>测试类<br>
+<figure class='code'><figcaption><span>test.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">test</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">AppleFactory</span> <span class="n">applefactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">AppleFactory</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">Fruit</span> <span class="n">f</span> <span class="o">=</span> <span class="n">applefactory</span><span class="o">.</span><span class="na">factory</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">f</span><span class="o">.</span><span class="na">grow</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h1>抽象工厂模式</h1>
+
+<p>[创建模式]</p>
+
+<p>抽象工厂模式意图:提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类。<br></p>
+
+<p>抽象工厂模式中的角色<br>
+<img src="/images/factory6.jpg"></p>
+
+<p>模式结构<br>
+<img src="/images/factory7.jpg"></p>
+
+<p>以下代码结构<br>
+<img src="/images/factory8.jpg"></p>
+
+<pre><code class="java Fruit.java">//抽象产品角色 水果
+public interface Fruit
+{}
+</code></pre>
+
+<pre><code class="java Gardener.java">//抽象工厂角色
+public interface Gardener//标识接口
+{}
+</code></pre>
+
+<pre><code class="java NorthernFruit.java">/**
+ *  具体产品类 
+ */
+public class NorthernFruit implements Fruit
+{
+    private String name;
+
+    public NorthernFruit(String name)
+    {
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+}
+</code></pre>
+
+<pre><code class="java NorthernGardener.java">/**
+ *  具体工厂类  生产北方水果、蔬菜
+ */
+public class NorthernGardener implements Gardener
+{
+    /**
+     * 水果的工厂方法
+     */
+    public Fruit createFruit(String name)
+    {
+        return new NorthernFruit(name);
+    }
+
+    /**
+     * 蔬菜的工厂方法
+     */
+    public Veggie createVeggie(String name) 
+    {
+        return new NorthernVeggie(name);
+    }
+}
+</code></pre>
+
+<pre><code class="java TropicalFruit.java">/**
+ *  具体产品类 
+ */
+public class TropicalFruit implements Fruit
+{
+    private String name;
+
+    public TropicalFruit(String name)
+    {
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+}
+</code></pre>
+
+<pre><code class="java TropicalGardener.java">/**
+ *  具体工厂类  生产热带水果、蔬菜
+ */
+public class TropicalGardener implements Gardener
+{
+    /**
+     * 水果的工厂方法
+     */
+    public Fruit createFruit(String name)
+    {
+        return new TropicalFruit(name);
+    }
+
+    /**
+     * 蔬菜的工厂方法
+     */
+    public Veggie createVeggie(String name)
+    {
+        return new TropicalVeggie(name);
+    }
+}
+</code></pre>
+
+<pre><code class="java Veggie.java">//抽象产品角色 蔬菜
+public interface Veggie//标识接口
+{}
+</code></pre>
+
+<pre><code class="java NorthernVeggie.java">/**
+ *  具体产品类 
+ */
+public class NorthernVeggie implements Veggie
+{
+    private String name;
+
+    public NorthernVeggie(String name)
+    {
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+}
+</code></pre>
+
+<pre><code class="java TropicalVeggie.java">/**
+ *  具体产品类 
+ */
+public class TropicalVeggie implements Veggie
+{
+    private String name;
+
+    public TropicalVeggie(String name)
+    {
+        this.name = name;
+    }
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+}
+</code></pre>
+
+<pre><code class="java test.java">public class test
+{
+    public static void main(String[] args)
+    {
+
+    }
+}
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[设计模式之装饰器模式]]></title>
