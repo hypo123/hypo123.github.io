@@ -4,7 +4,7 @@
   <title><![CDATA[regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-06-25T17:21:30+08:00</updated>
+  <updated>2016-06-29T20:46:17+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,253 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之享元模式[2]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/06/29/flyweigth-design-pattern/"/>
+    <updated>2016-06-29T19:26:46+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/06/29/flyweigth-design-pattern</id>
+    <content type="html"><![CDATA[<p>[结构型模式]</p>
+
+<p>在Java语言中,String类型就使用了享元模式.String对象是不变对象,一旦创建出来就不能改变.<br>
+如果需要改变一个字符串的值,就只好创建一个新的String对象.在JVM内部,String对象都是共享的.<br>
+如果一个系统中有两个String对象所包含的字符串相同的话,JVM实际上只创建一个String对象提供给<br>
+两个引用,从而实现String对象的共享.String的itern()方法给出这个字符串在共享池中的唯一实例.<br></p>
+
+<p>意图:运用共享技术有效地支持大量细粒度的对象.<br></p>
+
+<p><img src="http://www.regenthypo.com/images/flyweight1.jpg"></p>
+
+<figure class='code'><figcaption><span>FlyWeight.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//抽象享元角色</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">FlyWeight</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="c1">//参数state是外部状态</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">abstract</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>ConcreteFlyWeight.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//具体享元角色</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteFlyWeight</span> <span class="kd">extends</span> <span class="n">FlyWeight</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="n">Character</span> <span class="n">intrinsicState</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">//构造函数,内部状态作为参数传入.</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="nf">ConcreteFlyWeight</span><span class="o">(</span><span class="n">Character</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">intrinsicState</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  * 外部状态作为参数传入方法中,改变方法的行为,</span>
+</span><span class='line'><span class="cm">  * 但是并不改变对象的内部状态.</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Intrinsic State = &quot;</span> <span class="o">+</span> <span class="n">intrinsicState</span> <span class="o">+</span>
+</span><span class='line'>              <span class="s">&quot;,Extrinsic State = &quot;</span> <span class="o">+</span> <span class="n">state</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">};</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>FlyWeightFactory.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//享元工厂角色</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FlyWeightFactory</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="n">HashMap</span> <span class="n">flies</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">HashMap</span><span class="o">();</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">private</span> <span class="n">FlyWeight</span> <span class="n">inkFlyWeight</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//工厂方法,内部状态作为参数传入.</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="n">FlyWeight</span> <span class="nf">factory</span><span class="o">(</span><span class="n">Character</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">flies</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">state</span><span class="o">))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="o">(</span><span class="n">FlyWeight</span><span class="o">)</span><span class="n">flies</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">state</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">FlyWeight</span> <span class="n">fly</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteFlyWeight</span><span class="o">(</span><span class="n">state</span><span class="o">);</span>
+</span><span class='line'>          <span class="n">flies</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">state</span><span class="o">,</span> <span class="n">fly</span><span class="o">);</span>
+</span><span class='line'>          
+</span><span class='line'>          <span class="k">return</span> <span class="n">fly</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//辅助方法</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">checkFlyWeight</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">FlyWeight</span> <span class="n">fly</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;-------checkFlyWeight-----&quot;</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">FlyWeight</span><span class="o">&gt;</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">flies</span><span class="o">.</span><span class="na">entrySet</span><span class="o">().</span><span class="na">iterator</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span> <span class="n">entry</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">)</span><span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+</span><span class='line'>          
+</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Item &quot;</span> <span class="o">+</span> <span class="o">(++</span><span class="n">i</span><span class="o">)</span> <span class="o">+</span><span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">());</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;-------checkFlyWeight-----&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>Client.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//客户端</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//创建享元工厂对象</span>
+</span><span class='line'>      <span class="n">FlyWeightFactory</span> <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FlyWeightFactory</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//向享元工厂对象请求一个内部状态为&#39;a&#39;的享元对象</span>
+</span><span class='line'>      <span class="n">FlyWeight</span> <span class="n">fly</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">factory</span><span class="o">(</span><span class="k">new</span> <span class="nf">Character</span><span class="o">(</span><span class="sc">&#39;a&#39;</span><span class="o">));</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//以参数方式传入一个外部状态.</span>
+</span><span class='line'>      <span class="n">fly</span><span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&quot;First Call&quot;</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//向享元对象请求一个内部状态为&#39;b&#39;的享元对象</span>
+</span><span class='line'>      <span class="n">fly</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">factory</span><span class="o">(</span><span class="k">new</span> <span class="nf">Character</span><span class="o">(</span><span class="sc">&#39;b&#39;</span><span class="o">));</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//以参数方式传入一个外部状态.</span>
+</span><span class='line'>      <span class="n">fly</span><span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&quot;Second Call&quot;</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//向享元工厂对象请求一个内部状态为&#39;a&#39;的享元对象</span>
+</span><span class='line'>      <span class="n">fly</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">factory</span><span class="o">(</span><span class="k">new</span> <span class="nf">Character</span><span class="o">(</span><span class="sc">&#39;a&#39;</span><span class="o">));</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//以参数方式传入一个外部状态.</span>
+</span><span class='line'>      <span class="n">fly</span><span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&quot;Third Call&quot;</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//打印所有的独立的享元对象.</span>
+</span><span class='line'>      <span class="n">factory</span><span class="o">.</span><span class="na">checkFlyWeight</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>运行结果<br>
+<img src="http://www.regenthypo.com/images/flyweight2.jpg"></p>
+
+<p>享元模式的适用情况<br>
+<img src="http://www.regenthypo.com/images/flyweight3.jpg"></p>
+
+<p>享元模式的优缺点<br>
+<img src="http://www.regenthypo.com/images/flyweight4.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之工厂模式[1]]]></title>
@@ -6517,15 +6764,6 @@ Java语言中单例类的一个重要特点是类的构造函数是私有的，�
 
 <p>参考资料:<br>
 1. <a href="http://devbean.blog.51cto.com/448512/203501">http://devbean.blog.51cto.com/448512/203501</a><br></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java String对象的内存机制]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/03/24/java-string/"/>
-    <updated>2016-03-24T13:59:12+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/03/24/java-string</id>
-    <content type="html"><![CDATA[
 ]]></content>
   </entry>
   
