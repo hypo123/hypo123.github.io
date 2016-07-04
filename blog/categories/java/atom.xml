@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-06-29T20:46:17+08:00</updated>
+  <updated>2016-07-04T15:44:29+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -41,7 +41,7 @@
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Java IO总结]]></title>
+    <title type="html"><![CDATA[Java IO整体框架]]></title>
     <link href="http://www.regenthypo.com/blog/2016/04/22/java-io/"/>
     <updated>2016-04-22T19:07:39+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/04/22/java-io</id>
@@ -259,6 +259,7 @@
 <span class='line-number'>168</span>
 <span class='line-number'>169</span>
 <span class='line-number'>170</span>
+<span class='line-number'>171</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'> <span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;-</span> <span class="n">Constants</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">ndash</span><span class="o">;</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="cm">/**</span>
@@ -309,7 +310,8 @@
 </span><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">RETRIES_BEFORE_LOCK</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
 </span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">ConcurrentHashMap类成员变量</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="n">ConcurrentHashMap类成员变量</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
 </span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>   <span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;-</span> <span class="n">Fields</span> <span class="o">&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">mdash</span><span class="o">;&amp;</span><span class="n">ndash</span><span class="o">;</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/&lt;/</span><span class="n">p</span><span class="o">&gt;</span>

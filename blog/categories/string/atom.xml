@@ -4,7 +4,7 @@
   <title><![CDATA[Category: String | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/string/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-06-29T20:46:17+08:00</updated>
+  <updated>2016-07-04T15:44:29+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -88,7 +88,9 @@ public class BigNumberMultiply
     <link href="http://www.regenthypo.com/blog/2016/03/15/leetcode214-shortest-palindrome-string/"/>
     <updated>2016-03-15T20:36:54+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/03/15/leetcode214-shortest-palindrome-string</id>
-    <content type="html"><![CDATA[<p>给定一个字符串S,通过在其前面加字符，使其变成回文字符串;找到最短的回文字符串</p>
+    <content type="html"><![CDATA[<p>//TODO</p>
+
+<p>给定一个字符串S,通过在其前面加字符，使其变成回文字符串;找到最短的回文字符串</p>
 
 <p>样例: <br/>
 给定 &ldquo;aacecaaa&rdquo;, 返回 &ldquo;aaacecaaa&rdquo;.
