@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-05T15:26:14+08:00</updated>
+  <updated>2016-07-05T16:52:56+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,159 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之中介者模式[6]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/05/mediator-design-pattern/"/>
+    <updated>2016-07-05T15:41:38+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/05/mediator-design-pattern</id>
+    <content type="html"><![CDATA[<p>[行为模式]</p>
+
+<p>意图:用一个中介对象来封装一系列的对象交互。中介者使各对象不需要显示地相互引用，从而使其耦合松散，而且
+可以独立地改变它们之间的交互.<br></p>
+
+<p><img src="/images/mediatordp1.jpg"></p>
+
+<p><img src="/images/mediatordp2.jpg"></p>
+
+<p><img src="/images/mediatordp3.jpg"></p>
+
+<pre><code class="java Mediator.java">/**
+ *  抽象中介者角色 
+ */
+public abstract class Mediator
+{
+    //事件方法,由子类实现
+    public abstract void colleagueChanged(Colleague c);
+}
+</code></pre>
+
+<pre><code class="java ConcreteMediator.java">/**
+ *  具体中介者角色 
+ */
+public class ConcreteMediator extends Mediator
+{
+    //具体中介者知道所有的具体同事类
+    private Colleague1 colleague1;
+    private Colleague2 colleague2;
+
+    //事件方法的具体实现
+    @Override
+    public void colleagueChanged(Colleague c)
+    {
+        colleague1.action();
+        colleague2.action();
+    }
+
+    //工厂方法,创建同事对象
+    public void createConcreteMediator()
+    {
+        colleague1 = new Colleague1(this);
+        colleague2 = new Colleague2(this);
+    }
+
+    //取值方法,提供同事对象 
+    public Colleague1 getColleague1()
+    {
+        return colleague1;
+    }
+
+    //取值方法,提供同事对象 
+    public Colleague2 getColleague2()
+    {
+        return colleague2;
+    }
+}
+</code></pre>
+
+<pre><code class="java Colleague.java">/**
+ *  抽象同事类 
+ */
+public abstract class Colleague
+{
+    private Mediator mediator;
+
+    public Colleague(Mediator mediator)
+    {
+        this.mediator = mediator;
+    }
+
+    //取值方法,提供中介者对象
+    public Mediator getMediator()
+    {
+        return mediator;
+    }
+
+    //行动方法,有子类实现
+    public abstract void action();
+
+    //示意性的商业方法,调用此方法可以改变对象的内部状态
+    public void change()
+    {
+        mediator.colleagueChanged(this);
+    }
+}
+</code></pre>
+
+<pre><code class="java Colleague1.java">/**
+ *  具体同事类 
+ *  每一个同事对象都仅知道中介者,而不知道其他的同事对象
+ */
+public class Colleague1 extends Colleague
+{
+    public Colleague1(Mediator mediator)
+    {
+        super(mediator);
+    }
+
+    //行动方法的具体实现
+    @Override
+    public void action()
+    {
+        System.out.println("action from colleague1");
+    }
+}
+</code></pre>
+
+<pre><code class="java Colleague2.java">/**
+ *  具体同事类 
+ *  每一个同事对象都仅知道中介者,而不知道其他的同事对象
+ */
+public class Colleague2 extends Colleague
+{
+    public Colleague2(Mediator mediator)
+    {
+        super(mediator);
+    }
+
+    //行动方法的具体实现
+    @Override
+    public void action()
+    {
+        System.out.println("action from colleague2");
+    }
+}
+</code></pre>
+
+<pre><code class="java Client.java">public class Client
+{
+    public static void main(String[] args)
+    {
+        ConcreteMediator mediator = new ConcreteMediator();
+
+        mediator.createConcreteMediator();
+
+        Colleague1 c1 = new Colleague1(mediator);
+        Colleague2 c2 = new Colleague2(mediator);
+
+        mediator.colleagueChanged(c1);
+    }
+}
+</code></pre>
+
+<p><img src="/images/mediatordp4.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之策略模式[5]]]></title>
