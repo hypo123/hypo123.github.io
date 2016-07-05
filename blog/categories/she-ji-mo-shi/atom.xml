@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-04T15:44:29+08:00</updated>
+  <updated>2016-07-05T15:26:14+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,108 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之策略模式[5]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/05/strategy-design-pattern/"/>
+    <updated>2016-07-05T14:39:38+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/05/strategy-design-pattern</id>
+    <content type="html"><![CDATA[<p>[行为模式]</p>
+
+<p>意图:定义一系列的算法,将每一个算法封装到具有共同接口的独立的类中,从而使得他们可以相互替换.本模式可以使得算法可以独立于使用它的客户而变化.<br></p>
+
+<p>策略模式把行为和环境分割开来。环境类负责维护和查询行为类，各种算法则在具体策略类中提供。由于算法和环境独立开来，
+算法的增减、修改都不会影响环境和客户端。<br></p>
+
+<p><img src="/images/strategydp1.jpg"></p>
+
+<p><img src="/images/strategydp2.jpg"></p>
+
+<pre><code class="java Context.java">/**
+ *  环境角色 
+ */
+public class Context
+{
+    private Strategy strategy;
+
+    public Strategy getStrategy()
+    {
+        return strategy;
+    }
+
+    public void setStrategy(Strategy strategy)
+    {
+        this.strategy = strategy;
+    }
+
+    //策略方法
+    public void operation()
+    {
+        strategy.action();
+    }
+}
+</code></pre>
+
+<pre><code class="java Strategy.java">/**
+ *  抽象策略角色 
+ */
+public abstract class Strategy
+{
+    //策略方法
+    public abstract void action();//具体策略类要实现的共同接口
+}
+</code></pre>
+
+<pre><code class="java ConcreteStrategy1.java">/**
+ *  具体策略角色 
+ */
+public class ConcreteStrategy1 extends Strategy
+{
+    @Override
+    public void action()//策略方法
+    {
+        //实现算法
+        System.out.println("strategy1 operation.");
+    }
+}
+</code></pre>
+
+<pre><code class="java ConcreteStrategy2.java">/**
+ *  具体策略角色 
+ */
+public class ConcreteStrategy2 extends Strategy
+{
+    @Override
+    public void action()
+    {
+        //实现算法
+        System.out.println("strategy2 operation.");
+    }
+}
+</code></pre>
+
+<pre><code class="java Client.java">public class Client
+{
+    public static void main(String[] args)
+    {
+        Context context = new Context();
+
+        context.setStrategy(new ConcreteStrategy1());
+        context.operation();
+
+        context.setStrategy(new ConcreteStrategy2());
+        context.operation();
+    }
+}
+</code></pre>
+
+<p><img src="/images/strategydp3.jpg"></p>
+
+<p><img src="/images/strategydp4.jpg"></p>
+
+<p><img src="/images/strategydp5.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之工厂模式[1]]]></title>

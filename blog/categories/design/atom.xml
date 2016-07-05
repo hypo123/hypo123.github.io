@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Design | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/design/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-04T15:44:29+08:00</updated>
+  <updated>2016-07-05T15:26:14+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[一天一设计模式之组合模式]]></title>
+    <title type="html"><![CDATA[一天一设计模式之组合模式[3]]]></title>
     <link href="http://www.regenthypo.com/blog/2016/07/04/composite-design-pattern/"/>
     <updated>2016-07-04T13:27:47+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/07/04/composite-design-pattern</id>
@@ -248,10 +248,8 @@ public class Leaf implements Component
 
 <p>应用实例</p>
 
-<pre><code>由于AWT和Swing的图形界面构件是构建在AWT库中的Container类和Component类上的,从下面的AWT组合模式式类图可以看出，
-</code></pre>
-
-<p>Button和CheckBox是树叶型的构件,而Container则是树枝型的构件.</p>
+<p>由于AWT和Swing的图形界面构件是构建在AWT库中的Container类和Component类上的,从下面的AWT组合模式式类图可以看出，
+Button和CheckBox是树叶型的构件,而Container则是树枝型的构件.</p>
 
 <p><img src="/images/cdp3.jpg"></p>
 ]]></content>

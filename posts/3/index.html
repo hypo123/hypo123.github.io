@@ -9,7 +9,7 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="public class CopyOnWriteArrayList extends Object implements List, RandomAccess, Cloneable, SerializableArrayList 的一个线程安全的变体，其中所有可变操作（add、set 等等） &hellip;">
+  <meta name="description" content="Java运行时数据区 Java方法区和堆一样是被该程序的所有线程共享的. ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +68,235 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/18/java-method-area/">Java方法区</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-18T15:17:37+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:17 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Java运行时数据区<br>
+<img src="/images/jma1.jpg"></p>
+
+<p><font color=#FF0000>Java方法区和堆一样是被该程序的所有线程共享的.</font><br></p>
+
+<p><img src="/images/jma2.jpg"></p>
+
+<p><img src="/images/jma3.jpg"></p>
+
+<p><img src="/images/jma4.jpg"></p>
+
+<p><img src="/images/jma5.jpg"></p>
+
+<p><img src="/images/jma6.jpg"></p>
+
+<p><img src="/images/jma7.jpg"></p>
+
+<p><img src="/images/jma8.jpg"></p>
+
+<p><img src="/images/jma9.jpg"></p>
+
+<p><img src="/images/jma10.jpg"></p>
+
+<p><img src="/images/jma11.jpg"></p>
+
+<p><img src="/images/jma12.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/17/concurrenthashmap-analyse/">ConcurrentHashMap源码解析</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-17T21:48:40+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:48 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>ConcurrentHashMap类编译时常量<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'> <span class="cm">/* ---------------- Constants -------------- */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The default initial capacity for this table,</span>
+</span><span class='line'><span class="cm">     * used when not otherwise specified in a constructor.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">DEFAULT_INITIAL_CAPACITY</span> <span class="o">=</span> <span class="mi">16</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The default load factor for this table, used when not</span>
+</span><span class='line'><span class="cm">     * otherwise specified in a constructor.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">float</span> <span class="n">DEFAULT_LOAD_FACTOR</span> <span class="o">=</span> <span class="mf">0.75f</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The default concurrency level for this table, used when not</span>
+</span><span class='line'><span class="cm">     * otherwise specified in a constructor.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">DEFAULT_CONCURRENCY_LEVEL</span> <span class="o">=</span> <span class="mi">16</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The maximum capacity, used if a higher value is implicitly</span>
+</span><span class='line'><span class="cm">     * specified by either of the constructors with arguments.  MUST</span>
+</span><span class='line'><span class="cm">     * be a power of two &lt;= 1&lt;&lt;30 to ensure that entries are indexable</span>
+</span><span class='line'><span class="cm">     * using ints.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAXIMUM_CAPACITY</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">30</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The minimum capacity for per-segment tables.  Must be a power</span>
+</span><span class='line'><span class="cm">     * of two, at least two to avoid immediate resizing on next use</span>
+</span><span class='line'><span class="cm">     * after lazy construction.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MIN_SEGMENT_TABLE_CAPACITY</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The maximum number of segments to allow; used to bound</span>
+</span><span class='line'><span class="cm">     * constructor arguments. Must be power of two less than 1 &lt;&lt; 24.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">MAX_SEGMENTS</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="o">;</span> <span class="c1">// slightly conservative</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * Number of unsynchronized retries in size and containsValue</span>
+</span><span class='line'><span class="cm">     * methods before resorting to locking. This is used to avoid</span>
+</span><span class='line'><span class="cm">     * unbounded retries if tables undergo continuous modification</span>
+</span><span class='line'><span class="cm">     * which would make it impossible to obtain an accurate result.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">RETRIES_BEFORE_LOCK</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ConcurrentHashMap类成员变量<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>   <span class="cm">/* ---------------- Fields -------------- */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * Mask value for indexing into segments. The upper bits of a</span>
+</span><span class='line'><span class="cm">     * key&#39;s hash code are used to choose the segment.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="kt">int</span> <span class="n">segmentMask</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * Shift value for indexing within segments.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="kt">int</span> <span class="n">segmentShift</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * The segments, each of which is a specialized hash table.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">Segment</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;[]</span> <span class="n">segments</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">transient</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">K</span><span class="o">&gt;</span> <span class="n">keySet</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">transient</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;&gt;</span> <span class="n">entrySet</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">transient</span> <span class="n">Collection</span><span class="o">&lt;</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">values</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1179,442 +1408,6 @@ Java语言中单例类的一个重要特点是类的构造函数是私有的，�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/24/java-string/">Java String对象的内存机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-24T13:59:12+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:59 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content">
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/21/comparator-and-comparable/">Comparator接口和Comparable接口</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-21T19:22:29+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>7:22 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>当需要排序的集合或数组不是单纯的数字型时，通常可以使用Comparator或Comparable接口，以简单的方式实现对象排序或自定义排序.<br></p>
-
-<p>Comparator接口源代码<br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Comparator</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">T</span> <span class="n">o1</span><span class="o">,</span> <span class="n">T</span> <span class="n">o2</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">obj</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Comparator接口:<br>
-强行对某个对象collection进行整体排序的比较函数.可以将Comparator传递给sort方法(如Collections.sort或Arrays.sort)，从而允许在排序顺序上实现精确控制.还可以使用Comparator来控制某些数据结构(如有序set或有序映射)的顺序,或者为那些没有自然顺序地对象collection提供排序.<br>
-Comparator接口中有两个未实现的方法，但是不一定要实现equals方法，除非有特殊的性能需要，因为无论何时创建一个类，都是间接继承自Object,而Object带有equals方法。所以只需要默认的Object的equals方法就可以满足接口的要求了.<br>
-<font color=#FF0000>基本类型无法使用Comparator进行排序.</font><br></p>
-
-<p>Collections类中有两个重载的sort方法:<br>
-<img src="/images/cc5.jpg">
-<img src="/images/cc2.jpg"></p>
-
-<p><img src="/images/cc6.jpg">
-<img src="/images/cc3.jpg"></p>
-
-<p><font color=#FF0000>其实Collections类中的两个重载sort方法在源代码实现上是调用了Arrays类中的sort方法(见上两图红框中调用).</font><br></p>
-
-<p>Arrays类中有很多重载的sort方法:<br>
-分为两大类，一类是对基本数据类型的数组的排序方法，采用DualPivotQuicksort(多路快排)进行排序;<br>
-另一类是引用类型的数组的排序排序方法，采用MergeSort(稳定归并排序)来进行排序;<br></p>
-
-<p>Arrays中sort方法可以传Comparator参数的两个方法：
-<img src="/images/cc9.jpg">
-<img src="/images/cc7.jpg"></p>
-
-<p><img src="/images/cc10.jpg">
-<img src="/images/cc8.jpg"></p>
-
-<p>Comparator接口使用实例：<br></p>
-
-<figure class='code'><figcaption><span>hashmapSort.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">hypo</span><span class="o">.</span><span class="na">collection</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Collections</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Comparator</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.HashMap</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//HashMap根据值排序</span>
-</span><span class='line'><span class="c1">//通过把HashMap中的所有Entry存入一个List,然后调用collection的sort进行排序操作.</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">hashmapSort</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">hm</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;b&#39;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;a&#39;</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;c&#39;</span><span class="o">,</span> <span class="mi">5</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;d&#39;</span><span class="o">,</span> <span class="mi">2</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;e&#39;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">hm</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="sc">&#39;f&#39;</span><span class="o">,</span><span class="mi">4</span> <span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//Map.Entry&lt;K,V&gt;是接口，其方法有getKey(),getValue()等.</span>
-</span><span class='line'>      <span class="n">List</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;&gt;</span> <span class="n">info</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;&gt;(</span><span class="n">hm</span><span class="o">.</span><span class="na">entrySet</span><span class="o">());</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="c1">//排序前</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">info</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">;</span><span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">).</span><span class="na">toString</span><span class="o">());</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//排序</span>
-</span><span class='line'>      <span class="c1">//通过把HashMap中的所有Entry存入一个List,然后调用collection的sort进行排序操作.</span>
-</span><span class='line'>      <span class="n">Collections</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">info</span><span class="o">,</span> <span class="k">new</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;&gt;()</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="nd">@Override</span>
-</span><span class='line'>          <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">o1</span><span class="o">,</span>
-</span><span class='line'>                  <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">o2</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>              <span class="k">return</span> <span class="o">(</span><span class="n">o1</span><span class="o">.</span><span class="na">getValue</span><span class="o">()</span> <span class="o">-</span> <span class="n">o2</span><span class="o">.</span><span class="na">getValue</span><span class="o">());</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">});</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;===============================&quot;</span><span class="o">);</span>
-</span><span class='line'>      <span class="c1">//排序后</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">info</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">).</span><span class="na">toString</span><span class="o">());</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>hashmapSort.java运行结果：<br>
-<img src="/images/cc4.jpg"></p>
-
-<p>可以看程序中Collections.sort调用的关系:<br>
-<img src="/images/cc1.jpg"></p>
-
-<p>Comparable接口源代码<br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.*</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Comparable</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="n">T</span> <span class="n">o</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Comparable接口：此接口强行对实现它的每个类的对象进行整体排序。这种排序被称为类的自然排序，类的 compareTo 方法被称为它的自然比较方法。实现此接口的对象列表（和数组）可以通过 Collections.sort（和 Arrays.sort）进行
-<font color=#FF0000>自动排序</font>
-实现此接口的对象可以用作有序映射中的键或有序集合中的元素，无需指定比较器。<br>
-java.lang.Comparable接口，使你的类具有“天生”的比较能力.此接口很简单，只有compareTo()一个方法.此方法接受另一个Object为参数，
-如果当前对象小于参数则返回负值，如果相等则返回零，如果当前对象大于参数则返回正值.</p>
-
-<p>Comparable接口使用实例:<br></p>
-
-<figure class='code'><figcaption><span>comparableTest.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-<span class='line-number'>79</span>
-<span class='line-number'>80</span>
-<span class='line-number'>81</span>
-<span class='line-number'>82</span>
-<span class='line-number'>83</span>
-<span class='line-number'>84</span>
-<span class='line-number'>85</span>
-<span class='line-number'>86</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">hypo</span><span class="o">.</span><span class="na">collection</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">class</span> <span class="nc">Student</span> <span class="kd">implements</span> <span class="n">Comparable</span><span class="o">&lt;</span><span class="n">Student</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">float</span> <span class="n">score</span><span class="o">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">Student</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">age</span> <span class="o">,</span><span class="kt">float</span> <span class="n">score</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated constructor stub</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">age</span> <span class="o">=</span> <span class="n">age</span><span class="o">;</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">score</span> <span class="o">=</span> <span class="n">score</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&quot;\t&quot;</span> <span class="o">+</span> <span class="n">age</span> <span class="o">+</span><span class="s">&quot;\t&quot;</span> <span class="o">+</span> <span class="n">score</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="n">Student</span> <span class="n">o</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">score</span> <span class="o">&gt;</span> <span class="n">o</span><span class="o">.</span><span class="na">score</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">score</span> <span class="o">&lt;</span> <span class="n">o</span><span class="o">.</span><span class="na">score</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">else</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">age</span> <span class="o">&gt;</span> <span class="n">o</span><span class="o">.</span><span class="na">age</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">age</span> <span class="o">&lt;</span> <span class="n">o</span><span class="o">.</span><span class="na">age</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">comparableTest</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">Student</span> <span class="n">student</span><span class="o">[]</span> <span class="o">=</span> <span class="o">{</span>
-</span><span class='line'>              <span class="k">new</span> <span class="nf">Student</span><span class="o">(</span><span class="s">&quot;Lily&quot;</span><span class="o">,</span> <span class="mi">20</span> <span class="o">,</span> <span class="mf">90.0f</span><span class="o">),</span>
-</span><span class='line'>              <span class="k">new</span> <span class="nf">Student</span><span class="o">(</span><span class="s">&quot;Suny&quot;</span> <span class="o">,</span><span class="mi">22</span> <span class="o">,</span> <span class="mf">91.0f</span><span class="o">),</span>
-</span><span class='line'>              <span class="k">new</span> <span class="nf">Student</span><span class="o">(</span><span class="s">&quot;Sady&quot;</span> <span class="o">,</span><span class="mi">23</span> <span class="o">,</span> <span class="mf">90.0f</span><span class="o">),</span>
-</span><span class='line'>              <span class="k">new</span> <span class="nf">Student</span><span class="o">(</span><span class="s">&quot;Tomy&quot;</span> <span class="o">,</span><span class="mi">25</span> <span class="o">,</span> <span class="mf">88.0f</span><span class="o">),</span>
-</span><span class='line'>              <span class="k">new</span> <span class="nf">Student</span><span class="o">(</span><span class="s">&quot;Jimy&quot;</span> <span class="o">,</span><span class="mi">25</span> <span class="o">,</span> <span class="mf">99.0f</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">};</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;===排序前===&quot;</span><span class="o">);</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="n">Student</span> <span class="n">s</span> <span class="o">:</span> <span class="n">student</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">Arrays</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">student</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;===排序后===&quot;</span><span class="o">);</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="n">Student</span> <span class="n">s</span> <span class="o">:</span> <span class="n">student</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>comparableTest.java运行结果：<br>
-<img src="/images/cc11.jpg"></p>
-
-<p>总结:<br>
-两种方法各有优劣, 用Comparable 简单, 只要实现Comparable 接口的对象直接就成为一个可以比较的对象,
-但是需要修改源代码, 用Comparator 的好处是不需要修改源代码, 而是另外实现一个比较器, 当某个自定义
-的对象需要作比较的时候,把比较器和对象一起传递过去就可以比大小了, 并且在Comparator 里面用户可以自
-己实现复杂的可以通用的逻辑,使其可以匹配一些比较简单的对象,那样就可以节省很多重复劳动了</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -1632,6 +1425,14 @@ java.lang.Comparable接口，使你的类具有“天生”的比较能力.此�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/05/strategy-design-pattern/">一天一设计模式之策略模式[5]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/04/command-design-pattern/">一天一设计模式之命令模式[4]</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/07/04/java-collection-map/">Java Collection Map</a>
       </li>
     
@@ -1641,14 +1442,6 @@ java.lang.Comparable接口，使你的类具有“天生”的比较能力.此�
     
       <li class="post">
         <a href="/blog/2016/07/04/java-collection-list/">Java Collection List</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/04/thread-4/">Java并发编程之线程执行器[4]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/04/thread-3/">Java并发编程之线程同步辅助类[3]</a>
       </li>
     
   </ul>
