@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-06T16:08:42+08:00</updated>
+  <updated>2016-07-06T16:44:19+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -18,7 +18,11 @@
     <link href="http://www.regenthypo.com/blog/2016/07/04/java-collection-map/"/>
     <updated>2016-07-04T15:41:49+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/07/04/java-collection-map</id>
-    <content type="html"><![CDATA[
+    <content type="html"><![CDATA[<p>集合框架图<br>
+<img src="/images/list1.jpg"></p>
+
+<p>Map框架图<br>
+<img src="/images/Map2.jpg"></p>
 ]]></content>
   </entry>
   
@@ -39,7 +43,7 @@
     <content type="html"><![CDATA[<p>集合框架图<br>
 <img src="/images/list1.jpg"></p>
 
-<p>List框架图
+<p>List框架图<br>
 <img src="/images/list2.jpg"></p>
 ]]></content>
   </entry>
