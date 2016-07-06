@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-05T16:52:56+08:00</updated>
+  <updated>2016-07-06T16:08:42+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,184 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之访问者模式[7]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/06/visitor-design-pattern/"/>
+    <updated>2016-07-06T10:12:31+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/06/visitor-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[行为模式]</strong></font></p>
+
+<p>意图:表示一个作用于<font color=#FF0000><strong>某对象结构中的各元素</strong></font>的操作。它使你可以在不改变各元素的类的前提下定义作用于这些元素的新操作.<br></p>
+
+<p><img src="/images/visitordp1.jpg"></p>
+
+<p>结构:<br>
+<img src="/images/visitordp2.jpg"></p>
+
+<pre><code class="java Visitor.java">/**
+ *  抽象访问者
+ */
+public interface Visitor
+{
+    //对应于NodeA的访问操作
+    void visit(NodeA node);
+
+    //对应于NodeB的访问操作
+    void visit(NodeB node);
+}
+</code></pre>
+
+<pre><code class="java VisitorA.java">/**
+ *  具体访问者 
+ */
+public class VisitorA implements Visitor
+{
+    //对应于NodeA的访问操作
+    @Override
+    public void visit(NodeA node)
+    {
+        System.out.println(node.operationA());
+    }
+
+    //对应于NodeB的访问操作
+    @Override
+    public void visit(NodeB node)
+    {
+        System.out.println(node.operationB());
+    }
+}
+</code></pre>
+
+<pre><code class="java VisitorB.java">/**
+ *  具体访问者 
+ */
+public class VisitorB implements Visitor
+{
+    //对应于NodeA的访问操作
+    @Override
+    public void visit(NodeA node)
+    {
+        System.out.println(node.operationA());
+    }
+
+    //对应于NodeB的访问操作
+    @Override
+    public void visit(NodeB node)
+    {
+        System.out.println(node.operationB());
+    }
+}
+</code></pre>
+
+<pre><code class="java Node.java">/**
+ *  抽象结点角色 
+ */
+public abstract class Node
+{
+    //接受操作
+    public abstract void accept(Visitor visitor);
+}
+</code></pre>
+
+<pre><code class="java NodeA.java">/**
+ *  具体结点 
+ */
+public class NodeA extends Node
+{
+    @Override
+    public void accept(Visitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    public String operationA()
+    {
+        return "NodeA is visited";
+    }
+}
+</code></pre>
+
+<pre><code class="java NodeB.java">/**
+ *  具体结点 
+ */
+public class NodeB extends Node
+{
+    @Override
+    public void accept(Visitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    public String operationB()
+    {
+        return "NodeB is visited";
+    }
+}
+</code></pre>
+
+<pre><code class="java ObjectStructure.java">/**
+ *  结构对象角色 
+ */
+public class ObjectStructure
+{
+    private List&lt;Node&gt; nodes;
+    private Node node;
+
+    public ObjectStructure()
+    {
+        nodes = new ArrayList&lt;Node&gt;();
+    }
+
+    //执行访问操作
+    public void action(Visitor visitor)
+    {
+        for(Node node : nodes)
+        {
+            node.accept(visitor);
+        }
+    }
+
+    //增加新的元素
+    public void add(Node node)  
+    {
+        nodes.add(node);
+    }
+}
+</code></pre>
+
+<pre><code class="java Client.java">public class Client
+{
+    private static ObjectStructure objectstru;
+    private static Visitor visitor;
+
+    public static void main(String[] args)
+    {
+        //创建一个结构对象
+        objectstru = new ObjectStructure();
+
+        //给结构增加一个节点
+        objectstru.add(new NodeA());
+        //给结构增加一个节点
+        objectstru.add(new NodeB());
+
+        //创建一个新的访问者
+        visitor = new VisitorA();
+        //让访问者访问结构
+        objectstru.action(visitor);
+    }
+}
+</code></pre>
+
+<p><img src="/images/visitordp3.jpg"></p>
+
+<p>访问者模式优点<br>
+<img src="/images/visitordp4.jpg"></p>
+
+<p>访问者模式缺点<br>
+<img src="/images/visitordp5.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之中介者模式[6]]]></title>
@@ -269,690 +447,365 @@ public class ConcreteStrategy2 extends Strategy
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[一天一设计模式之工厂模式[1]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/06/25/factory-pattern/"/>
-    <updated>2016-06-25T14:43:37+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/06/25/factory-pattern</id>
-    <content type="html"><![CDATA[<p>[创建型模式]</p>
+    <title type="html"><![CDATA[一天一设计模式之命令模式[4]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/04/command-design-pattern/"/>
+    <updated>2016-07-04T16:04:36+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/04/command-design-pattern</id>
+    <content type="html"><![CDATA[<p>[行为模式]</p>
 
-<p>工厂模式专门负责将大量有共同接口的类实例化.工厂模式可以动态决定将哪一个类实例化，不必
-事先知道每次要实例化哪一个类.工厂模式有以下几种形态:<br>
-简单工厂(Simple Factory)模式: 又称静态工厂方法模式.<br>
-工厂方法(Factory Method)模式: 又称多态性工厂模式或虚拟构造子(Virtual Constructor)模式.<br>
-抽象工厂(Abstract Factory)模式:又称工具箱模式.<br></p>
+<p>意图:命令模式将一个请求封装为一个对象,从而使你可用不同的请求对客户进行参数化;对请求排队或记录请求日志,以及支持可撤销的操作.</p>
 
-<h1>简单工厂模式</h1>
+<p>命令模式是对命令的封装.命令模式把发出命令的责任和执行命令的责任分隔开,委派给不同的对象.<br>
+每一个命令都是一个操作:请求的一方发出请求要求执行一个操作;接受的一方收到请求,并执行操作.<br>
+命令模式允许请求的一方和接受的一方独立开来,使得请求的一方不必知道接受请求的一方的接口,更不必知道请求是怎么被接受,
+以及操作是否被执行、何时被执行、以及怎么被执行的。<br></p>
 
-<p>简单工厂模式 Simple Factory 又称静态工厂方法模式</p>
+<p>命令允许请求的一方和接受请求的一方能够独立演化,从而具有以下优点:<br>
+1. 命令模式使新的命名很容易地被加入到系统里。
+2. 允许接受请求的一方决定是否要否决请求。
+3. 较容易地设计一个命令队列。
+4. 可以容易地实现对请求的Undo和Redo.
+5. 在需要的情况下，可以较容易地将命令记入日志.</p>
 
-<p>&hellip;.简单工厂模式就是一个工厂类根据传入的参量决定创建出哪一种产品类的实例.</p>
+<p><img src="/images/commanddp1.jpg"></p>
 
-<p>简单工厂涉及三个角色<br>
-&mdash;-工厂类角色     ：担任这个角色的是工厂方法模式的核心，含有与应用紧密相关的商业逻辑。工厂类在客户端的直接调用下创建产品对象。<br></p>
-
-<p>&mdash;-抽象产品角色: 担任这个角色的类是由工厂方法模式所创建的对象的父类，或他们的共同拥有的接口。可以是一个Java接口或Java抽象类<br></p>
-
-<p>&mdash;-具体产品角色:工厂方法模式所创建的任何对象都是这个角色的实例，具体产品角色由一个具体Java类实现.<br></p>
-
-<pre><code class="java Fruit.java">package DP1_1.SimpleFactory;
-
-/**
- * 抽象产品接口/抽象类
+<pre><code class="java Command.java">/**
+ *  命名角色 
  */
-public interface Fruit
+public interface Command
 {
-    void grow();//生长
-
-    void harvest();//收获
-
-    void plant();//种植
+    void execute();
 }
 </code></pre>
 
-<p>以下三个类Apple,Grape,StrawBerry均实现了Fruit接口.<br></p>
-
-<pre><code class="java Apple.java">/**
- *  具体产品类 
+<pre><code class="java ConcreteCommand.java">/**
+ *  具体命令角色 
  */
-public class Apple implements Fruit
+public class ConcreteCommand implements Command
 {
-    private int treeAge ;
-    @Override
-    public void grow()
+    private Receiver receiver;
+
+    public ConcreteCommand(Receiver receiver)
     {
-        log("apple is growing...");
+        this.receiver = receiver;
     }
 
     @Override
-    public void harvest()
+    public void execute()//执行方法
     {
-        log("apple has harvested!!!");
-    }
-
-    @Override
-    public void plant()
-    {
-        log("apple has planted!!!");
-    }
-
-//  辅助方法
-    public static void log(String msg)
-    {
-        System.out.println(msg);
-    }
-
-//    树龄的取值方法
-    public int getTreeAge()
-    {
-        return treeAge;
-    }
-
-//  树龄的赋值方法
-    public void setTreeAge(int treeAge)
-    {
-        this.treeAge = treeAge;
+        receiver.action();
     }
 }
 </code></pre>
 
-<pre><code class="java Grape.java">/**
- *  具体产品类 
+<pre><code class="java Invoker.java">/**
+ *  请求者角色 
  */
-public class Grape implements Fruit
+public class Invoker
 {
-    private boolean seedless;
-    @Override
-    public void grow()
+    private Command command;
+
+    public Invoker(Command command)
     {
-        log("grape is growing...");
+        this.command = command;
     }
 
-    @Override
-    public void harvest()
+    //行动方法
+    public void action()
     {
-        log("grape has harvested!!!");
-    }
-
-    @Override
-    public void plant()
-    {
-        log("grape has planted!!!");
-    }
-
-//  辅助方法
-    public static void log(String msg)
-    {
-        System.out.println(msg);
-    }
-
-//  有无仔的取值方法    
-    private boolean getSeedless()
-    {
-        return seedless;
-    }
-
-//  有无仔的赋值方法
-    public void setSeedless(boolean seedless)
-    {
-        this.seedless = seedless;
+        command.execute();
     }
 }
 </code></pre>
 
-<pre><code class="java StrawBerry.java">/**
- *  具体产品类 
+<pre><code class="java Receiver.java">/**
+ *  接受者角色 
  */
-public class StrawBerry implements Fruit
+public class Receiver
 {
-    @Override
-    public void grow()
+    public Receiver()
     {
-        log("strawberry is growing...");
     }
 
-    @Override
-    public void harvest()
+    //行动方法
+    public void action()
     {
-        log("strawberry has harvested!!!");
-    }
-
-    @Override
-    public void plant()
-    {
-        log("strawberry has planted!!!");
-    }
-
-//  辅助方法
-    public static void log(String msg)
-    {
-        System.out.println(msg);
+        System.out.println("action has been taken!");
     }
 }
 </code></pre>
 
-<pre><code class="java BadFruitException.java">public class BadFruitException extends Exception
-{
-    public BadFruitException(String msg)
-    {
-        super(msg);
-    }
-}
-</code></pre>
-
-<p>工厂类 <br>
-FruitGardener类会根据客户端的要求,创建出不同的水果对象,比如Apple,Grape,或StrawBerry的实例.
-而如果接到不合法的要求,FruitGardener类会抛出BadFruitException异常.<br></p>
-
-<pre><code class="java FruitGardener.java">public class FruitGardener
-{
-    /**
-     * 工厂类      静态工厂方法
-     */
-    public static Fruit factory(String which) throws BadFruitException
-    {
-        if(which.equalsIgnoreCase("apple"))
-        {
-            return new Apple();
-        }
-        else if(which.equalsIgnoreCase("grape"))
-        {
-            return new Grape();
-        }
-        else if(which.equalsIgnoreCase("strawberry"))
-        {
-            return new StrawBerry();
-        }
-        else
-        {
-            throw new BadFruitException("Bad fruit request");
-        }
-    }
-}
-</code></pre>
-
-<p>测试类<br></p>
-
-<pre><code class="java test.java">package DP1_1.SimpleFactory;
-
-public class test
+<pre><code class="java Client.java">/**
+ *  客户角色 
+ */
+public class Client
 {
     public static void main(String[] args)
     {
-        try
-        {
-            FruitGardener.factory("apple").grow();;
-            FruitGardener.factory("grape");
-            FruitGardener.factory("strawberry");
-            //FruitGardener.factory("banana");
-        } catch (BadFruitException e)
-        {
-            e.printStackTrace();
-        }
-    }
+        //接受者
+        Receiver receiver = new Receiver();
 
-}
-</code></pre>
+        //命令 确定要发送给接受者的命令
+        Command command = new ConcreteCommand(receiver);
 
-<p>抽象产品角色可使用Java接口或Java抽象类来实现.<br>
-    如果模式所产生的具体产品类彼此之间没有共同的商业逻辑,那么抽象产品角色可以由一个
-Java接口扮演;<br>
-    相反,如果这些具体产品类彼此之间确实有共同的商业逻辑,那么这些公有的逻辑就应该移动抽象角
-色里面,这就意味着抽象角色应该由一个抽象类扮演;<br>
-    在一个类型的等级结构里面,共同的代码应当尽量向上移动,以达到共享的目的.<br></p>
+        //请求者 调用命令对象执行请求
+        Invoker invoker = new Invoker(command);
 
-<p><img src="/images/factory1.jpg"></p>
-
-<p><img src="/images/factory2.jpg"></p>
-
-<h1>工厂方法模式</h1>
-
-<p>[创建型模式]</p>
-
-<p>工厂方法模式意图:定义一个用于创建对象的接口,让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类.<br></p>
-
-<p>由于使用了多态性，工厂方法模式保持了简单工厂模式的优点，而且克服了它的缺点。<br>
-  首先，在工厂方法模式中，核心的工厂类不再负责所有产品的创建，而是将具体创建的工作交给子类
-去做。这个核心类则摇身一变，成为了一个抽象工厂角色，仅负责给出具体工厂子类必须实现的接口，而不接触哪一个产品类被实例化这种细节。<br></p>
-
-<p>  这种进一步抽象化的结果，使这种工厂方法模式可以用来允许系统在不修改具体工厂角色的情况下引进新的产品，这一特点无疑使得工厂模式具有超过简单工厂模式的优越性.<br>
-<img src="/images/factory3.jpg">
-<img src="/images/factory4.jpg"></p>
-
-<p>模式结构<br>
-<img src="/images/factory5.jpg"></p>
-
-<pre><code class="java Fruit.java">/**
- * 抽象产品接口/抽象类
- */
-public interface Fruit
-{
-    void grow();//生长
-
-    void harvest();//收获
-
-    void plant();//种植
-}
-</code></pre>
-
-<pre><code class="java FruitGardener.java">/**
- *  抽象工厂角色 
- */
-public interface FruitGardener
-{
-//  工厂方法
-    public Fruit factory();//返回值是抽象产品Fruit接口的引用
-}
-</code></pre>
-
-<pre><code class="java Apple.java">package DP1_2.Factory_Method;
-
-/**
- *  具体产品类, 实现抽象产品类(接口)
- */
-public class Apple implements Fruit
-{
-    private int treeAge ;
-    @Override
-    public void grow()
-    {
-        log("apple is growing...");
-    }
-
-    @Override
-    public void harvest()
-    {
-        log("apple has harvested!!!");
-    }
-
-    @Override
-    public void plant()
-    {
-        log("apple has planted!!!");
-    }
-
-//  辅助方法
-    public static void log(String msg)
-    {
-        System.out.println(msg);
-    }
-
-//    树龄的取值方法
-    public int getTreeAge()
-    {
-        return treeAge;
-    }
-
-//  树龄的赋值方法
-    public void setTreeAge(int treeAge)
-    {
-        this.treeAge = treeAge;
+        invoker.action();
     }
 }
 </code></pre>
 
-<pre><code class="java AppleFactory.java">/**
- *  具体工厂类 
- */
-public class AppleFactory implements FruitGardener
-{
-    /**
-     * 工厂方法
-     */
-    @Override
-    public Fruit factory()//返回值是抽象产品Fruit接口的引用
-    {
-        // TODO Auto-generated method stub
-        return new Apple();
-    }
-}
-</code></pre>
+<p>在什么情况下应当使用命令模式<br>
+<img src="/images/commanddp2.jpg"></p>
 
-<pre><code class="java Grape.java">//具体产品类 
-public class Grape implements Fruit
-{
-    private boolean seedless;
-    @Override
-    public void grow()
-    {
-        log("grape is growing...");
-    }
+<p>命令模式的优缺点<br>
+<img src="/images/commanddp3.jpg"></p>
 
-    @Override
-    public void harvest()
-    {
-        log("grape has harvested!!!");
-    }
-
-    @Override
-    public void plant()
-    {
-        log("grape has planted!!!");
-    }
-
-//  辅助方法
-    public static void log(String msg)
-    {
-        System.out.println(msg);
-    }
-
-//  有无仔的取值方法    
-    private boolean getSeedless()
-    {
-        return seedless;
-    }
-
-//  有无仔的赋值方法
-    public void setSeedless(boolean seedless)
-    {
-        this.seedless = seedless;
-    }
-}
-</code></pre>
-
-<pre><code class="java GrapeFactory.java">//具体工厂类 
-public class GrapeFactory implements FruitGardener
-{
-    @Override
-    public Fruit factory()
-    {
-        // TODO Auto-generated method stub
-        return new Grape();
-    }
-}
-</code></pre>
-
-<pre><code class="java StrawBerry.java">//具体产品类 
-public class StrawBerry implements Fruit
-{
-    @Override
-    public void grow()
-    {
-        log("strawberry is growing...");
-    }
-
-    @Override
-    public void harvest()
-    {
-        log("strawberry has harvested!!!");
-    }
-
-    @Override
-    public void plant()
-    {
-        log("strawberry has planted!!!");
-    }
-
-//  辅助方法
-    public static void log(String msg)
-    {
-        System.out.println(msg);
-    }
-}
-</code></pre>
-
-<pre><code class="java StrawBerryFactory.java">//具体工厂类 
-public class StrawBerryFactory implements FruitGardener
-{
-    @Override
-    public Fruit factory()
-    {
-        // TODO Auto-generated method stub
-        return new StrawBerry();
-    }
-}
-</code></pre>
-
-<pre><code class="java BadFruitException.java">public class BadFruitException extends Exception
-{
-    public BadFruitException(String msg)
-    {
-        super(msg);
-    }
-}
-</code></pre>
-
-<p>测试类<br>
-<figure class='code'><figcaption><span>test.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">test</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="n">AppleFactory</span> <span class="n">applefactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">AppleFactory</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">Fruit</span> <span class="n">f</span> <span class="o">=</span> <span class="n">applefactory</span><span class="o">.</span><span class="na">factory</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">f</span><span class="o">.</span><span class="na">grow</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<h1>抽象工厂模式</h1>
-
-<p>[创建模式]</p>
-
-<p>抽象工厂模式意图:提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类。<br></p>
-
-<p>抽象工厂模式中的角色<br>
-<img src="/images/factory6.jpg"></p>
-
-<p>模式结构<br>
-<img src="/images/factory7.jpg"></p>
-
-<p>以下代码结构<br>
-<img src="/images/factory8.jpg"></p>
-
-<pre><code class="java Fruit.java">//抽象产品角色 水果
-public interface Fruit
-{}
-</code></pre>
-
-<pre><code class="java Gardener.java">//抽象工厂角色
-public interface Gardener//标识接口
-{}
-</code></pre>
-
-<pre><code class="java NorthernFruit.java">/**
- *  具体产品类 
- */
-public class NorthernFruit implements Fruit
-{
-    private String name;
-
-    public NorthernFruit(String name)
-    {
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-}
-</code></pre>
-
-<pre><code class="java NorthernGardener.java">/**
- *  具体工厂类  生产北方水果、蔬菜
- */
-public class NorthernGardener implements Gardener
-{
-    /**
-     * 水果的工厂方法
-     */
-    public Fruit createFruit(String name)
-    {
-        return new NorthernFruit(name);
-    }
-
-    /**
-     * 蔬菜的工厂方法
-     */
-    public Veggie createVeggie(String name) 
-    {
-        return new NorthernVeggie(name);
-    }
-}
-</code></pre>
-
-<pre><code class="java TropicalFruit.java">/**
- *  具体产品类 
- */
-public class TropicalFruit implements Fruit
-{
-    private String name;
-
-    public TropicalFruit(String name)
-    {
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-}
-</code></pre>
-
-<pre><code class="java TropicalGardener.java">/**
- *  具体工厂类  生产热带水果、蔬菜
- */
-public class TropicalGardener implements Gardener
-{
-    /**
-     * 水果的工厂方法
-     */
-    public Fruit createFruit(String name)
-    {
-        return new TropicalFruit(name);
-    }
-
-    /**
-     * 蔬菜的工厂方法
-     */
-    public Veggie createVeggie(String name)
-    {
-        return new TropicalVeggie(name);
-    }
-}
-</code></pre>
-
-<pre><code class="java Veggie.java">//抽象产品角色 蔬菜
-public interface Veggie//标识接口
-{}
-</code></pre>
-
-<pre><code class="java NorthernVeggie.java">/**
- *  具体产品类 
- */
-public class NorthernVeggie implements Veggie
-{
-    private String name;
-
-    public NorthernVeggie(String name)
-    {
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-}
-</code></pre>
-
-<pre><code class="java TropicalVeggie.java">/**
- *  具体产品类 
- */
-public class TropicalVeggie implements Veggie
-{
-    private String name;
-
-    public TropicalVeggie(String name)
-    {
-        this.name = name;
-    }
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-}
-</code></pre>
-
-<pre><code class="java test.java">public class test
-{
-    public static void main(String[] args)
-    {
-
-    }
-}
-</code></pre>
-
-<p>抽象工厂模式可以向客户端提供一个接口，使得客户端在不必指定产品的具体类型的情况下，创建多个产品族中的产品对象。<br></p>
-
-<p>可分三段理解它<br></p>
-
-<p>第一段<br>
-  一个系统需要消费多个抽象产品角色,这些抽象产品角色可以用Java接口或抽象Java类实现。既然客户端需要这些抽象产品角色的实例，为什么不使用一个工厂类负责创建这些角色的实力呢?工厂类负责创建抽象产品的实例描述如下图:<br></p>
-
-<p>  <img src="/images/factory9.jpg"></p>
-
-<p>但是，正如上面所指出，这些抽象产品角色是由Java接口或抽象Java类实现的，而一个Java接口或抽象
-Java类是不能实例化的。也就是说，上面的设计不能成立.<br></p>
-
-<p>第二段<br>
-    根据里氏代换原则，任何接受父类型的地方，都应当能够接受子类型。因此，实际上系统所需要的，仅仅是类型与这些抽象产品角色系统的一些实例，而不是这些 抽象产品的实例。换言之，也  <br/>
-就是这些抽象产品的具体子类的实例。工厂类负责创建抽象产品的具体子类的实例如下图:<br></p>
-
-<p>  <img src="/images/factory10.jpg"></p>
-
-<p>  这是抽象工厂模式用意的基本含义。<br></p>
-
-<p>  <img src="/images/factory11.jpg"></p>
-
-<p>  <font color=#FF0000>&ldquo;抽象"来自"抽象产品角色&rdquo;,而"抽象工厂"就是抽象产品角色的工厂.</font><br></p>
+<p>Java语言内应用实例<br>
+<img src="/images/commanddp4.jpg"></p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[设计模式之装饰器模式]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/04/22/decorator/"/>
-    <updated>2016-04-22T19:10:35+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/04/22/decorator</id>
-    <content type="html"><![CDATA[<p>//TODO</p>
+    <title type="html"><![CDATA[一天一设计模式之组合模式[3]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/04/composite-design-pattern/"/>
+    <updated>2016-07-04T13:27:47+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/04/composite-design-pattern</id>
+    <content type="html"><![CDATA[<p>[结构型模式]</p>
 
-<h2>1.意图<br></h2>
+<p>意图:将对象组合成树形结构以表示"部分-整体"的层次结构,组合模式使得用户对单个对象和组合对象的使用具有一致性.<br>
+    &ndash;关键是单个对象和组合对象都间接或直接实现了最顶层的抽象类或接口，所以对它们的操作具有一致性.<br></p>
 
-<p>动态地给一个对象添加一些额外的职责。就增加功能来说，Decorator模式相比生成子类更为灵活.<br></p>
+<p>安全式的组合模式的结构</p>
+
+<p><img src="/images/cdp1.jpg"></p>
+
+<p>透明式的组合模式的结构</p>
+
+<p><img src="/images/cdp2.jpg"></p>
+
+<p>安全式的组合模式</p>
+
+<p><img src="/images/cdp5.jpg"></p>
+
+<pre><code class="java Component.java">/**
+ *  抽象构件角色
+ *  抽象构件角色并不定义管理子对象的方法.
+ */
+public interface Component
+{
+
+    Component getComponent();
+
+    void sampleOperation();
+}
+</code></pre>
+
+<pre><code class="java Composite.java">/**
+ *  树枝构件角色 
+ */
+public class Composite implements Component
+{
+    //树枝构件包含的下级子对象的集合(包含树枝构件和树叶构件)
+    private List&lt;Component&gt; list = new ArrayList();
+
+    @Override
+    public Composite getComposite()
+    {
+        return this;
+    }
+
+    @Override
+    public void sampleOperation()
+    {
+        System.out.println("Composite operation");
+
+        for(Component component : list)
+        {
+            component.sampleOperation();
+        }
+    }
+
+    //增加子构件对象
+    public void add(Component component)
+    {
+        list.add(component);
+    }
+
+    //删除子构件对象
+    public void remove(Component component)
+    {
+        list.remove(component);
+    }
+}
+</code></pre>
+
+<pre><code class="java Leaf.java">/**
+ *  树叶构件 
+ */
+public class Leaf implements Component
+{
+    @Override
+    public Composite getComposite()
+    {
+        return null;
+    }
+
+    @Override
+    public void sampleOperation()
+    {
+        System.out.println("Leaf operation");
+    }
+}
+</code></pre>
+
+<pre><code class="java Client.java">public class Client
+{
+    public static void main(String[] args)
+    {
+        Component leaf1 = new Leaf();
+        Component leaf2 = new Leaf();
+
+        Component composite = new Composite();
+        composite.getComposite().add(leaf1);
+        composite.getComposite().add(leaf2);
+        composite.getComposite().sampleOperation();
+    }
+}
+</code></pre>
+
+<p>执行结果:<br>
+<img src="/images/cdp4.jpg"></p>
+
+<p>透明式的组合模式</p>
+
+<p><img src="/images/cdp6.jpg"></p>
+
+<pre><code class="java Component.java">/**
+ *  抽象构件角色 
+ *  抽象构件角色定义了管理子对象的方法.
+ */
+public interface Component
+{
+
+    public void sampleOperation();
+
+    public void add(Component component);
+
+    public void remove(Component component);
+
+    public Component getComponent();
+}
+</code></pre>
+
+<pre><code class="java Composite.java">/**
+ *  树枝构件角色 
+ *
+ */
+public class Composite implements Component
+{
+    private List&lt;Component&gt; list = new ArrayList();
+
+    @Override
+    public Component getComponent()
+    {
+        return this;
+    }
+
+    @Override
+    public void sampleOperation()
+    {
+        System.out.println("Composite operation");
+
+        for(Component component : list)
+        {
+            component.getComponent().sampleOperation();
+        }
+    }
+
+    @Override
+    public void add(Component component)
+    {
+        list.add(component);
+    }
+
+    @Override
+    public void remove(Component component)
+    {
+        list.remove(component);
+    }
+}
+</code></pre>
+
+<pre><code class="java Leaf.java">/**
+ *  树叶构件角色
+ *  树叶构件角色也实现了抽象构件角色所声明的各个方法,包括管理集合的方法
+ *  但是树叶构件因为没有子结点,因此并没有集合可以用来管理.
+ */
+public class Leaf implements Component
+{
+    @Override
+    public Component getComponent()
+    {
+        return this;
+    }
+
+    @Override
+    public void sampleOperation()
+    {
+        System.out.println("Leaf operation");
+    }
+
+    @Override
+    public void add(Component component)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void remove(Component component)
+    {
+        // TODO Auto-generated method stub
+
+    }
+}
+</code></pre>
+
+<pre><code class="java Client.java">public class Client
+{
+    public static void main(String[] args)
+    {
+        Component leaf1 = new Leaf();
+        Component leaf2 = new Leaf();
+        Component leaf3 = new Leaf();
+        Component composite = new Composite();
+        Component composite1 = new Composite();
+
+        composite1.add(leaf3);
+
+        composite.getComponent().add(leaf1);
+        composite.getComponent().add(leaf2);
+        composite.getComponent().add(composite1);
+
+        composite.getComponent().sampleOperation();
+    }
+}
+</code></pre>
+
+<p>运行结果:<br>
+<img src="/images/cdp8.jpg"></p>
+
+<p>本例的结构<br>
+<img src="/images/cdp7.jpg"></p>
+
+<p>应用实例</p>
+
+<p>由于AWT和Swing的图形界面构件是构建在AWT库中的Container类和Component类上的,从下面的AWT组合模式式类图可以看出，
+Button和CheckBox是树叶型的构件,而Container则是树枝型的构件.</p>
+
+<p><img src="/images/cdp3.jpg"></p>
 ]]></content>
   </entry>
   
