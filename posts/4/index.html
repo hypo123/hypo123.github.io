@@ -9,8 +9,8 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="Java语言中虽然有垃圾收集机制，但仍然可能存在内存泄露的情况. 什么是内存泄露 内存泄露的定义:对象已经没有被应用程序使用，但是垃圾回收器没办法移除它们，因为它们还在被引用着.
-要先理解一下无用对象和未被引用对象. 上图中未被引用对象会被垃圾回收器回收，而被引用对象却不会. &hellip;">
+  <meta name="description" content="
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,85 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/12/java-exception/">Java异常</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-12T19:49:37+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:49 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/je1.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/12/java-class-lifecycle/">Java类型生命周期</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-12T16:26:50+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:26 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Java虚拟机通过装载、连接和初始化一个Java类型，使该类型可以被正在运行的Java程序所使用。其中，
+装载就是把二进制形式的Java类型读入Java虚拟机中；<br>
+连接就是把这种已经读入虚拟机的二进制形式的类型数据合并到虚拟机的运行时状态中;<br></p>
+
+<p>连接阶段分为三个子步骤——验证、准备和解析<br>
+验证步骤确保了Java类型数据格式正确并且适于Java虚拟机使用;<br>
+准备步骤则负责为该类型分配它所需的内存，比如为它的类变量分配内存;<br>
+解析步骤则负责把常量池中的符号引用转换为直接引用;<br></p>
+
+<p>初始化阶段，都将为类变量赋以适当的初始值.<br></p>
+
+<p><img src="/images/jcc1.jpg"></p>
+
+<h2>java类的初始化 <br></h2>
+
+<p>Java虚拟机规范严格定义了类的初始化时机<br>
+所有的Java虚拟机实现必须在每个类或接口首次主动使用时初始化，以下六种情形符合主动使用的要求:<br>
+<img src="/images/jcc2.jpg"></p>
+
+<h2>Java类的装载 <br></h2>
+
+<p><img src="/images/jcc3.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -977,106 +1056,6 @@ java.lang.Comparable接口，使你的类具有“天生”的比较能力.此�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/18/jvm/">Java虚拟机</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-18T16:50:36+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:50 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>Java运行时数据区内存分布</h2>
-
-<p><img src="/images/jvm_1.jpg"></p>
-
-<h2>Java对象在堆中的内存结构</h2>
-
-<h3>Java对象再内存中是怎样分配的呢?<br></h3>
-
-<p>一旦对象在堆中分配了空间，那本质上是一系列的字节，那么如何才能找到对象中的某个特定的属性域呢?<br>
-编译器通过一个内部表来保存每个域的偏移量.<br></p>
-
-<p>下图是Base类的一个对象内存分布图.Base类没有定义任何方法.<br>
-<img src="/images/jvm_2.jpg"></p>
-
-<p>如果还有另一个子类Derived继承了Base类，那么内存分布如下图:<br>
-<img src="/images/jvm_3.jpg"></p>
-
-<p>子类对象和父类对象拥有同样的内存分布.当然,子类对象需要更多的空间来存放新的属性.<br>
-<font color=#FF0000>这种分配的好处在于Base类型的引用如果引用了Derived的对象，仍然在开头的地方"看见"Base对象</font><br>
-<font color=#FF0000>因此，使用父类(Base)引用来操作子类(Derived)对象,保证是安全的.因此在运行时不需要动态地检查</font><br>
-<font color=#FF0000>Base引用的实际类型.</font><br></p>
-
-<p>同样的道理，方法也可以放到object空间的开始处,如下图:<br>
-<img src="/images/jvm_4.jpg"></p>
-
-<p>然而这种实现方式是没有效率的.假若一个类有很多方法(例如20个),那么每个对象就要持有20个指针,相应的,每个对象都需要20个指针的内存空间,这会导致创建对象变慢,所占空间更大<br></p>
-
-<p>优化手段是创建一个 虚拟函数表(vtable,虚表),虚表是一个指向特定类的成员函数的指针数组. 如下图:<br>
-<img src="/images/jvm_5.jpg"></p>
-
-<h2>java语法糖<br></h2>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/18/design-pattern/">Java设计模式</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-18T09:32:47+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:32 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>设计模式分类<br></h3>
-
-<p><img src="/images/dp2.jpg"></p>
-
-<p>设计模式之间的关系<br>
-<img src="/images/dp.jpg"></p>
-
-<p>设计模式所支持的设计可变方面<br>
-<img src="/images/dp3.jpg"></p>
-
-<h3>软件设计原则<br></h3>
-
-<p><img src="/images/dp4.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/5">&larr; Older</a>
@@ -1094,6 +1073,14 @@ java.lang.Comparable接口，使你的类具有“天生”的比较能力.此�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/07/bridge-design-pattern/">一天一设计模式之桥接模式[11]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/07/prototype-design-pattern/">一天一设计模式之原型模式[10]</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/07/07/interpreter-design-pattern/">一天一设计模式之解释器模式[9]</a>
       </li>
     
@@ -1103,14 +1090,6 @@ java.lang.Comparable接口，使你的类具有“天生”的比较能力.此�
     
       <li class="post">
         <a href="/blog/2016/07/06/visitor-design-pattern/">一天一设计模式之访问者模式[7]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/05/mediator-design-pattern/">一天一设计模式之中介者模式[6]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/05/strategy-design-pattern/">一天一设计模式之策略模式[5]</a>
       </li>
     
   </ul>

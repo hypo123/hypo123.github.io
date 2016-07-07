@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-07T17:22:42+08:00</updated>
+  <updated>2016-07-07T21:12:37+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,108 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之桥接模式[11]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/07/bridge-design-pattern/"/>
+    <updated>2016-07-07T20:50:45+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/07/bridge-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>意图:将抽象部分与它的实现部分分离,使它们都可以独立地变化.</strong></font></p>
+
+<p><img src="/images/bridgedp1.jpg"></p>
+
+<p><img src="/images/bridgedp2.jpg"></p>
+
+<p><img src="/images/bridgedp3.jpg"></p>
+
+<pre><code class="java Abstraction.java">/**
+ *  抽象化角色 
+ */
+public abstract class Abstraction
+{
+    public void operation(Implementor imp)
+    {
+        imp.operationImp();
+    }
+}
+</code></pre>
+
+<pre><code class="java RefinedAbstraction.java">/**
+ *  修正抽象化角色 
+ */
+public class RefinedAbstraction extends Abstraction
+{
+    @Override
+    public void operation(Implementor imp)
+    {
+        super.operation(imp);
+    }
+}
+</code></pre>
+
+<pre><code class="java Implementor.java">/**
+ *  实现化角色
+ */
+public abstract class Implementor
+{
+    public abstract void operationImp();
+}
+</code></pre>
+
+<pre><code class="java ConcreteImplementorA.java">/**
+ *  具体实现化角色
+ */
+public class ConcreteImplementorA extends Implementor
+{
+    @Override
+    public void operationImp()
+    {
+        System.out.println("ConcreteImplementorA");
+    }
+}
+</code></pre>
+
+<pre><code class="java ConcreteImplementorB.java">/**
+ *  具体实现化角色
+ */
+public class ConcreteImplementorB extends Implementor
+{
+    @Override
+    public void operationImp()
+    {
+        System.out.println("ConcreteImplementorB");
+    }
+}
+</code></pre>
+
+<pre><code class="java Client.java">public class Client
+{
+    public static void main(String[] args)
+    {
+        Abstraction abstraction = new RefinedAbstraction();
+
+        abstraction.operation(new ConcreteImplementorA());
+        abstraction.operation(new ConcreteImplementorB());
+    }
+}
+</code></pre>
+
+<p><img src="/images/bridgedp4.jpg"></p>
+
+<p><img src="/images/bridgedp5.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之原型模式[10]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/07/prototype-design-pattern/"/>
+    <updated>2016-07-07T19:36:21+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/07/prototype-design-pattern</id>
+    <content type="html"><![CDATA[<p>//TODO</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之解释器模式[9]]]></title>
@@ -1244,261 +1346,6 @@ public class ObjectStructure
 
 <p>访问者模式缺点<br>
 <img src="/images/visitordp5.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之中介者模式[6]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/05/mediator-design-pattern/"/>
-    <updated>2016-07-05T15:41:38+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/05/mediator-design-pattern</id>
-    <content type="html"><![CDATA[<p>[行为模式]</p>
-
-<p>意图:用一个中介对象来封装一系列的对象交互。中介者使各对象不需要显示地相互引用，从而使其耦合松散，而且
-可以独立地改变它们之间的交互.<br></p>
-
-<p><img src="/images/mediatordp1.jpg"></p>
-
-<p><img src="/images/mediatordp2.jpg"></p>
-
-<p><img src="/images/mediatordp3.jpg"></p>
-
-<pre><code class="java Mediator.java">/**
- *  抽象中介者角色 
- */
-public abstract class Mediator
-{
-    //事件方法,由子类实现
-    public abstract void colleagueChanged(Colleague c);
-}
-</code></pre>
-
-<pre><code class="java ConcreteMediator.java">/**
- *  具体中介者角色 
- */
-public class ConcreteMediator extends Mediator
-{
-    //具体中介者知道所有的具体同事类
-    private Colleague1 colleague1;
-    private Colleague2 colleague2;
-
-    //事件方法的具体实现
-    @Override
-    public void colleagueChanged(Colleague c)
-    {
-        colleague1.action();
-        colleague2.action();
-    }
-
-    //工厂方法,创建同事对象
-    public void createConcreteMediator()
-    {
-        colleague1 = new Colleague1(this);
-        colleague2 = new Colleague2(this);
-    }
-
-    //取值方法,提供同事对象 
-    public Colleague1 getColleague1()
-    {
-        return colleague1;
-    }
-
-    //取值方法,提供同事对象 
-    public Colleague2 getColleague2()
-    {
-        return colleague2;
-    }
-}
-</code></pre>
-
-<pre><code class="java Colleague.java">/**
- *  抽象同事类 
- */
-public abstract class Colleague
-{
-    private Mediator mediator;
-
-    public Colleague(Mediator mediator)
-    {
-        this.mediator = mediator;
-    }
-
-    //取值方法,提供中介者对象
-    public Mediator getMediator()
-    {
-        return mediator;
-    }
-
-    //行动方法,有子类实现
-    public abstract void action();
-
-    //示意性的商业方法,调用此方法可以改变对象的内部状态
-    public void change()
-    {
-        mediator.colleagueChanged(this);
-    }
-}
-</code></pre>
-
-<pre><code class="java Colleague1.java">/**
- *  具体同事类 
- *  每一个同事对象都仅知道中介者,而不知道其他的同事对象
- */
-public class Colleague1 extends Colleague
-{
-    public Colleague1(Mediator mediator)
-    {
-        super(mediator);
-    }
-
-    //行动方法的具体实现
-    @Override
-    public void action()
-    {
-        System.out.println("action from colleague1");
-    }
-}
-</code></pre>
-
-<pre><code class="java Colleague2.java">/**
- *  具体同事类 
- *  每一个同事对象都仅知道中介者,而不知道其他的同事对象
- */
-public class Colleague2 extends Colleague
-{
-    public Colleague2(Mediator mediator)
-    {
-        super(mediator);
-    }
-
-    //行动方法的具体实现
-    @Override
-    public void action()
-    {
-        System.out.println("action from colleague2");
-    }
-}
-</code></pre>
-
-<pre><code class="java Client.java">public class Client
-{
-    public static void main(String[] args)
-    {
-        ConcreteMediator mediator = new ConcreteMediator();
-
-        mediator.createConcreteMediator();
-
-        Colleague1 c1 = new Colleague1(mediator);
-        Colleague2 c2 = new Colleague2(mediator);
-
-        mediator.colleagueChanged(c1);
-    }
-}
-</code></pre>
-
-<p><img src="/images/mediatordp4.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之策略模式[5]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/05/strategy-design-pattern/"/>
-    <updated>2016-07-05T14:39:38+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/05/strategy-design-pattern</id>
-    <content type="html"><![CDATA[<p>[行为模式]</p>
-
-<p>意图:定义一系列的算法,将每一个算法封装到具有共同接口的独立的类中,从而使得他们可以相互替换.本模式可以使得算法可以独立于使用它的客户而变化.<br></p>
-
-<p>策略模式把行为和环境分割开来。环境类负责维护和查询行为类，各种算法则在具体策略类中提供。由于算法和环境独立开来，
-算法的增减、修改都不会影响环境和客户端。<br></p>
-
-<p><img src="/images/strategydp1.jpg"></p>
-
-<p><img src="/images/strategydp2.jpg"></p>
-
-<pre><code class="java Context.java">/**
- *  环境角色 
- */
-public class Context
-{
-    private Strategy strategy;
-
-    public Strategy getStrategy()
-    {
-        return strategy;
-    }
-
-    public void setStrategy(Strategy strategy)
-    {
-        this.strategy = strategy;
-    }
-
-    //策略方法
-    public void operation()
-    {
-        strategy.action();
-    }
-}
-</code></pre>
-
-<pre><code class="java Strategy.java">/**
- *  抽象策略角色 
- */
-public abstract class Strategy
-{
-    //策略方法
-    public abstract void action();//具体策略类要实现的共同接口
-}
-</code></pre>
-
-<pre><code class="java ConcreteStrategy1.java">/**
- *  具体策略角色 
- */
-public class ConcreteStrategy1 extends Strategy
-{
-    @Override
-    public void action()//策略方法
-    {
-        //实现算法
-        System.out.println("strategy1 operation.");
-    }
-}
-</code></pre>
-
-<pre><code class="java ConcreteStrategy2.java">/**
- *  具体策略角色 
- */
-public class ConcreteStrategy2 extends Strategy
-{
-    @Override
-    public void action()
-    {
-        //实现算法
-        System.out.println("strategy2 operation.");
-    }
-}
-</code></pre>
-
-<pre><code class="java Client.java">public class Client
-{
-    public static void main(String[] args)
-    {
-        Context context = new Context();
-
-        context.setStrategy(new ConcreteStrategy1());
-        context.operation();
-
-        context.setStrategy(new ConcreteStrategy2());
-        context.operation();
-    }
-}
-</code></pre>
-
-<p><img src="/images/strategydp3.jpg"></p>
-
-<p><img src="/images/strategydp4.jpg"></p>
-
-<p><img src="/images/strategydp5.jpg"></p>
 ]]></content>
   </entry>
   
