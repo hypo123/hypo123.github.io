@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-07T15:50:49+08:00</updated>
+  <updated>2016-07-07T17:22:42+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,572 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之解释器模式[9]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/07/interpreter-design-pattern/"/>
+    <updated>2016-07-07T16:54:12+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/07/interpreter-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[行为模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>意图:给定一个语言,定义它的文法的一种表示,并定义一个解释器,这个解释器使用该表达式来解释语言中的句子.</strong></font></p>
+
+<p><img src="/images/interpreterdp1.jpg"></p>
+
+<p><img src="/images/interpreterdp4.jpg"></p>
+
+<pre><code class="java Expression.java">/**
+ *  抽象表达式角色
+ *  Expression ::= Constant | Variable | Or | And | Not
+ *  And        ::= Expression 'AND' Expression
+ *  Or         ::= Expression 'OR' Expression
+ *  Not        ::= 'NOT' Expression
+ *  Variable   ::= 任何标识符
+ *  Constant   ::= 'true' | 'false'
+ */
+public abstract class Expression
+{
+    //以环境类为准,本方法解释给定的任何一个表达式
+    public abstract boolean interpret(Context ctx);
+
+    //检查两个表达式在结构上是否相同
+    public abstract boolean equals(Object o);
+
+    //返回表达式的    hash code
+    public abstract int hashCode();
+
+    //将表达式转换成字符串
+    public abstract String toString();
+}
+</code></pre>
+
+<pre><code class="java Context.java">/**
+ *  环境角色
+ *  给变量赋值
+ *  取变量的值 
+ */
+public class Context
+{
+    //HashMap存储 变量-值 对
+    private HashMap&lt;Variable,Boolean&gt; map = new HashMap();
+
+    //给变量赋值
+    public void assign(Variable var , boolean value)
+    {
+        map.put(var, new Boolean(value));
+    }
+
+    //取变量的值
+    public boolean lookup(Variable var) throws IllegalArgumentException
+    {
+        Boolean value = map.get(var);
+
+        if(value == null)
+        {
+            throw new IllegalArgumentException();
+        }
+
+        return value.booleanValue();
+    }
+}
+</code></pre>
+
+<p>解释布尔常量<br>
+<figure class='code'><figcaption><span>Constant.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">终结符表达式</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">布尔常量</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Constant</span> <span class="kd">extends</span> <span class="n">Expression</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">value</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">Constant</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">value</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">interpret</span><span class="o">(</span><span class="n">Context</span> <span class="n">ctx</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">o</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">o</span> <span class="k">instanceof</span> <span class="n">Constant</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">value</span> <span class="o">==</span> <span class="o">((</span><span class="n">Constant</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">()).</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">new</span> <span class="nf">Boolean</span><span class="o">(</span><span class="n">value</span><span class="o">).</span><span class="na">toString</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>解释变量<br>
+<figure class='code'><figcaption><span>Variable.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">非终结符表达式</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">变量</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Variable</span> <span class="kd">extends</span> <span class="n">Expression</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">Variable</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">interpret</span><span class="o">(</span><span class="n">Context</span> <span class="n">ctx</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="na">lookup</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">o</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">o</span> <span class="k">instanceof</span> <span class="n">Variable</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">.</span><span class="na">equals</span><span class="o">(((</span><span class="n">Variable</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">name</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">()).</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">name</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>与操作<br>
+<figure class='code'><figcaption><span>And.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">非终结符表达式</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">And操作</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">And</span> <span class="kd">extends</span> <span class="n">Expression</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Expression</span> <span class="n">left</span> <span class="o">,</span> <span class="n">right</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">And</span><span class="o">(</span><span class="n">Expression</span> <span class="n">left</span> <span class="o">,</span> <span class="n">Expression</span> <span class="n">right</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">right</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">interpret</span><span class="o">(</span><span class="n">Context</span> <span class="n">ctx</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">left</span><span class="o">.</span><span class="na">interpret</span><span class="o">(</span><span class="n">ctx</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">right</span><span class="o">.</span><span class="na">interpret</span><span class="o">(</span><span class="n">ctx</span><span class="o">);</span><span class="c1">//与</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">o</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">o</span> <span class="k">instanceof</span> <span class="n">And</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">left</span><span class="o">.</span><span class="na">equals</span><span class="o">(((</span><span class="n">And</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">left</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="k">this</span><span class="o">.</span><span class="na">right</span><span class="o">.</span><span class="na">equals</span><span class="o">(((</span><span class="n">And</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">right</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">()).</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="n">left</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; AND &quot;</span> <span class="o">+</span> <span class="n">right</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span><span class="s">&quot;)&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>或操作<br>
+<figure class='code'><figcaption><span>Or.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">非终结符表达式</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">Or操作</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Or</span> <span class="kd">extends</span> <span class="n">Expression</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Expression</span> <span class="n">left</span> <span class="o">,</span> <span class="n">right</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">Or</span><span class="o">(</span><span class="n">Expression</span> <span class="n">left</span> <span class="o">,</span> <span class="n">Expression</span> <span class="n">right</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">right</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">interpret</span><span class="o">(</span><span class="n">Context</span> <span class="n">ctx</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">left</span><span class="o">.</span><span class="na">interpret</span><span class="o">(</span><span class="n">ctx</span><span class="o">)</span> <span class="o">||</span> <span class="n">right</span><span class="o">.</span><span class="na">interpret</span><span class="o">(</span><span class="n">ctx</span><span class="o">);</span><span class="c1">//或</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">o</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">o</span> <span class="k">instanceof</span> <span class="n">And</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">left</span><span class="o">.</span><span class="na">equals</span><span class="o">(((</span><span class="n">Or</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">left</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="k">this</span><span class="o">.</span><span class="na">right</span><span class="o">.</span><span class="na">equals</span><span class="o">(((</span><span class="n">Or</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">right</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">()).</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot;(&quot;</span> <span class="o">+</span> <span class="n">left</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot; OR &quot;</span> <span class="o">+</span> <span class="n">right</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span><span class="s">&quot;)&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>非操作<br>
+<figure class='code'><figcaption><span>Not.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">非终结符表达式</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">Not操作</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Not</span> <span class="kd">extends</span> <span class="n">Expression</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Expression</span> <span class="n">exp</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">Not</span><span class="o">(</span><span class="n">Expression</span> <span class="n">exp</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">exp</span> <span class="o">=</span> <span class="n">exp</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">interpret</span><span class="o">(</span><span class="n">Context</span> <span class="n">ctx</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">!</span><span class="n">exp</span><span class="o">.</span><span class="na">interpret</span><span class="o">(</span><span class="n">ctx</span><span class="o">);</span><span class="c1">//非</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">o</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">o</span> <span class="k">instanceof</span> <span class="n">Not</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">exp</span><span class="o">.</span><span class="na">equals</span><span class="o">(((</span><span class="n">Not</span><span class="o">)</span><span class="n">o</span><span class="o">).</span><span class="na">exp</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">()).</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="s">&quot; (Not &quot;</span> <span class="o">+</span> <span class="n">exp</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span><span class="s">&quot;)&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<pre><code class="java Client.java">/**
+ *  客户端角色
+ */
+public class Client
+{
+    private static Context ctx;
+    private static Expression exp;
+
+    public static void main(String[] args)
+    {
+        ctx = new Context();
+
+        //新建变量x , y
+        Variable x = new Variable("x");
+        Variable y = new Variable("y");
+
+        Constant c = new Constant(true);
+
+        //给变量赋值
+        ctx.assign(x, false);
+        ctx.assign(y, true);
+
+        //表达式
+        exp = new Or(new And(c , x) , new And(y , new Not(x)));
+
+        System.out.println("x = " + x.interpret(ctx));
+        System.out.println("y = " + y.interpret(ctx));
+        System.out.println(exp.toString() + " = " + exp.interpret(ctx));
+    }
+}
+</code></pre>
+
+<p>运行结果<br>
+<img src="/images/interpreterdp3.jpg"></p>
+
+<p>解释器模式优缺点<br>
+<img src="/images/interpreterdp2.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之责任链模式[8]]]></title>
@@ -933,127 +1499,6 @@ public class ConcreteStrategy2 extends Strategy
 <p><img src="/images/strategydp4.jpg"></p>
 
 <p><img src="/images/strategydp5.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之命令模式[4]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/04/command-design-pattern/"/>
-    <updated>2016-07-04T16:04:36+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/04/command-design-pattern</id>
-    <content type="html"><![CDATA[<p>[行为模式]</p>
-
-<p>意图:命令模式将一个请求封装为一个对象,从而使你可用不同的请求对客户进行参数化;对请求排队或记录请求日志,以及支持可撤销的操作.</p>
-
-<p>命令模式是对命令的封装.命令模式把发出命令的责任和执行命令的责任分隔开,委派给不同的对象.<br>
-每一个命令都是一个操作:请求的一方发出请求要求执行一个操作;接受的一方收到请求,并执行操作.<br>
-命令模式允许请求的一方和接受的一方独立开来,使得请求的一方不必知道接受请求的一方的接口,更不必知道请求是怎么被接受,
-以及操作是否被执行、何时被执行、以及怎么被执行的。<br></p>
-
-<p>命令允许请求的一方和接受请求的一方能够独立演化,从而具有以下优点:<br>
-1. 命令模式使新的命名很容易地被加入到系统里。
-2. 允许接受请求的一方决定是否要否决请求。
-3. 较容易地设计一个命令队列。
-4. 可以容易地实现对请求的Undo和Redo.
-5. 在需要的情况下，可以较容易地将命令记入日志.</p>
-
-<p><img src="/images/commanddp1.jpg"></p>
-
-<pre><code class="java Command.java">/**
- *  命名角色 
- */
-public interface Command
-{
-    void execute();
-}
-</code></pre>
-
-<pre><code class="java ConcreteCommand.java">/**
- *  具体命令角色 
- */
-public class ConcreteCommand implements Command
-{
-    private Receiver receiver;
-
-    public ConcreteCommand(Receiver receiver)
-    {
-        this.receiver = receiver;
-    }
-
-    @Override
-    public void execute()//执行方法
-    {
-        receiver.action();
-    }
-}
-</code></pre>
-
-<pre><code class="java Invoker.java">/**
- *  请求者角色 
- */
-public class Invoker
-{
-    private Command command;
-
-    public Invoker(Command command)
-    {
-        this.command = command;
-    }
-
-    //行动方法
-    public void action()
-    {
-        command.execute();
-    }
-}
-</code></pre>
-
-<pre><code class="java Receiver.java">/**
- *  接受者角色 
- */
-public class Receiver
-{
-    public Receiver()
-    {
-    }
-
-    //行动方法
-    public void action()
-    {
-        System.out.println("action has been taken!");
-    }
-}
-</code></pre>
-
-<pre><code class="java Client.java">/**
- *  客户角色 
- */
-public class Client
-{
-    public static void main(String[] args)
-    {
-        //接受者
-        Receiver receiver = new Receiver();
-
-        //命令 确定要发送给接受者的命令
-        Command command = new ConcreteCommand(receiver);
-
-        //请求者 调用命令对象执行请求
-        Invoker invoker = new Invoker(command);
-
-        invoker.action();
-    }
-}
-</code></pre>
-
-<p>在什么情况下应当使用命令模式<br>
-<img src="/images/commanddp2.jpg"></p>
-
-<p>命令模式的优缺点<br>
-<img src="/images/commanddp3.jpg"></p>
-
-<p>Java语言内应用实例<br>
-<img src="/images/commanddp4.jpg"></p>
 ]]></content>
   </entry>
   
