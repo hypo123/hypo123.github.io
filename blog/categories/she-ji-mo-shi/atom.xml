@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-07T21:12:37+08:00</updated>
+  <updated>2016-07-08T19:21:55+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,192 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之门面模式[12]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/08/facade-design-pattern/"/>
+    <updated>2016-07-08T18:51:26+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/08/facade-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>外部与一个子系统的通信必须通过一个统一的门面(Facade)对象进行.</strong></font></p>
+
+<p><img src="/images/facadedp1.jpg"></p>
+
+<p><img src="/images/facadedp2.jpg"></p>
+
+<p><strong>结构</strong>
+<img src="/images/facadedp3.jpg"></p>
+
+<p><strong>门面模式的角色</strong>
+<img src="/images/facadedp4.jpg"></p>
+
+<pre><code class="java">/**
+ *  子系统角色 
+ */
+public class Alarm
+{
+    public void activate()
+    {
+        System.out.println("Activating the alarm.");
+    }
+
+    public void deactivate()
+    {
+        System.out.println("Deactivating the alarm.");
+    }
+
+    public void ring()
+    {
+        System.out.println("Ringing the alarm.");
+    }
+
+    public void stopRing()
+    {
+        System.out.println("Stop the alarm.");
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  子系统角色 
+ */
+public class Camera
+{
+    public void turnOn()
+    {
+        System.out.println("Turning on the camera.");
+    }
+
+    public void turnOff()
+    {
+        System.out.println("Turning off the camera.");
+    }
+
+    public void rotate(int degrees)
+    {
+        System.out.println("rotate the camera by" + degrees + "degrees.");
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  子系统角色 
+ */
+public class Light
+{
+    public void turnOn()
+    {
+        System.out.println("Turning on the light.");
+    }
+
+    public void turnOff()
+    {
+        System.out.println("Turning off the light.");
+    }
+
+    public void changeBulb()
+    {
+        System.out.println("changing the light-bulb.");
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  子系统角色 
+ */
+public class Sensor
+{
+    public void activate()
+    {
+        System.out.println("Activating the sensor.");
+    }
+
+    public void deactivate()
+    {
+        System.out.println("Deactivating the sensor.");
+    }
+
+    public void trigger()
+    {
+        System.out.println("The sensor has been triggered.");
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  门面角色 
+ */
+public class SecurityFacade
+{
+    private static Camera camera1 , camera2;
+    private static Light light1 , light2 , light3;
+    private static Sensor sensor;
+    private static Alarm alarm;
+
+//  static
+    {
+        camera1 = new Camera();
+        camera2 = new Camera();
+        light1 = new Light();
+        light2 = new Light();
+        light3 = new Light();
+        sensor = new Sensor();
+        alarm = new Alarm();
+    }
+
+    public void activate()
+    {
+        camera1.turnOn();
+        camera2.turnOn();
+
+        light1.turnOn();
+        light2.turnOn();
+        light3.turnOn();
+
+        sensor.activate();
+
+        alarm.activate();
+    }
+
+    public void deactivate()
+    {
+        camera1.turnOff();
+        camera2.turnOff();
+
+        light1.turnOff();
+        light2.turnOff();
+        light3.turnOff();
+
+        sensor.deactivate();
+
+        alarm.deactivate();
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  客户端 
+ */
+public class Client
+{
+    private static SecurityFacade facade;
+    private static SecurityFacade facade2;
+
+    public static void main(String[] args)
+    {
+        facade = new SecurityFacade();
+
+        facade.activate();
+    }
+}
+</code></pre>
+
+<p><img src="/images/facadedp5.jpg"></p>
+
+<p><img src="/images/facadedp6.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之桥接模式[11]]]></title>
@@ -1168,184 +1354,6 @@ public class ConcreteHandler extends Handler
 <p>运行结果<br></p>
 
 <p><img src="/images/chaindp4.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之访问者模式[7]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/06/visitor-design-pattern/"/>
-    <updated>2016-07-06T10:12:31+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/06/visitor-design-pattern</id>
-    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[行为模式]</strong></font></p>
-
-<p>意图:表示一个作用于<font color=#FF0000><strong>某对象结构中的各元素</strong></font>的操作。它使你可以在不改变各元素的类的前提下定义作用于这些元素的新操作.<br></p>
-
-<p><img src="/images/visitordp1.jpg"></p>
-
-<p>结构:<br>
-<img src="/images/visitordp2.jpg"></p>
-
-<pre><code class="java Visitor.java">/**
- *  抽象访问者
- */
-public interface Visitor
-{
-    //对应于NodeA的访问操作
-    void visit(NodeA node);
-
-    //对应于NodeB的访问操作
-    void visit(NodeB node);
-}
-</code></pre>
-
-<pre><code class="java VisitorA.java">/**
- *  具体访问者 
- */
-public class VisitorA implements Visitor
-{
-    //对应于NodeA的访问操作
-    @Override
-    public void visit(NodeA node)
-    {
-        System.out.println(node.operationA());
-    }
-
-    //对应于NodeB的访问操作
-    @Override
-    public void visit(NodeB node)
-    {
-        System.out.println(node.operationB());
-    }
-}
-</code></pre>
-
-<pre><code class="java VisitorB.java">/**
- *  具体访问者 
- */
-public class VisitorB implements Visitor
-{
-    //对应于NodeA的访问操作
-    @Override
-    public void visit(NodeA node)
-    {
-        System.out.println(node.operationA());
-    }
-
-    //对应于NodeB的访问操作
-    @Override
-    public void visit(NodeB node)
-    {
-        System.out.println(node.operationB());
-    }
-}
-</code></pre>
-
-<pre><code class="java Node.java">/**
- *  抽象结点角色 
- */
-public abstract class Node
-{
-    //接受操作
-    public abstract void accept(Visitor visitor);
-}
-</code></pre>
-
-<pre><code class="java NodeA.java">/**
- *  具体结点 
- */
-public class NodeA extends Node
-{
-    @Override
-    public void accept(Visitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    public String operationA()
-    {
-        return "NodeA is visited";
-    }
-}
-</code></pre>
-
-<pre><code class="java NodeB.java">/**
- *  具体结点 
- */
-public class NodeB extends Node
-{
-    @Override
-    public void accept(Visitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    public String operationB()
-    {
-        return "NodeB is visited";
-    }
-}
-</code></pre>
-
-<pre><code class="java ObjectStructure.java">/**
- *  结构对象角色 
- */
-public class ObjectStructure
-{
-    private List&lt;Node&gt; nodes;
-    private Node node;
-
-    public ObjectStructure()
-    {
-        nodes = new ArrayList&lt;Node&gt;();
-    }
-
-    //执行访问操作
-    public void action(Visitor visitor)
-    {
-        for(Node node : nodes)
-        {
-            node.accept(visitor);
-        }
-    }
-
-    //增加新的元素
-    public void add(Node node)  
-    {
-        nodes.add(node);
-    }
-}
-</code></pre>
-
-<pre><code class="java Client.java">public class Client
-{
-    private static ObjectStructure objectstru;
-    private static Visitor visitor;
-
-    public static void main(String[] args)
-    {
-        //创建一个结构对象
-        objectstru = new ObjectStructure();
-
-        //给结构增加一个节点
-        objectstru.add(new NodeA());
-        //给结构增加一个节点
-        objectstru.add(new NodeB());
-
-        //创建一个新的访问者
-        visitor = new VisitorA();
-        //让访问者访问结构
-        objectstru.action(visitor);
-    }
-}
-</code></pre>
-
-<p><img src="/images/visitordp3.jpg"></p>
-
-<p>访问者模式优点<br>
-<img src="/images/visitordp4.jpg"></p>
-
-<p>访问者模式缺点<br>
-<img src="/images/visitordp5.jpg"></p>
 ]]></content>
   </entry>
   

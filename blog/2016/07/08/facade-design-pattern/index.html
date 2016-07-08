@@ -1,0 +1,602 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>一天一设计模式之门面模式[12] - regenthypo's Blog</title>
+  <meta name="author" content="regenthypo">
+
+  
+  <meta name="description" content="[结构型模式] 外部与一个子系统的通信必须通过一个统一的门面(Facade)对象进行. 结构 门面模式的角色 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+/** * 子系统角色 */
+public class &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.regenthypo.com/blog/2016/07/08/facade-design-pattern/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="regenthypo's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">regenthypo's Blog</a></h1>
+  
+    <h2>The greatest test of courage on earth is to bear defeat without losing heart</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.regenthypo.com">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/Java">Java</a></li>
+  <li><a href="/blog/leetcode">leetcode</a></li>
+  <li><a href="/blog/about">about</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">一天一设计模式之门面模式[12]</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-08T18:51:26+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:51 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>外部与一个子系统的通信必须通过一个统一的门面(Facade)对象进行.</strong></font></p>
+
+<p><img src="/images/facadedp1.jpg"></p>
+
+<p><img src="/images/facadedp2.jpg"></p>
+
+<p><strong>结构</strong>
+<img src="/images/facadedp3.jpg"></p>
+
+<p><strong>门面模式的角色</strong>
+<img src="/images/facadedp4.jpg"></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   子系统角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Alarm</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">activate</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Activating the alarm.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">deactivate</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Deactivating the alarm.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">ring</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Ringing the alarm.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">stopRing</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Stop the alarm.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   子系统角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Camera</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">turnOn</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Turning on the camera.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">turnOff</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Turning off the camera.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">rotate</span><span class="o">(</span><span class="kt">int</span> <span class="n">degrees</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;rotate the camera by&quot;</span> <span class="o">+</span> <span class="n">degrees</span> <span class="o">+</span> <span class="s">&quot;degrees.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   子系统角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Light</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">turnOn</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Turning on the light.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">turnOff</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Turning off the light.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">changeBulb</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;changing the light-bulb.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   子系统角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Sensor</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">activate</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Activating the sensor.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">deactivate</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Deactivating the sensor.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trigger</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;The sensor has been triggered.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   门面角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SecurityFacade</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">Camera</span> <span class="n">camera1</span> <span class="o">,</span> <span class="n">camera2</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">Light</span> <span class="n">light1</span> <span class="o">,</span> <span class="n">light2</span> <span class="o">,</span> <span class="n">light3</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">Sensor</span> <span class="n">sensor</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">Alarm</span> <span class="n">alarm</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'><span class="c1">//   static</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">camera1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Camera</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">camera2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Camera</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Light</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Light</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light3</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Light</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">sensor</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Sensor</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">alarm</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Alarm</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">activate</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">camera1</span><span class="o">.</span><span class="na">turnOn</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">camera2</span><span class="o">.</span><span class="na">turnOn</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">light1</span><span class="o">.</span><span class="na">turnOn</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light2</span><span class="o">.</span><span class="na">turnOn</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light3</span><span class="o">.</span><span class="na">turnOn</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">sensor</span><span class="o">.</span><span class="na">activate</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">alarm</span><span class="o">.</span><span class="na">activate</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">deactivate</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">camera1</span><span class="o">.</span><span class="na">turnOff</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">camera2</span><span class="o">.</span><span class="na">turnOff</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">light1</span><span class="o">.</span><span class="na">turnOff</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light2</span><span class="o">.</span><span class="na">turnOff</span><span class="o">();</span>
+</span><span class='line'>      <span class="n">light3</span><span class="o">.</span><span class="na">turnOff</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">sensor</span><span class="o">.</span><span class="na">deactivate</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">alarm</span><span class="o">.</span><span class="na">deactivate</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   客户端 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">SecurityFacade</span> <span class="n">facade</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">SecurityFacade</span> <span class="n">facade2</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">facade</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SecurityFacade</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">facade</span><span class="o">.</span><span class="na">activate</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="/images/facadedp5.jpg"></p>
+
+<p><img src="/images/facadedp6.jpg"></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">regenthypo</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-08T18:51:26+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:51 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/she-ji-mo-shi/'>设计模式</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/07/bridge-design-pattern/" title="Previous Post: 一天一设计模式之桥接模式[11]">&laquo; 一天一设计模式之桥接模式[11]</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/07/08/facade-design-pattern/">一天一设计模式之门面模式[12]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/07/bridge-design-pattern/">一天一设计模式之桥接模式[11]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/07/prototype-design-pattern/">一天一设计模式之原型模式[10]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/07/interpreter-design-pattern/">一天一设计模式之解释器模式[9]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/07/chainofresponsibility-design-pattern/">一天一设计模式之责任链模式[8]</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'hypo123',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>    	
+    <ul id="weibo">
+    <li>
+
+ <iframe width="100%" height="300" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=300&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1956661252&verifier=d9191102&dpc=1"></iframe>
+      </li>
+    </ul>
+</section><section>
+  <h1>访客地图</h1>
+  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/1.js?i=55gx2i6yqf0&amp;s=220&amp;m=6&amp;v=false&amp;r=false&amp;b=000000&amp;n=false&amp;c=ff0000" async="async"></script>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - regenthypo -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

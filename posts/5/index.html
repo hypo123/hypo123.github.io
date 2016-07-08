@@ -9,8 +9,8 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="Java运行时数据区内存分布 Java对象在堆中的内存结构 Java对象再内存中是怎样分配的呢? 一旦对象在堆中分配了空间，那本质上是一系列的字节，那么如何才能找到对象中的某个特定的属性域呢?
-编译器通过一个内部表来保存每个域的偏移量. 下图是Base类的一个对象内存分布图. &hellip;">
+  <meta name="description" content="
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,35 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/20/java-regex/">Java正则表达式</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-20T10:32:51+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:32 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/regex1.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -3443,169 +3472,6 @@ java jdk7中java.io.Serializable接口源代码<br></li>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode71-simplify-path-string/">Leetcode71 Simplify Path [String]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T17:02:57+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>5:02 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>给定一个文档(Unix-style)的完全路径，将路径进行简化。
-样例:
-path = &ldquo;/home/&rdquo;, => &ldquo;/home&rdquo;
-path = &ldquo;/a/./b/../../c/&rdquo;, => &ldquo;/c&rdquo;</p>
-
-<p>边界情况:
-path = &ldquo;/../&rdquo; , => &ldquo;/&rdquo;
-path = &ldquo;/home//foo/&rdquo; , => &ldquo;/home/foo&rdquo;</p>
-
-<p>Difficulty: Medium</p>
-
-<p><img src="/images/71.jpg"></p>
-
-<ul>
-<li>分析：</li>
-<li>当遇到“/../&ldquo;则需要返回上级目录，需检查上级目录是否为空</li>
-<li>当遇到"/./&ldquo;则表示是本级目录，无需做任何特殊操作</li>
-<li>当遇到"//&ldquo;则表示是本级目录，无需做任何操作 这儿&rdquo;//&ldquo;表示&rdquo;/&ldquo;和&rdquo;/&ldquo;之间为空(&rdquo;&ldquo;)</li>
-<li>当遇到其他字符则表示是文件夹名，无需简化</li>
-<li>当字符串是空或者遇到”/../”，则需要返回一个"/"</li>
-<li>当遇见"/a//b"，则需要简化为"/a/b"</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Simplify_Path</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">String</span> <span class="nf">simplifyPath2</span><span class="o">(</span><span class="n">String</span> <span class="n">path</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">result</span> <span class="o">=</span> <span class="s">&quot;/&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span><span class="o">[]</span> <span class="n">stubs</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;/+&quot;</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">paths</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span> <span class="o">:</span> <span class="n">stubs</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;..&quot;</span><span class="o">))</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">paths</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">paths</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">paths</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span><span class="c1">//&quot;..&quot;不是上级目录，要向上级目录回退</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(!</span><span class="n">s</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;.&quot;</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">s</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;&quot;</span><span class="o">))</span><span class="c1">// &quot;.&quot;为当前目录不用管，&quot;&quot;为空不用管</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">paths</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">i</span> <span class="o">:</span> <span class="n">paths</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">result</span> <span class="o">+=</span> <span class="n">i</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="o">)</span><span class="c1">//去掉最后一个多加的&quot;/&quot;</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">result</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//   test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">Simplify_Path</span> <span class="n">sp</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Simplify_Path</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">String</span> <span class="n">path</span> <span class="o">=</span> <span class="s">&quot;/home/&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">path2</span> <span class="o">=</span> <span class="s">&quot;/a/./b/../../c/&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">path3</span> <span class="o">=</span> <span class="s">&quot;/../&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">path4</span> <span class="o">=</span> <span class="s">&quot;/home//foo/&quot;</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">sp</span><span class="o">.</span><span class="na">simplifyPath2</span><span class="o">(</span><span class="n">path</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">sp</span><span class="o">.</span><span class="na">simplifyPath2</span><span class="o">(</span><span class="n">path2</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">sp</span><span class="o">.</span><span class="na">simplifyPath2</span><span class="o">(</span><span class="n">path3</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">sp</span><span class="o">.</span><span class="na">simplifyPath2</span><span class="o">(</span><span class="n">path4</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果:
-<img src="/images/71_2.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -3623,6 +3489,10 @@ path = &ldquo;/home//foo/&rdquo; , => &ldquo;/home/foo&rdquo;</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/08/facade-design-pattern/">一天一设计模式之门面模式[12]</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/07/07/bridge-design-pattern/">一天一设计模式之桥接模式[11]</a>
       </li>
     
@@ -3636,10 +3506,6 @@ path = &ldquo;/home//foo/&rdquo; , => &ldquo;/home/foo&rdquo;</p>
     
       <li class="post">
         <a href="/blog/2016/07/07/chainofresponsibility-design-pattern/">一天一设计模式之责任链模式[8]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/06/visitor-design-pattern/">一天一设计模式之访问者模式[7]</a>
       </li>
     
   </ul>
