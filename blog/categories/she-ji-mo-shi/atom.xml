@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-08T19:21:55+08:00</updated>
+  <updated>2016-07-08T19:29:04+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -26,10 +26,10 @@
 
 <p><img src="/images/facadedp2.jpg"></p>
 
-<p><strong>结构</strong>
+<p><strong>门面模式的角色</strong>
 <img src="/images/facadedp3.jpg"></p>
 
-<p><strong>门面模式的角色</strong>
+<p><strong>结构</strong>
 <img src="/images/facadedp4.jpg"></p>
 
 <pre><code class="java">/**
@@ -193,9 +193,11 @@ public class Client
 }
 </code></pre>
 
-<p><img src="/images/facadedp5.jpg"></p>
+<p><strong>适用性</strong>
+<img src="/images/facadedp5.jpg"></p>
 
-<p><img src="/images/facadedp6.jpg"></p>
+<p><strong>门面模式优点</strong>
+<img src="/images/facadedp6.jpg"></p>
 ]]></content>
   </entry>
   
