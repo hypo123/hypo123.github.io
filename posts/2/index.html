@@ -9,8 +9,8 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="[行为模式] 意图:命令模式将一个请求封装为一个对象,从而使你可用不同的请求对客户进行参数化;对请求排队或记录请求日志,以及支持可撤销的操作. 命令模式是对命令的封装.命令模式把发出命令的责任和执行命令的责任分隔开,委派给不同的对象.
-每一个命令都是一个操作:请求的一方发出请求要求执行一个操作; &hellip;">
+  <meta name="description" content="[行为模式] 意图:定义一系列的算法,将每一个算法封装到具有共同接口的独立的类中,从而使得他们可以相互替换.本模式可以使得算法可以独立于使用它的客户而变化. 策略模式把行为和环境分割开来。环境类负责维护和查询行为类，各种算法则在具体策略类中提供。由于算法和环境独立开来，
+算法的增减、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,209 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/05/strategy-design-pattern/">一天一设计模式之策略模式[5]</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-05T14:39:38+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:39 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>[行为模式]</p>
+
+<p>意图:定义一系列的算法,将每一个算法封装到具有共同接口的独立的类中,从而使得他们可以相互替换.本模式可以使得算法可以独立于使用它的客户而变化.<br></p>
+
+<p>策略模式把行为和环境分割开来。环境类负责维护和查询行为类，各种算法则在具体策略类中提供。由于算法和环境独立开来，
+算法的增减、修改都不会影响环境和客户端。<br></p>
+
+<p><img src="/images/strategydp1.jpg"></p>
+
+<p><img src="/images/strategydp2.jpg"></p>
+
+<figure class='code'><figcaption><span>Context.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   环境角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Context</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="n">Strategy</span> <span class="n">strategy</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="n">Strategy</span> <span class="nf">getStrategy</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">strategy</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setStrategy</span><span class="o">(</span><span class="n">Strategy</span> <span class="n">strategy</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">strategy</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//策略方法</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">strategy</span><span class="o">.</span><span class="na">action</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>Strategy.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   抽象策略角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Strategy</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="c1">//策略方法</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">abstract</span> <span class="kt">void</span> <span class="nf">action</span><span class="o">();</span><span class="c1">//具体策略类要实现的共同接口</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>ConcreteStrategy1.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   具体策略角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteStrategy1</span> <span class="kd">extends</span> <span class="n">Strategy</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="nd">@Override</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">action</span><span class="o">()</span><span class="c1">//策略方法</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//实现算法</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;strategy1 operation.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>ConcreteStrategy2.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *   具体策略角色 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteStrategy2</span> <span class="kd">extends</span> <span class="n">Strategy</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="nd">@Override</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">action</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//实现算法</span>
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;strategy2 operation.&quot;</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>Client.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">Context</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Context</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">setStrategy</span><span class="o">(</span><span class="k">new</span> <span class="nf">ConcreteStrategy1</span><span class="o">());</span>
+</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">setStrategy</span><span class="o">(</span><span class="k">new</span> <span class="nf">ConcreteStrategy2</span><span class="o">());</span>
+</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="/images/strategydp3.jpg"></p>
+
+<p><img src="/images/strategydp4.jpg"></p>
+
+<p><img src="/images/strategydp5.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -2093,273 +2296,6 @@ Button和CheckBox是树叶型的构件,而Container则是树枝型的构件.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/06/29/flyweigth-design-pattern/">一天一设计模式之享元模式[2]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-06-29T19:26:46+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:26 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>[结构型模式]</p>
-
-<p>在Java语言中,String类型就使用了享元模式.String对象是不变对象,一旦创建出来就不能改变.
-如果需要改变一个字符串的值,就只好创建一个新的String对象.在JVM内部,String对象都是共享的.
-如果一个系统中有两个String对象所包含的字符串相同的话,JVM实际上只创建一个String对象提供给
-两个引用,从而实现String对象的共享.String的itern()方法给出这个字符串在共享池中的唯一实例.<br></p>
-
-<p>意图:运用共享技术有效地支持大量细粒度的对象.<br></p>
-
-<p><img src="/images/flyweight1.jpg"></p>
-
-<figure class='code'><figcaption><span>FlyWeight.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//抽象享元角色</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">FlyWeight</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="c1">//参数state是外部状态</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">abstract</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span>ConcreteFlyWeight.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//具体享元角色</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteFlyWeight</span> <span class="kd">extends</span> <span class="n">FlyWeight</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">Character</span> <span class="n">intrinsicState</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1">//构造函数,内部状态作为参数传入.</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="nf">ConcreteFlyWeight</span><span class="o">(</span><span class="n">Character</span> <span class="n">state</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">intrinsicState</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/**</span>
-</span><span class='line'><span class="cm">  * 外部状态作为参数传入方法中,改变方法的行为,</span>
-</span><span class='line'><span class="cm">  * 但是并不改变对象的内部状态.</span>
-</span><span class='line'><span class="cm">  */</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Intrinsic State = &quot;</span> <span class="o">+</span> <span class="n">intrinsicState</span> <span class="o">+</span>
-</span><span class='line'>              <span class="s">&quot;,Extrinsic State = &quot;</span> <span class="o">+</span> <span class="n">state</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">};</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span>FlyWeightFactory.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//享元工厂角色</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FlyWeightFactory</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">HashMap</span> <span class="n">flies</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">HashMap</span><span class="o">();</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="kd">private</span> <span class="n">FlyWeight</span> <span class="n">inkFlyWeight</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//工厂方法,内部状态作为参数传入.</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="n">FlyWeight</span> <span class="nf">factory</span><span class="o">(</span><span class="n">Character</span> <span class="n">state</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">flies</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">state</span><span class="o">))</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">return</span> <span class="o">(</span><span class="n">FlyWeight</span><span class="o">)</span><span class="n">flies</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">state</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">else</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">FlyWeight</span> <span class="n">fly</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteFlyWeight</span><span class="o">(</span><span class="n">state</span><span class="o">);</span>
-</span><span class='line'>          <span class="n">flies</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">state</span><span class="o">,</span> <span class="n">fly</span><span class="o">);</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="k">return</span> <span class="n">fly</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//辅助方法</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">checkFlyWeight</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">FlyWeight</span> <span class="n">fly</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;-------checkFlyWeight-----&quot;</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">FlyWeight</span><span class="o">&gt;</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">flies</span><span class="o">.</span><span class="na">entrySet</span><span class="o">().</span><span class="na">iterator</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span> <span class="n">entry</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">)</span><span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Item &quot;</span> <span class="o">+</span> <span class="o">(++</span><span class="n">i</span><span class="o">)</span> <span class="o">+</span><span class="s">&quot;:&quot;</span> <span class="o">+</span> <span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">());</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;-------checkFlyWeight-----&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span>Client.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//客户端</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">//创建享元工厂对象</span>
-</span><span class='line'>      <span class="n">FlyWeightFactory</span> <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">FlyWeightFactory</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//向享元工厂对象请求一个内部状态为&#39;a&#39;的享元对象</span>
-</span><span class='line'>      <span class="n">FlyWeight</span> <span class="n">fly</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">factory</span><span class="o">(</span><span class="k">new</span> <span class="nf">Character</span><span class="o">(</span><span class="sc">&#39;a&#39;</span><span class="o">));</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//以参数方式传入一个外部状态.</span>
-</span><span class='line'>      <span class="n">fly</span><span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&quot;First Call&quot;</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//向享元对象请求一个内部状态为&#39;b&#39;的享元对象</span>
-</span><span class='line'>      <span class="n">fly</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">factory</span><span class="o">(</span><span class="k">new</span> <span class="nf">Character</span><span class="o">(</span><span class="sc">&#39;b&#39;</span><span class="o">));</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//以参数方式传入一个外部状态.</span>
-</span><span class='line'>      <span class="n">fly</span><span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&quot;Second Call&quot;</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//向享元工厂对象请求一个内部状态为&#39;a&#39;的享元对象</span>
-</span><span class='line'>      <span class="n">fly</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">factory</span><span class="o">(</span><span class="k">new</span> <span class="nf">Character</span><span class="o">(</span><span class="sc">&#39;a&#39;</span><span class="o">));</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//以参数方式传入一个外部状态.</span>
-</span><span class='line'>      <span class="n">fly</span><span class="o">.</span><span class="na">operation</span><span class="o">(</span><span class="s">&quot;Third Call&quot;</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//打印所有的独立的享元对象.</span>
-</span><span class='line'>      <span class="n">factory</span><span class="o">.</span><span class="na">checkFlyWeight</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果<br>
-<img src="/images/flyweight2.jpg"></p>
-
-<p>享元模式的适用情况<br>
-<img src="/images/flyweight3.jpg"></p>
-
-<p>享元模式的优缺点<br>
-<img src="/images/flyweight4.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -2377,6 +2313,10 @@ Button和CheckBox是树叶型的构件,而Container则是树枝型的构件.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/20/decorator-design-pattern/">一天一设计模式之装饰模式[14]</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/07/20/adapter-design-pattern/">一天一设计模式之适配器模式[13]</a>
       </li>
     
@@ -2390,10 +2330,6 @@ Button和CheckBox是树叶型的构件,而Container则是树枝型的构件.</p>
     
       <li class="post">
         <a href="/blog/2016/07/07/bridge-design-pattern/">一天一设计模式之桥接模式[11]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/07/prototype-design-pattern/">一天一设计模式之原型模式[10]</a>
       </li>
     
   </ul>
