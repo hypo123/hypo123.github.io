@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-21T15:01:59+08:00</updated>
+  <updated>2016-07-21T15:55:02+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,173 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之代理模式[17]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/21/proxy-design-pattern/"/>
+    <updated>2016-07-21T15:24:50+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/21/proxy-design-pattern</id>
+    <content type="html"><![CDATA[<h2>静态代理</h2>
+
+<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>为其他对象提供一种代理以控制对这个对象的访问.</strong></font></p>
+
+<p><strong>代理模式结构</strong><br>
+<img src="/images/proxydp1.jpg"></p>
+
+<p><strong>代理模式角色</strong><br>
+<img src="/images/proxydp2.jpg"></p>
+
+<p><strong>代理模式代码</strong></p>
+
+<p><strong>抽象主题</strong>
+<code>java
+/**
+ *  抽象主题角色
+ */
+public abstract class Subject
+{
+    public abstract void request();
+}
+</code></p>
+
+<p><strong>真实主题</strong>
+<code>java
+/**
+ *  真实主题角色
+ */
+public class RealSubject extends Subject
+{
+    @Override
+    public void request()
+    {
+        System.out.println("from real subject");
+    }
+}
+</code></p>
+
+<p><strong>代理主题</strong>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">代理主题角色</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ProxySubject</span> <span class="kd">extends</span> <span class="n">Subject</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//代理对象含有RealSubject对象的引用</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">RealSubject</span> <span class="n">realsubject</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  请求前操作 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">preRequest</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;prerequest!&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  请求后操作 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">postRequest</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;postrequest&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * 实现请求方法</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">request</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">preRequest</span><span class="o">();</span><span class="c1">//可插入业务代码</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">realsubject</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">realsubject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">RealSubject</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">realsubject</span><span class="o">.</span><span class="na">request</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">postRequest</span><span class="o">();</span><span class="c1">//可插入业务代码</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>测试</strong>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">test</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">Subject</span> <span class="n">subject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ProxySubject</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">subject</span><span class="o">.</span><span class="na">request</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h2>动态代理</h2>
+
+<p>//TODO</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之状态模式[16]]]></title>
@@ -917,194 +1084,6 @@ public class test2_1
 
 <p><strong>适配器模式适用情况</strong><br>
 <img src="/images/adapterdp4.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之门面模式[12]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/08/facade-design-pattern/"/>
-    <updated>2016-07-08T18:51:26+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/08/facade-design-pattern</id>
-    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
-
-<p><font color=#FF0000><strong>外部与一个子系统的通信必须通过一个统一的门面(Facade)对象进行.</strong></font></p>
-
-<p><img src="/images/facadedp1.jpg"></p>
-
-<p><img src="/images/facadedp2.jpg"></p>
-
-<p><strong>门面模式的角色</strong>
-<img src="/images/facadedp3.jpg"></p>
-
-<p><strong>结构</strong>
-<img src="/images/facadedp4.jpg"></p>
-
-<pre><code class="java">/**
- *  子系统角色 
- */
-public class Alarm
-{
-    public void activate()
-    {
-        System.out.println("Activating the alarm.");
-    }
-
-    public void deactivate()
-    {
-        System.out.println("Deactivating the alarm.");
-    }
-
-    public void ring()
-    {
-        System.out.println("Ringing the alarm.");
-    }
-
-    public void stopRing()
-    {
-        System.out.println("Stop the alarm.");
-    }
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  子系统角色 
- */
-public class Camera
-{
-    public void turnOn()
-    {
-        System.out.println("Turning on the camera.");
-    }
-
-    public void turnOff()
-    {
-        System.out.println("Turning off the camera.");
-    }
-
-    public void rotate(int degrees)
-    {
-        System.out.println("rotate the camera by" + degrees + "degrees.");
-    }
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  子系统角色 
- */
-public class Light
-{
-    public void turnOn()
-    {
-        System.out.println("Turning on the light.");
-    }
-
-    public void turnOff()
-    {
-        System.out.println("Turning off the light.");
-    }
-
-    public void changeBulb()
-    {
-        System.out.println("changing the light-bulb.");
-    }
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  子系统角色 
- */
-public class Sensor
-{
-    public void activate()
-    {
-        System.out.println("Activating the sensor.");
-    }
-
-    public void deactivate()
-    {
-        System.out.println("Deactivating the sensor.");
-    }
-
-    public void trigger()
-    {
-        System.out.println("The sensor has been triggered.");
-    }
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  门面角色 
- */
-public class SecurityFacade
-{
-    private static Camera camera1 , camera2;
-    private static Light light1 , light2 , light3;
-    private static Sensor sensor;
-    private static Alarm alarm;
-
-//  static
-    {
-        camera1 = new Camera();
-        camera2 = new Camera();
-        light1 = new Light();
-        light2 = new Light();
-        light3 = new Light();
-        sensor = new Sensor();
-        alarm = new Alarm();
-    }
-
-    public void activate()
-    {
-        camera1.turnOn();
-        camera2.turnOn();
-
-        light1.turnOn();
-        light2.turnOn();
-        light3.turnOn();
-
-        sensor.activate();
-
-        alarm.activate();
-    }
-
-    public void deactivate()
-    {
-        camera1.turnOff();
-        camera2.turnOff();
-
-        light1.turnOff();
-        light2.turnOff();
-        light3.turnOff();
-
-        sensor.deactivate();
-
-        alarm.deactivate();
-    }
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  客户端 
- */
-public class Client
-{
-    private static SecurityFacade facade;
-    private static SecurityFacade facade2;
-
-    public static void main(String[] args)
-    {
-        facade = new SecurityFacade();
-
-        facade.activate();
-    }
-}
-</code></pre>
-
-<p><strong>适用性</strong>
-<img src="/images/facadedp5.jpg"></p>
-
-<p><strong>门面模式优点</strong>
-<img src="/images/facadedp6.jpg"></p>
 ]]></content>
   </entry>
   

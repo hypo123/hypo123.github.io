@@ -9,8 +9,10 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="给定一个单链表，和非负整数k,将单链表的后k个结点翻转到链表的左边; 例如: 给定 1->2->3->4->5->6->NULL and k = 2,
-返回 5->6->1->2->3->4->NULL. 需注意的一点是k的值可能比链表的长度还要大 例如: 给定 1->2->3->4->5->6 &hellip;">
+  <meta name="description" content="Java语言的"编译期"其实是一段"不确定"的操作过程,因为它可能指以下几个:
+1. 前端编译器，把.java文件转变为.class文件的过程;
+2. 虚拟机的后端运行期编译器(JIT编译器)把字节码转变为机器码的过程;
+3. 使用静态提前编译器(AOT编译器)直接把*. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +71,161 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/17/java-cheat-sheet/">Java-cheat-sheet</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-17T19:14:33+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:14 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Java语言的"编译期"其实是一段"不确定"的操作过程,因为它可能指以下几个:<br>
+1. 前端编译器，把<em>.java文件转变为</em>.class文件的过程;<br>
+2. 虚拟机的后端运行期编译器(JIT编译器)把字节码转变为机器码的过程;<br>
+3. 使用静态提前编译器(AOT编译器)直接把*.java文件编译成本地机器代码的过程;<br></p>
+
+<h2>Java访问权限修饰词:<br></h2>
+
+<h3>类的访问控制</h3>
+
+<p>类访问的含义是：若一个类(类A)访问另一个类(类B)时，其所指类A有以下3中操作:<br>
+1. 在类A中创建类B的对象;<br>
+2. 使用类B中某些方法和成员变量;<br>
+3. 继承类B;<br></p>
+
+<p>类的访问权限有两种，分别是：<br>
+1. 公有级别访问(public)<br>
+2. 默认访问级别 (可看作包访问)<br></p>
+
+<h3>类的成员访问控制<br></h3>
+
+<ol>
+<li>public：被public修饰的方法或者变量,所有其他类，无论该类属于那个包，均能访问该成员 <br></li>
+<li>默认访问权限(包访问权限): 对同一个包中的类，默认类型相当于public,而对于包外的类则相当于private <br></li>
+<li>protected 如果一个类的方法或者变量被protected修饰，对于同一个包的类，这个类的方法或变量是可以被访问的。对于不同包的类，只有继承于该类的类才可以访问到该类的方法或者变量<br></li>
+<li>private：如果一个类的方法或者变量被private修饰，那么这个类的方法或者变量只能在该类本身中被访问，及其不能被该成员所在类之外的任何类中的代码访问.</li>
+</ol>
+
+
+<h2>final关键字<br></h2>
+
+<p>用final修饰变量的基本含义是,改变量一旦被显示初始化之后其值就不能再被修改. 但对基本类型和引用类型要区别理解.<br></p>
+
+<p>对于基本类型,final使其数值恒定不变<br>
+对于引用类型,final使改引用恒定不变，即一旦引用被初始化指向一个对象，就无法再把它改为指向另一个对象;但是,被指向对象本身却是可以修改的.<br></p>
+
+<p><strong>空白final</strong><br>
+待写部分</p>
+
+<p><strong>final参数</strong><br>
+Java允许在参数列表中以声明的方式将参数指明为final,这意味着无法再方法中更改参数引用所指向的对象.</p>
+
+<p><strong>final修饰方法</strong><br>
+把方法锁定,以防止任何继承类修改它的含义.这确保了在继承中使方法行为保持不变,并且不会被覆盖(override).</p>
+
+<p><strong>final修饰类</strong><br>
+final类禁止继承,所以final类中所有方法都隐式指定为final的，因为无法覆盖(override)它们.</p>
+
+<h2>static关键字<br></h2>
+
+<p>static关键字只能修饰成员.</p>
+
+<ol>
+<li><p>static方法</p></li>
+<li><p>static变量</p></li>
+<li><p>static代码块</p></li>
+</ol>
+
+
+<h2>java接口</h2>
+
+<h3>java接口定义</h3>
+
+<p>&lt;访问限制修饰符> [abstract] interface &lt;接口名><br>
+{<br>
+<br>
+}<br></p>
+
+<ol>
+<li>其中访问限制修饰符与类的访问限制修饰符相同,可以是public或不写(即默认包访问权限),<br>
+ 使用public修饰的接口必须必须接口名是在与其同名的文件中(与public 类一样).<br></li>
+<li>[abstract]可选，可写可不写，如果不写，系统在进行编译时也会自动加上，也就是说接口一定是抽象的<br></li>
+</ol>
+
+
+<p><strong>接口不能有构造函数</strong><br></p>
+
+<p><font color=#FF0000>因为接口声明中隐含了abstract，所以不能用final关键字来修饰接口.</font><br></p>
+
+<h3>java接口中的成员变量:<br></h3>
+
+<p><font color=#FF0000>接口也可以包含域(成员变量)，但是这些域隐式地是static和final的</font><br>
+<font color=#FF0000>可以在接口中不必显示地使用public,static,final关键字，及时不使用这些修饰符,
+    编译时也会为其自动加上.</font><br>
+<font color=#FF0000>接口中的变量隐含是"public static final"的</font><br></p>
+
+<h3>java接口中的方法:<br></h3>
+
+<ol>
+<li>所有接口方法隐含都是公有的(public)和抽象的(abstract)，不需要显示声明;<br></li>
+<li>接口方法一定不能是静态的(static)，也一定不能是final的；也不能用public修饰符之外的其他访问限制符进行修饰;
+也就是说，<font color=#FF0000>要给接口中的方法写修饰符,只能写public和abstract</font><br></li>
+</ol>
+
+
+<h3>Java接口常用方法：<br></h3>
+
+<ol>
+<li>单方法接口 <br>
+一个单方法接口中只有一个方法<br></li>
+<li>标识接口 <br>
+标识接口是没有任何方法和属性的接口.标识接口不对实现它的任何类有任何语义上的要求,它仅仅表明实现它的类属于一个特定的类型.<br>
+标识接口在java语言中有一些很著名的应用,比如java.io.Serializable便是标识接口.<br>
+java jdk7中java.io.Serializable接口源代码<br></li>
+</ol>
+
+
+<figure class='code'><figcaption><span>java.io.Serializable.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">;</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Serializable</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>3.常量接口<br>
+所谓常量接口，是指用Java接口来声明一些常量，然后由实现这些接口的类使用这些常量.<br>
+<img src="/images/java2.jpg">
+凡是实现了这个接口的Java类都会自动继承这些常量，并且都可以像使用自己的常量一样使用这些常量<br>
+<font color=#FF0000>不过实际使用中不建议这样使用常量接口</font><br></p>
+
+<h2>抽象类<br></h2>
+
+<p>参考资料:<br>
+1. <a href="http://www.cnblogs.com/dolphin0520/p/3799052.html">http://www.cnblogs.com/dolphin0520/p/3799052.html</a><br></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1690,169 +1847,6 @@ Given target = 3, return true.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode168-excel-sheet-column-title-math/">Leetcode168 Excel Sheet Column Title [Math]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:43:14+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:43 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Given a positive integer, return its corresponding column title as appear in an Excel sheet.</p>
-
-<p>For example:</p>
-
-<pre><code>1 -&gt; A
-2 -&gt; B
-3 -&gt; C
-...
-26 -&gt; Z
-27 -&gt; AA
-28 -&gt; AB 
-</code></pre>
-
-<p>Difficulty: Easy</p>
-
-<p><img src="/images/168.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">Math</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ExcelSheetColumnTitle_T168</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'><span class="c1">//   ---------------------方案一---------------------------</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="nf">convertToTitle</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="n">StringBuffer</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuffer</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="n">n</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="mi">26</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">m</span> <span class="o">%</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="c1">//注意被26时，left不应该为0 ，而应该为26  1-&gt;A , 26-&gt;Z</span>
-</span><span class='line'>          <span class="o">{</span>    
-</span><span class='line'>              <span class="n">left</span> <span class="o">=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">m</span> <span class="o">-=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">((</span><span class="kt">char</span><span class="o">)(</span><span class="n">left</span> <span class="o">+</span> <span class="mi">64</span><span class="o">));</span>
-</span><span class='line'>          <span class="n">m</span> <span class="o">=</span> <span class="n">m</span> <span class="o">/</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">m</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//m为0时，不用添加</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">((</span><span class="kt">char</span><span class="o">)(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">64</span><span class="o">));</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">reverse</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//---------------------方案二---------------------------</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="nf">convertToTitle2</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="n">StringBuilder</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="o">--</span><span class="n">n</span><span class="o">;</span><span class="c1">//1-&gt;A</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="n">result</span><span class="o">.</span><span class="na">insert</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="o">(</span><span class="kt">char</span><span class="o">)(</span><span class="sc">&#39;A&#39;</span> <span class="o">+</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">26</span> <span class="o">));</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="n">n</span> <span class="o">/=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">ExcelSheetColumnTitle_T168</span> <span class="n">t168</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ExcelSheetColumnTitle_T168</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">52</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t168</span><span class="o">.</span><span class="na">convertToTitle2</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/7">&larr; Older</a>
@@ -1870,6 +1864,10 @@ Given target = 3, return true.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/21/proxy-design-pattern/">一天一设计模式之代理模式[17]</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/07/21/state-design-pattern/">一天一设计模式之状态模式[16]</a>
       </li>
     
@@ -1883,10 +1881,6 @@ Given target = 3, return true.</p>
     
       <li class="post">
         <a href="/blog/2016/07/20/adapter-design-pattern/">一天一设计模式之适配器模式[13]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/09/template-design-pattern/">Template Design Pattern</a>
       </li>
     
   </ul>
