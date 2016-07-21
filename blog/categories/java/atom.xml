@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-21T16:04:23+08:00</updated>
+  <updated>2016-07-21T19:45:20+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,155 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Synchronized关键字——内置锁]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/21/synchronized/"/>
+    <updated>2016-07-21T17:02:27+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/21/synchronized</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>synchronzied是Java中的关键字,是一种内置锁，可以修饰一下几种:</strong></font><br>
+<font color=#FF0000><strong>修饰一个对象的非静态方法,作用的范围是整个方法,对该对象加锁.</strong></font><br>
+<font color=#FF0000><strong>修饰一个静态方法,作用的范围是整个方法,对该方法所在类的Class对象加锁. </strong></font><br>
+<font color=#FF0000><strong>修饰一个代码块,synchronzied()中参数可指定,对该参数对象进行加锁.</strong></font><br></p>
+
+<p><font color=#0000C6><strong>1.线程在进入同步代码块之前会自动获得锁,并且在退出同步代码块时自动释放锁,而无论是通过正常的控制路径退出，还是通过代码块中抛出异常退出。获得内置锁的唯一途径就是进入由这个锁保护的同步代码块或方法.</strong></font></p>
+
+<p><font color=#0000C6><strong>2.以关键字synchronzied来修饰的方法就是一种横跨整个方法体的同步代码块，其中该同步代码块的锁就是方法调用所在的对象.</strong></font></p>
+
+<p><font color=#0000C6><strong>3.所有对象都自动含有单一的锁(也称为监视器),当在对象上调用其任意synchronzied方法(非静态方法)的时候,此对象都被加锁.此时该对象上的其他synchronzied方法(非静态方法)只有等到前一个方法调用完毕并释放了锁之后才能被调用. </strong></font></p>
+
+<p><font color=#0000C6><strong>4.用synchronzied关键字声明的静态方法,同时只能被一个执行线程访问,但是其他线程可以访问这个对象的非静态方法(synchronzied修饰的非静态方法只要拿到锁也可以同时访问). </strong></font></p>
+
+<p><font color=#0000C6><strong>5.没有被synchronzied修饰的方法可以被所有的线程同时访问.</strong></font></p>
+
+<p><font color=#0000C6><strong>5 同一对象上的所有用synchronzied修饰的非静态方法共用该对象的锁,即所有非静态方法都要竞争这一个锁,获得了锁才可以访问.</strong></font></p>
+
+<p><font color=#0000C6><strong>6 同一个类上的所有用synchronzied修饰的静态方法共用该类所对应Class对象的锁,即所有静态方法都要竞争这一个锁,获得了锁才可以访问.</strong></font></p>
+
+<p><font color=#0000C6><strong>7.用synchronized修饰代码块时,synchronized的参数可以为this,也可以为别的对象.参数是那个对象,那么访问的时候要先获得该对象的锁才能访问. </strong></font></p>
+
+<p><font color=#0000C6><strong>8.当线程访问一个对象的同步方法时,它还可以调用这个对象的其他同步方法(非静态),也包含正在执行的方法,而不必再次去获得这个方法的访问权。即已经获得对象的锁不用再重新获得. </strong></font></p>
+
+<p><strong>代码块</strong><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">DualSynch</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Object</span> <span class="n">syncObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Object</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//同步方法</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">f</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">5</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;f()&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//暂停当前线程,执行其他线程(包括当前线程),具体执行那个线程有CPU决定</span>
+</span><span class='line'>        <span class="n">Thread</span><span class="o">.</span><span class="na">yield</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">g</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//同步代码块</span>
+</span><span class='line'>    <span class="kd">synchronized</span><span class="o">(</span><span class="n">syncObject</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">5</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;g()&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">Thread</span><span class="o">.</span><span class="na">yield</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SyncObject</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="kd">final</span> <span class="n">DualSynch</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">DualSynch</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="c1">//启动新线程</span>
+</span><span class='line'>    <span class="k">new</span> <span class="nf">Thread</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="c1">//新线程要获得对象DualSynch类的对象ds的锁</span>
+</span><span class='line'>            <span class="n">ds</span><span class="o">.</span><span class="na">f</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}.</span><span class="na">start</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//主线程执行,主线程要获得Object类的对象syncObject的锁</span>
+</span><span class='line'>    <span class="n">ds</span><span class="o">.</span><span class="na">g</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>运行结果</strong><br>
+<img src="/images/synchronized1.jpg"></p>
+
+<p><strong>如果把ssynchronized(syncObject)改为synchronized(this)运行结果</strong><br>
+<img src="/images/synchronized2.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[java集合之Map总结]]></title>
@@ -72,15 +221,6 @@
 <p>另有总结<br></p>
 
 <h1>第三章:线程<br></h1>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java IO整体框架]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/04/22/java-io/"/>
-    <updated>2016-04-22T19:07:39+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/04/22/java-io</id>
-    <content type="html"><![CDATA[<p><img src="/images/IO1.jpg"></p>
 ]]></content>
   </entry>
   
