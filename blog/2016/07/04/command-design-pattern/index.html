@@ -88,9 +88,9 @@
   </header>
 
 
-<div class="entry-content"><p>[行为模式]</p>
+<div class="entry-content"><p><font color=#FF0000><strong>[行为模式]</strong></font></p>
 
-<p>意图:命令模式将一个请求封装为一个对象,从而使你可用不同的请求对客户进行参数化;对请求排队或记录请求日志,以及支持可撤销的操作.</p>
+<p><font color=#FF0000><strong>意图:命令模式将一个请求封装为一个对象,从而使你可用不同的请求对客户进行参数化;对请求排队或记录请求日志,以及支持可撤销的操作.</strong></font></p>
 
 <p>命令模式是对命令的封装.命令模式把发出命令的责任和执行命令的责任分隔开,委派给不同的对象.<br>
 每一个命令都是一个操作:请求的一方发出请求要求执行一个操作;接受的一方收到请求,并执行操作.<br>
@@ -104,7 +104,13 @@
 4. 可以容易地实现对请求的Undo和Redo.
 5. 在需要的情况下，可以较容易地将命令记入日志.</p>
 
-<p><img src="/images/commanddp1.jpg"></p>
+<p><strong>命令模式结构</strong><br>
+<img src="/images/commanddp0.jpg"></p>
+
+<p><strong>命令模式角色</strong><br>
+<img src="/images/commanddp1.jpg"></p>
+
+<p><strong>命令模式代码</strong></p>
 
 <figure class='code'><figcaption><span>Command.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -283,13 +289,13 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>在什么情况下应当使用命令模式<br>
+<p><strong>命令模式适用情况</strong><br>
 <img src="/images/commanddp2.jpg"></p>
 
-<p>命令模式的优缺点<br>
+<p><strong>命令模式优缺点</strong><br>
 <img src="/images/commanddp3.jpg"></p>
 
-<p>Java语言内应用实例<br>
+<p><strong>Java语言内应用实例</strong><br>
 <img src="/images/commanddp4.jpg"></p>
 </div>
 
@@ -345,6 +351,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/21/state-design-pattern/">一天一设计模式之状态模式[16]</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/07/21/observer-design-pattern/">一天一设计模式之观察者模式[15]</a>
       </li>
     
@@ -358,10 +368,6 @@
     
       <li class="post">
         <a href="/blog/2016/07/09/template-design-pattern/">Template Design Pattern</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/08/facade-design-pattern/">一天一设计模式之门面模式[12]</a>
       </li>
     
   </ul>

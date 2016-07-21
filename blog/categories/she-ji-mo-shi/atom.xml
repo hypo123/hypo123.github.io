@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-21T13:45:44+08:00</updated>
+  <updated>2016-07-21T15:01:59+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,216 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之状态模式[16]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/21/state-design-pattern/"/>
+    <updated>2016-07-21T14:31:13+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/21/state-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[行为模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>允许一个对象在其内部状态改变时改变它的行为,看起来似乎修改了它的类.</strong></font></p>
+
+<p><font color=#FF0000><strong>别名:状态对象(Objects for States)</strong></font></p>
+
+<p><strong>状态模式结构</strong><br>
+<img src="/images/statedp1.jpg"></p>
+
+<p><strong>状态模式角色</strong><br>
+<img src="/images/statedp2.jpg"></p>
+
+<p><strong>状态模式代码</strong></p>
+
+<p><strong>抽象状态</strong><br>
+<code>java
+/**
+ *  抽象状态角色
+ */
+public interface State
+{
+    //定义与Context一个特定状态相关的行为
+    public void operation();
+}
+</code></p>
+
+<p><strong>具体状态</strong><br>
+<code>java
+/**
+ *  具体状态角色
+ */
+public class ConcreteState1 implements State
+{
+    @Override
+    public void operation()
+    {
+        System.out.println("state1 operation!");
+    }
+}
+</code></p>
+
+<p><strong>具体状态</strong><br>
+<code>java
+/**
+ *  具体状态角色
+ */
+public class ConcreteState2 implements State
+{
+    @Override
+    public void operation()
+    {
+        System.out.println("state2 operation!");
+    }
+}
+</code></p>
+
+<p><strong>具体状态</strong><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">具体状态角色</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteState3</span> <span class="kd">implements</span> <span class="n">State</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(&amp;</span><span class="n">ldquo</span><span class="o">;</span><span class="n">state3</span> <span class="n">operation</span><span class="o">!&amp;</span><span class="n">rdquo</span><span class="o">;);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">**</span><span class="n">环境</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">环境角色</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Context</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//环境类持有一个具体状态类的实例</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">State</span> <span class="n">state</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//环境类与状态类之间是聚合关系</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setState</span><span class="o">(</span><span class="n">State</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//当持有的具体状态类不同时,该操作产生不同的行为</span>
+</span><span class='line'>    <span class="n">state</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>客户端</strong><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">Context</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Context</span><span class="o">();</span><span class="c1">//环境类&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">ConcreteState1</span> <span class="n">state1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteState1</span><span class="o">();</span><span class="c1">//具体状态1</span>
+</span><span class='line'>    <span class="n">ConcreteState2</span> <span class="n">state2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteState2</span><span class="o">();</span><span class="c1">//具体状态2</span>
+</span><span class='line'>    <span class="n">ConcreteState3</span> <span class="n">state3</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteState3</span><span class="o">();</span><span class="c1">//具体状态3</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">state1</span><span class="o">);</span><span class="c1">//设定环境状态</span>
+</span><span class='line'>    <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------------------&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">state2</span><span class="o">);</span><span class="c1">//设定环境状态</span>
+</span><span class='line'>    <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------------------&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">context</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">state3</span><span class="o">);</span><span class="c1">//设定环境状态</span>
+</span><span class='line'>    <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------------------&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>运行结果</strong><br>
+<img src="/images/statedp3.jpg"></p>
+
+<p><strong>状态模式适用情况</strong><br>
+<img src="/images/statedp4.jpg"></p>
+
+<p><strong>状态模式效果</strong><br>
+<img src="/images/statedp5.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之观察者模式[15]]]></title>
@@ -895,99 +1105,6 @@ public class Client
 
 <p><strong>门面模式优点</strong>
 <img src="/images/facadedp6.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之桥接模式[11]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/07/bridge-design-pattern/"/>
-    <updated>2016-07-07T20:50:45+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/07/bridge-design-pattern</id>
-    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
-
-<p><font color=#FF0000><strong>意图:将抽象部分与它的实现部分分离,使它们都可以独立地变化.</strong></font></p>
-
-<p><img src="/images/bridgedp1.jpg"></p>
-
-<p><img src="/images/bridgedp2.jpg"></p>
-
-<p><img src="/images/bridgedp3.jpg"></p>
-
-<pre><code class="java Abstraction.java">/**
- *  抽象化角色 
- */
-public abstract class Abstraction
-{
-    public void operation(Implementor imp)
-    {
-        imp.operationImp();
-    }
-}
-</code></pre>
-
-<pre><code class="java RefinedAbstraction.java">/**
- *  修正抽象化角色 
- */
-public class RefinedAbstraction extends Abstraction
-{
-    @Override
-    public void operation(Implementor imp)
-    {
-        super.operation(imp);
-    }
-}
-</code></pre>
-
-<pre><code class="java Implementor.java">/**
- *  实现化角色
- */
-public abstract class Implementor
-{
-    public abstract void operationImp();
-}
-</code></pre>
-
-<pre><code class="java ConcreteImplementorA.java">/**
- *  具体实现化角色
- */
-public class ConcreteImplementorA extends Implementor
-{
-    @Override
-    public void operationImp()
-    {
-        System.out.println("ConcreteImplementorA");
-    }
-}
-</code></pre>
-
-<pre><code class="java ConcreteImplementorB.java">/**
- *  具体实现化角色
- */
-public class ConcreteImplementorB extends Implementor
-{
-    @Override
-    public void operationImp()
-    {
-        System.out.println("ConcreteImplementorB");
-    }
-}
-</code></pre>
-
-<pre><code class="java Client.java">public class Client
-{
-    public static void main(String[] args)
-    {
-        Abstraction abstraction = new RefinedAbstraction();
-
-        abstraction.operation(new ConcreteImplementorA());
-        abstraction.operation(new ConcreteImplementorB());
-    }
-}
-</code></pre>
-
-<p><img src="/images/bridgedp4.jpg"></p>
-
-<p><img src="/images/bridgedp5.jpg"></p>
 ]]></content>
   </entry>
   
