@@ -132,7 +132,8 @@ transient int modCount;//map结构被改变的次数
 
 <h2>HashMap中的数据结构</h2>
 
-<p><img src="/images/hashmap2.jpg"></p>
+<p><font color=#FF0000><strong>HashMap底层的数组加链表结构</strong></font><br>
+<img src="/images/hashmap2.jpg"></p>
 
 <p><font color=#FF0000><strong>HashMap其中一个构造函数</strong></font></p>
 
@@ -523,9 +524,11 @@ transient int modCount;//map结构被改变的次数
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p><font color=#FF0000><strong>put函数原理:当我们想一个HashMap中添加一对key-value时，系统首先会计算key的hash值，然后根据hash值确认在table中存储的位置。若该位置没有元素，则直接插入。否则迭代该处元素链表并依此比较其key的hash值。如果两个hash值相等且key值相等(e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))),则用新的Entry的value覆盖原来节点的value。如果两个hash值相等但key值不等 ，则将该节点插入该链表的链头 </strong></font></p>
+<p><font color=#FF0000><strong>put函数原理:当我们想一个HashMap中添加一对key-value时，系统首先会计算key的hash值，然后根据hash值确认在table中存储的位置。
+    若该位置没有元素，则直接插入。否则迭代该处元素链表并依此比较其key的hash值。
+    如果两个hash值相等且key值相等(e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))),则用新的Entry的value覆盖原来节点的value。如果两个hash值相等但key值不等 ，则将该节点插入该链表的链头 </strong></font></p>
 
-<p><font color=#0000CD><strong>addEntry函数源码</strong></font><br></p>
+<p><font color=#0000CD><strong>添加Entry结点——addEntry函数源码</strong></font><br></p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -539,20 +542,96 @@ transient int modCount;//map结构被改变的次数
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kt">void</span> <span class="nf">addEntry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bucketIndex</span><span class="o">)</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//参数依次为hash值、键key、值value、table数组下标bucketIndex</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">addEntry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bucketIndex</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//将当前结点设置为新加入结点的下一个结点</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//Entry构造函数的参数依次为hash值，键key，值value，下一个结点e</span>
+</span><span class='line'>    <span class="c1">//将新结点存储在table数组下标为bucketIndex处.</span>
+</span><span class='line'>    <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&lt;&gt;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//加入新键值对后大小超过了阈值，则要对hashmap进行扩容</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">size</span><span class="o">++</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">];</span>
+</span><span class='line'>        <span class="n">resize</span><span class="o">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span><span class="c1">//扩大一倍</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>addEntry中，对当前要添加的结点都是作为链表的头结点存储在table数组的下标bucketIndex处，对于该处已经有的结点或已经形成的结点链表则要连接在新加入的结点后面.</strong></font><br></p>
+
+<p><font color=#0000CD><strong>HashMap添加键为null的处理函数putForNullKey</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kd">private</span> <span class="n">V</span> <span class="nf">putForNullKey</span><span class="o">(</span><span class="n">V</span> <span class="n">value</span><span class="o">)</span> <span class="c1">//专门处理键为null的情况</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//如果key是null，会被存储到table[0]，因为null的hash值总是0</span>
 </span><span class='line'>
-</span><span class='line'>        <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&lt;&gt;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="c1">//加入新键值对后大小超过了阈值，则要对hashmap进行扩容</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">size</span><span class="o">++</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="o">)</span>
+</span><span class='line'>        <span class="c1">//只遍历table[0]为链表头的链表</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
 </span><span class='line'>        <span class="o">{</span>
-</span><span class='line'>            <span class="n">resize</span><span class="o">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span><span class="c1">//扩大一倍</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">key</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>             <span class="o">{</span>
+</span><span class='line'>                <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span><span class="c1">//用新的值替换旧的值</span>
+</span><span class='line'>                <span class="n">e</span><span class="o">.</span><span class="na">recordAccess</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
 </span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//添加新结点</span>
+</span><span class='line'>        <span class="c1">//hash值为0,键为null,值为value，table数组下标为0</span>
+</span><span class='line'>        <span class="n">addEntry</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
 </span><span class='line'>    <span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+<p><font color=#0000CD><strong>对于键key为null的情况由putForNullKey函数专门处理</strong></font><br>
+<font color=#0000CD><strong>对于键为null的结点只可能存储在table[0]处或table[0]为链表头的链表上。如果table[0]的值为null，说明table[0]处还没有
+    存入结点。可以直接将该null键新建的结点存储在table[0]即可。
+    如果table[0]处的值不为null，说明该处已经存储有结点或结点形成的链表。table[0]处不止存储有键为null的结点，还可能有别的键不为null的结点.
+    如果先存入的是键为null的结点后存入的是键不为null的结点，那么键为null的结点可能在链表的中间，所有此时要遍历table[0]的链表。如果此链表中
+    有键为null的结点，更新该结点的处null键所对应的值即可。如果遍历完链表没有找到键为null的结点，那么就要将键为null的新结点作为链表头存储在
+    table[0]处了，原来的链表结点都加在新结点后面。
+    </strong></font><br></p>
+
+<p><font color=#0000CD><strong>HashMap中可以存入键为null的键值对，但只能存入一个这样的键值对，而且位置是在table[0]处。 </strong></font><br></p>
 
 <h2>读取元素——get函数</h2>
 
