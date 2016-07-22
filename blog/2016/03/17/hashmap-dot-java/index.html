@@ -166,12 +166,21 @@ transient int modCount;//map结构被改变的次数
 <span class='line-number'>30</span>
 <span class='line-number'>31</span>
 <span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">HashMap</span><span class="o">(</span><span class="kt">int</span> <span class="n">initialCapacity</span><span class="o">,</span> <span class="kt">float</span> <span class="n">loadFactor</span><span class="o">)</span>
 </span><span class='line'><span class="o">{</span>
 </span><span class='line'>    <span class="c1">//构造一个带指定初始容量和加载因子的空HashMap </span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">initialCapacity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//确保参数合法</span>
+</span><span class='line'>    <span class="c1">//确保参数合法</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">initialCapacity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span>
 </span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;Illegal initial capacity: &quot;</span> <span class="o">+</span>
-</span><span class='line'>                                           <span class="n">initialCapacity</span><span class="o">);</span>
+</span><span class='line'>                                         <span class="n">initialCapacity</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果参数初始容量大于最大容量(1&lt;&lt;30)，则初始容量被置为最大容量</span>
 </span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">initialCapacity</span> <span class="o">&gt;</span> <span class="n">MAXIMUM_CAPACITY</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
 </span><span class='line'>        <span class="n">initialCapacity</span> <span class="o">=</span> <span class="n">MAXIMUM_CAPACITY</span><span class="o">;</span>
@@ -179,12 +188,14 @@ transient int modCount;//map结构被改变的次数
 </span><span class='line'>
 </span><span class='line'>    <span class="c1">//最大容量（必须是2的幂且小于2的30次方，传入容量过大将被这个值替换）</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">loadFactor</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">Float</span><span class="o">.</span><span class="na">isNaN</span><span class="o">(</span><span class="n">loadFactor</span><span class="o">))</span><span class="c1">//确保参数合法</span>
+</span><span class='line'>    <span class="c1">//确保参数合法</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">loadFactor</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">Float</span><span class="o">.</span><span class="na">isNaN</span><span class="o">(</span><span class="n">loadFactor</span><span class="o">))</span>
 </span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;Illegal load factor: &quot;</span> <span class="o">+</span>
 </span><span class='line'>                                           <span class="n">loadFactor</span><span class="o">);</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="kt">int</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
 </span><span class='line'>
+</span><span class='line'>    <span class="c1">//循环控制capacity刚好是大于initialCapacity的某个2的n次方数.</span>
 </span><span class='line'>    <span class="k">while</span> <span class="o">(</span><span class="n">capacity</span> <span class="o">&lt;</span> <span class="n">initialCapacity</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
 </span><span class='line'>        <span class="n">capacity</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="o">;</span><span class="c1">//容量一定要是2的n次方,其值等于或稍大于传入参数.</span>
@@ -194,7 +205,8 @@ transient int modCount;//map结构被改变的次数
 </span><span class='line'>
 </span><span class='line'>    <span class="n">threshold</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)(</span><span class="n">capacity</span> <span class="o">*</span> <span class="n">loadFactor</span><span class="o">);</span><span class="c1">//初始化阈值 = 容量*加载因子</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="n">table</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">[</span><span class="n">capacity</span><span class="o">];</span><span class="c1">//开一个大小为capacity的内部类Entry的数组,</span>
+</span><span class='line'>    <span class="c1">//开一个大小为capacity的内部类Entry的数组,</span>
+</span><span class='line'>    <span class="n">table</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">[</span><span class="n">capacity</span><span class="o">];</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="n">init</span><span class="o">();</span>
 </span><span class='line'><span class="o">}</span>
@@ -283,7 +295,9 @@ transient int modCount;//map结构被改变的次数
 <span class='line-number'>76</span>
 <span class='line-number'>77</span>
 <span class='line-number'>78</span>
+<span class='line-number'>79</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//hashmap类的内部类Entry,底层数组中存储的就是Entry对象的引用</span>
+</span><span class='line'>
 </span><span class='line'><span class="kd">static</span> <span class="kd">class</span> <span class="nc">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span>
 </span><span class='line'><span class="o">{</span>
 </span><span class='line'>    <span class="kd">final</span> <span class="n">K</span> <span class="n">key</span><span class="o">;</span><span class="c1">//键</span>
@@ -470,6 +484,7 @@ transient int modCount;//map结构被改变的次数
 <span class='line-number'>46</span>
 <span class='line-number'>47</span>
 <span class='line-number'>48</span>
+<span class='line-number'>49</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
 </span><span class='line'><span class="cm"> * 参数为键和值</span>
 </span><span class='line'><span class="cm"> */</span>
@@ -506,6 +521,7 @@ transient int modCount;//map结构被改变的次数
 </span><span class='line'>            <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span><span class="c1">//旧的键值</span>
 </span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span><span class="c1">//用新的值替换旧的值</span>
 </span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">recordAccess</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>
 </span><span class='line'>            <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
 </span><span class='line'>        <span class="o">}</span>
 </span><span class='line'>    <span class="o">}</span>
@@ -522,8 +538,9 @@ transient int modCount;//map结构被改变的次数
 
 
 <p><font color=#FF0000><strong>put函数原理:当我们想一个HashMap中添加一对key-value时，系统首先会计算key的hash值，然后根据hash值确认在table中存储的位置。
-    若该位置没有元素，则直接插入。否则迭代该处元素链表并依此比较其key的hash值。
-    如果两个hash值相等且key值相等(e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))),则用新的Entry的value覆盖原来节点的value。如果两个hash值相等但key值不等 ，则将该节点插入该链表的链头 </strong></font></p>
+    若该位置没有元素，则直接插入新结点。否则迭代该处元素链表并依此比较其key的hash值。 </strong></font><br>
+<font color=#FF0000><strong>如果两个hash值相等且key值相等(e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))),则用新的Entry的value覆盖原来节点的value。</strong></font><br>
+<font color=#FF0000><strong>如果两个hash值相等但key值不等 ，则将该节点插入该链表的链头 </strong></font><br></p>
 
 <p><font color=#0000CD><strong>添加Entry结点——addEntry函数源码</strong></font><br></p>
 
@@ -544,6 +561,7 @@ transient int modCount;//map结构被改变的次数
 <span class='line-number'>15</span>
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
+<span class='line-number'>18</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//参数依次为hash值、键key、值value、table数组下标bucketIndex</span>
 </span><span class='line'>
 </span><span class='line'><span class="kt">void</span> <span class="nf">addEntry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bucketIndex</span><span class="o">)</span>
@@ -558,7 +576,8 @@ transient int modCount;//map结构被改变的次数
 </span><span class='line'>    <span class="c1">//加入新键值对后大小超过了阈值，则要对hashmap进行扩容</span>
 </span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">size</span><span class="o">++</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="n">resize</span><span class="o">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span><span class="c1">//扩大一倍</span>
+</span><span class='line'>        <span class="c1">//调用resize函数将HashMap扩容1倍</span>
+</span><span class='line'>        <span class="n">resize</span><span class="o">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
 </span><span class='line'>    <span class="o">}</span>
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
@@ -621,12 +640,10 @@ transient int modCount;//map结构被改变的次数
 
 <p><font color=#0000CD><strong>对于键key为null的情况由putForNullKey函数专门处理</strong></font><br>
 <font color=#0000CD><strong>对于键为null的结点只可能存储在table[0]处或table[0]为链表头的链表上。如果table[0]的值为null，说明table[0]处还没有
-    存入结点。可以直接将该null键新建的结点存储在table[0]即可。
-    如果table[0]处的值不为null，说明该处已经存储有结点或结点形成的链表。table[0]处不止存储有键为null的结点，还可能有别的键不为null的结点.
-    如果先存入的是键为null的结点后存入的是键不为null的结点，那么键为null的结点可能在链表的中间，所有此时要遍历table[0]的链表。如果此链表中
-    有键为null的结点，更新该结点的处null键所对应的值即可。如果遍历完链表没有找到键为null的结点，那么就要将键为null的新结点作为链表头存储在
-    table[0]处了，原来的链表结点都加在新结点后面。
-    </strong></font><br></p>
+    存入结点。可以直接将该null键新建的结点存储在table[0]即可。</strong></font><br>
+<font color=#0000CD><strong>如果table[0]处的值不为null，说明该处已经存储有结点或结点形成的链表。table[0]处不止存储有键为null的结点，还可能有别的键不为null的结点.</strong></font><br>
+<font color=#0000CD><strong>如果先存入的是键为null的结点后存入的是键不为null的结点，那么键为null的结点可能在链表的中间，所有此时要遍历table[0]的链表。如果此链表中 有键为null的结点，更新该结点的处null键所对应的值即可。如果遍历完链表没有找到键为null的结点，那么就要将键为null的新结点作为链表头存储在
+    table[0]处了，原来的链表结点都加在新结点后面。</strong></font><br></p>
 
 <p><font color=#0000CD><strong>HashMap中可以存入键为null的键值对，但只能存入一个这样的键值对，而且位置是在table[0]处。 </strong></font><br></p>
 
@@ -657,7 +674,7 @@ transient int modCount;//map结构被改变的次数
 </span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">key</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
 </span><span class='line'>            <span class="k">return</span> <span class="nf">getForNullKey</span><span class="o">();</span>
 </span><span class='line'>
-</span><span class='line'>        <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">hash</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span><span class="c1">//计算键的哈希码</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">hash</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span><span class="c1">//计算键的hash值</span>
 </span><span class='line'>
 </span><span class='line'>        <span class="c1">// indexFor()用来计算要获取的Entry对象在table数组中的精确的位置(table数组下标)</span>
 </span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">indexFor</span><span class="o">(</span><span class="n">hash</span><span class="o">,</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">)];</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span>  <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span> <span class="c1">//现在计算后得到位置的桶上找，如果没找到再在以该桶为链表头的链表上找</span>
@@ -670,6 +687,129 @@ transient int modCount;//map结构被改变的次数
 </span><span class='line'>    <span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+<h2>删除元素——remove函数</h2>
+
+<p><font color=#0000CD><strong>给定键key,可以删除HashMap对象中的键值对</strong></font><br></p>
+
+<pre><code>public V remove(Object key) 
+{
+    Entry&lt;K,V&gt; e = removeEntryForKey(key);
+    return (e == null ? null : e.value);
+}
+
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) 
+{
+    int hash = (key == null) ? 0 : hash(key.hashCode());
+
+    int i = indexFor(hash, table.length);//计算其数组下标
+
+    Entry&lt;K,V&gt; prev = table[i];
+
+    Entry&lt;K,V&gt; e = prev;
+
+    while (e != null) 
+    {
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+
+        if (e.hash == hash &amp;&amp; ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) 
+        {
+            modCount++;
+
+            size--;
+
+            if (prev == e)
+            {
+                table[i] = next;
+            }
+            else
+            {
+                prev.next = next;
+            }
+
+            e.recordRemoval(this);
+
+            return e;
+        }
+
+        prev = e;
+        e = next;
+    }
+
+    return e;
+}
+</code></pre>
+
+<h2>HashMap扩容</h2>
+
+<p><font color=#0000CD><strong>使用put函数向HashMap的对象中添加结点时，如果存储的键-值对个数大于等于阈值threshold时，会调用resize函数对当前HashMap对象进行扩容。一次扩容是将table数组的大小增长1倍.</strong></font><br></p>
+
+<pre><code>void resize(int newCapacity)//hashmap扩容,重新hash
+{
+    Entry[] oldTable = table;
+
+    int oldCapacity = oldTable.length;
+
+    //如果旧的容量已经是MAXIMUM_CAPACITY,则传入新的大小之后也不会重新扩容
+    //已经到可以支持的最大容量
+    //只是将旧的阈值改为Integer.MAX_VALUE
+
+    if (oldCapacity == MAXIMUM_CAPACITY)
+     {
+        //增大阈值，阈值太大可能造成冲突增多
+        threshold = Integer.MAX_VALUE;
+
+        return;
+    }
+
+    //新的table数组
+    Entry[] newTable = new Entry[newCapacity];
+
+    //将旧table数组的结点全部转移到新的table数组中
+    transfer(newTable);
+
+    table = newTable;
+
+    threshold = (int)(newCapacity * loadFactor);
+}
+</code></pre>
+
+<p><font color=#0000CD><strong>transfer函数将旧tables数组中的所有结点转移到新的table数组中.</strong></font><br></p>
+
+<pre><code>//将旧数组中的entry转移到新数组中
+void transfer(Entry[] newTable)
+{
+    Entry[] src = table;//旧table数组
+
+    int newCapacity = newTable.length;
+
+    for (int j = 0; j &lt; src.length; j++) 
+    {
+        Entry&lt;K,V&gt; e = src[j];
+
+        if (e != null) 
+        {
+            src[j] = null;
+
+            //处理结点链表
+            do 
+            {
+                Entry&lt;K,V&gt; next = e.next;
+
+                //重新计算数组下标
+                int i = indexFor(e.hash, newCapacity);
+
+                e.next = newTable[i];
+
+                newTable[i] = e;
+
+                e = next;
+            } while (e != null);
+        }
+    }
+}
+</code></pre>
 </div>
 
 
