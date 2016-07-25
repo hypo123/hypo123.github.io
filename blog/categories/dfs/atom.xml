@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Dfs | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/dfs/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T16:40:24+08:00</updated>
+  <updated>2016-07-25T17:04:22+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -25,7 +25,7 @@
 
 <p>Difficulty: Medium</p>
 
-<p>{%img /images/93.jpg %}</p>
+<p><img src="/images/93.jpg"></p>
 
 <pre><code class="java">
 package com.hypo.DFS;
@@ -115,7 +115,7 @@ public class RestoreIPAddresses_T93
 </code></pre>
 
 <p>运行结果:
-{%img /images/93_2.jpg %}</p>
+<img src="/images/93_2.jpg"></p>
 ]]></content>
   </entry>
   

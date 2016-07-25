@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T16:40:24+08:00</updated>
+  <updated>2016-07-25T17:04:22+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -14,12 +14,542 @@
 
   
   <entry>
-    <title type="html"><![CDATA[HashTable源码分析]]></title>
+    <title type="html"><![CDATA[ConcurrentHashMap源码分析]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/25/concurrenthashmap/"/>
+    <updated>2016-07-25T17:01:58+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/25/concurrenthashmap</id>
+    <content type="html"><![CDATA[<h2>定义</h2>
+
+<pre><code class="java">public class ConcurrentHashMap&lt;K, V&gt; extends AbstractMap&lt;K, V&gt;
+        implements ConcurrentMap&lt;K, V&gt;, Serializable
+</code></pre>
+
+<p><font color=#FF0000><strong>ConcurrentHashMap继承了AbstractMap类，实现了ConcurrentMap接口.</strong></font><br></p>
+
+<h2>ConcurrentHashMap类中变量</h2>
+
+<pre><code class="java">    private static final long serialVersionUID = 7249069246763182397L;
+
+    /* ---------------- 常量 -------------- */
+
+    static final int DEFAULT_INITIAL_CAPACITY = 16;//默认的初始容量为16
+
+    static final float DEFAULT_LOAD_FACTOR = 0.75f;//默认装载因子
+
+    static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+
+    static final int MAXIMUM_CAPACITY = 1 &lt;&lt; 30;//最大容量
+
+    static final int MIN_SEGMENT_TABLE_CAPACITY = 2;
+
+    static final int MAX_SEGMENTS = 1 &lt;&lt; 16; // 
+
+    static final int RETRIES_BEFORE_LOCK = 2;
+
+    /* ---------------- 成员变量 -------------- */
+
+    final int segmentMask;//段掩码
+
+    final int segmentShift;//段偏移量
+
+    final Segment&lt;K,V&gt;[] segments;//段的数组
+
+    transient Set&lt;K&gt; keySet;
+    transient Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;
+    transient Collection&lt;V&gt; values;
+</code></pre>
+
+<h2>ConcurrentHashMap底层结构</h2>
+
+<p><font color=#0000CD><strong>Hashtable中锁定的单位是整个table数组.只要有一个线程已经锁定了Hashtable，别的线程只能等该线程操作完毕释放锁后，才能对Hashtable进行操作.</strong></font><br>
+<img src="/images/concurrentHashMap1.jpg"></p>
+
+<p><font color=#0000CD><strong>ConcurrentHashMap并不是讲每个方法都在同一个锁上进行同步并使得每次只能有一个线程访问容器，
+    而是使用了一种粒度更细的加锁机制来实现更大程度的共享.</strong></font><br></p>
+
+<p><font color=#0000CD><strong>ConcurrentHashMap锁定的单位是段.</strong></font><br>
+<img src="/images/concurrentHashMap2.jpg"></p>
+
+<h2>ConcurrentHashMap类的构造函数</h2>
+
+<pre><code class="java">    @SuppressWarnings("unchecked")
+    public ConcurrentHashMap(int initialCapacity,
+                             float loadFactor, int concurrencyLevel) 
+    {
+        //判断参数是否合法
+        if (!(loadFactor &gt; 0) || initialCapacity &lt; 0 || concurrencyLevel &lt;= 0)
+            throw new IllegalArgumentException();
+
+        if (concurrencyLevel &gt; MAX_SEGMENTS)
+            concurrencyLevel = MAX_SEGMENTS;
+
+        // Find power-of-two sizes best matching arguments
+        int sshift = 0;
+        int ssize = 1;
+
+        while (ssize &lt; concurrencyLevel) 
+        {
+            ++sshift;
+            ssize &lt;&lt;= 1;
+        }
+
+        this.segmentShift = 32 - sshift;
+
+        this.segmentMask = ssize - 1;
+
+        if (initialCapacity &gt; MAXIMUM_CAPACITY)
+        {
+            initialCapacity = MAXIMUM_CAPACITY;
+        }
+
+        int c = initialCapacity / ssize;
+
+        if (c * ssize &lt; initialCapacity)
+        {
+            ++c;
+        }
+
+        int cap = MIN_SEGMENT_TABLE_CAPACITY;
+
+        while (cap &lt; c)
+        {
+            cap &lt;&lt;= 1;
+        }
+
+        Segment&lt;K,V&gt; s0 =
+            new Segment&lt;K,V&gt;(loadFactor, (int)(cap * loadFactor),
+                             (HashEntry&lt;K,V&gt;[])new HashEntry[cap]);
+
+        Segment&lt;K,V&gt;[] ss = (Segment&lt;K,V&gt;[])new Segment[ssize];
+
+        UNSAFE.putOrderedObject(ss, SBASE, s0); // ordered write of segments[0]
+
+        this.segments = ss;
+    }
+</code></pre>
+
+<h2>ConcurrentHashMap的内部类-结点</h2>
+
+<p><font color=#0000CD><strong>链表上的结点都是由HashEntry对象组成.</strong></font><br></p>
+
+<pre><code class="java">static final class HashEntry&lt;K,V&gt; 
+{
+        final int hash;//hash值
+        final K key; //键
+        volatile V value; //值
+        volatile HashEntry&lt;K,V&gt; next; //下一个结点
+
+        HashEntry(int hash, K key, V value, HashEntry&lt;K,V&gt; next) 
+        {
+            this.hash = hash;
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+
+        final void setNext(HashEntry&lt;K,V&gt; n) 
+        {
+            UNSAFE.putOrderedObject(this, nextOffset, n);
+        }
+
+        // Unsafe mechanics
+        static final sun.misc.Unsafe UNSAFE;
+        static final long nextOffset;
+        static 
+        {
+            try 
+            {
+                UNSAFE = sun.misc.Unsafe.getUnsafe();
+                Class k = HashEntry.class;
+                nextOffset = UNSAFE.objectFieldOffset
+                    (k.getDeclaredField("next"));
+            } 
+            catch (Exception e) 
+            {
+                throw new Error(e);
+            }
+        }
+}
+</code></pre>
+
+<h2>计算添加元素的位置</h2>
+
+<p><font color=#0000CD><strong> </strong></font><br>
+<code>java
+    private static int hash(int h)
+    {
+        h += (h &lt;&lt;  15) ^ 0xffffcd7d;
+        h ^= (h &gt;&gt;&gt; 10);
+        h += (h &lt;&lt;   3);
+        h ^= (h &gt;&gt;&gt;  6);
+        h += (h &lt;&lt;   2) + (h &lt;&lt; 14);
+        return h ^ (h &gt;&gt;&gt; 16);
+    }
+</code></p>
+
+<pre><code class="java">    @SuppressWarnings("unchecked")
+    private Segment&lt;K,V&gt; segmentForHash(int h) 
+    {
+        long u = (((h &gt;&gt;&gt; segmentShift) &amp; segmentMask) &lt;&lt; SSHIFT) + SBASE;
+        return (Segment&lt;K,V&gt;) UNSAFE.getObjectVolatile(segments, u);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    static final &lt;K,V&gt; HashEntry&lt;K,V&gt; entryForHash(Segment&lt;K,V&gt; seg, int h) 
+    {
+        HashEntry&lt;K,V&gt;[] tab;
+        return (seg == null || (tab = seg.table) == null) ? null :
+            (HashEntry&lt;K,V&gt;) UNSAFE.getObjectVolatile
+            (tab, ((long)(((tab.length - 1) &amp; h)) &lt;&lt; TSHIFT) + TBASE);
+    }
+</code></pre>
+
+<h2>内部类Segment</h2>
+
+<p><font color=#0000CD><strong>一个ConcurrentHashMap由多个段(Segment)组成,每一个段都包含一个HashEntry结点数组的Hashtable.</strong></font><br></p>
+
+<pre><code class="java">
+    static final class Segment&lt;K,V&gt; extends ReentrantLock implements Serializable 
+    {
+
+        private static final long serialVersionUID = 2249069246763182397L;
+
+
+        static final int MAX_SCAN_RETRIES =
+            Runtime.getRuntime().availableProcessors() &gt; 1 ? 64 : 1;
+
+        transient volatile HashEntry&lt;K,V&gt;[] table;
+
+        transient int count;
+
+        transient int modCount;
+
+        transient int threshold;
+
+        final float loadFactor;
+
+        Segment(float lf, int threshold, HashEntry&lt;K,V&gt;[] tab) 
+        {
+            this.loadFactor = lf;
+            this.threshold = threshold;
+            this.table = tab;
+        }
+
+        private HashEntry&lt;K,V&gt; scanAndLockForPut(K key, int hash, V value) 
+        {
+            HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
+            HashEntry&lt;K,V&gt; e = first;
+            HashEntry&lt;K,V&gt; node = null;
+            int retries = -1; // negative while locating node
+            while (!tryLock()) {
+                HashEntry&lt;K,V&gt; f; // to recheck first below
+                if (retries &lt; 0) {
+                    if (e == null) {
+                        if (node == null) // speculatively create node
+                            node = new HashEntry&lt;K,V&gt;(hash, key, value, null);
+                        retries = 0;
+                    }
+                    else if (key.equals(e.key))
+                        retries = 0;
+                    else
+                        e = e.next;
+                }
+                else if (++retries &gt; MAX_SCAN_RETRIES) {
+                    lock();
+                    break;
+                }
+                else if ((retries &amp; 1) == 0 &amp;&amp;
+                         (f = entryForHash(this, hash)) != first) {
+                    e = first = f; // re-traverse if entry changed
+                    retries = -1;
+                }
+            }
+            return node;
+        }
+
+
+        private void scanAndLock(Object key, int hash) {
+            // similar to but simpler than scanAndLockForPut
+            HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
+            HashEntry&lt;K,V&gt; e = first;
+            int retries = -1;
+            while (!tryLock()) {
+                HashEntry&lt;K,V&gt; f;
+                if (retries &lt; 0) {
+                    if (e == null || key.equals(e.key))
+                        retries = 0;
+                    else
+                        e = e.next;
+                }
+                else if (++retries &gt; MAX_SCAN_RETRIES) {
+                    lock();
+                    break;
+                }
+                else if ((retries &amp; 1) == 0 &amp;&amp;
+                         (f = entryForHash(this, hash)) != first) {
+                    e = first = f;
+                    retries = -1;
+                }
+            }
+        }
+
+        /**
+         * Remove; match on key only if value null, else match both.
+         */
+        final V remove(Object key, int hash, Object value) {
+            if (!tryLock())
+                scanAndLock(key, hash);
+            V oldValue = null;
+            try {
+                HashEntry&lt;K,V&gt;[] tab = table;
+                int index = (tab.length - 1) &amp; hash;
+                HashEntry&lt;K,V&gt; e = entryAt(tab, index);
+                HashEntry&lt;K,V&gt; pred = null;
+                while (e != null) {
+                    K k;
+                    HashEntry&lt;K,V&gt; next = e.next;
+                    if ((k = e.key) == key ||
+                        (e.hash == hash &amp;&amp; key.equals(k))) {
+                        V v = e.value;
+                        if (value == null || value == v || value.equals(v)) {
+                            if (pred == null)
+                                setEntryAt(tab, index, next);
+                            else
+                                pred.setNext(next);
+                            ++modCount;
+                            --count;
+                            oldValue = v;
+                        }
+                        break;
+                    }
+                    pred = e;
+                    e = next;
+                }
+            } finally {
+                unlock();
+            }
+            return oldValue;
+        }
+
+        final boolean replace(K key, int hash, V oldValue, V newValue) {
+            if (!tryLock())
+                scanAndLock(key, hash);
+            boolean replaced = false;
+            try {
+                HashEntry&lt;K,V&gt; e;
+                for (e = entryForHash(this, hash); e != null; e = e.next) {
+                    K k;
+                    if ((k = e.key) == key ||
+                        (e.hash == hash &amp;&amp; key.equals(k))) {
+                        if (oldValue.equals(e.value)) {
+                            e.value = newValue;
+                            ++modCount;
+                            replaced = true;
+                        }
+                        break;
+                    }
+                }
+            } finally {
+                unlock();
+            }
+            return replaced;
+        }
+
+        final V replace(K key, int hash, V value) {
+            if (!tryLock())
+                scanAndLock(key, hash);
+            V oldValue = null;
+            try {
+                HashEntry&lt;K,V&gt; e;
+                for (e = entryForHash(this, hash); e != null; e = e.next) {
+                    K k;
+                    if ((k = e.key) == key ||
+                        (e.hash == hash &amp;&amp; key.equals(k))) {
+                        oldValue = e.value;
+                        e.value = value;
+                        ++modCount;
+                        break;
+                    }
+                }
+            } finally {
+                unlock();
+            }
+            return oldValue;
+        }
+
+        final void clear() {
+            lock();
+            try {
+                HashEntry&lt;K,V&gt;[] tab = table;
+                for (int i = 0; i &lt; tab.length ; i++)
+                    setEntryAt(tab, i, null);
+                ++modCount;
+                count = 0;
+            } finally {
+                unlock();
+            }
+        }
+    }
+</code></pre>
+
+<h2>段内存储元素——Segment类的put函数</h2>
+
+<p>final V put(K key, int hash, V value, boolean onlyIfAbsent)
+{
+    HashEntry&lt;K,V> node = tryLock() ? null :
+        scanAndLockForPut(key, hash, value);</p>
+
+<pre><code>V oldValue;
+
+try {
+
+    HashEntry&lt;K,V&gt;[] tab = table;
+    int index = (tab.length - 1) &amp; hash;
+    HashEntry&lt;K,V&gt; first = entryAt(tab, index);
+
+    for (HashEntry&lt;K,V&gt; e = first;;) 
+    {
+        if (e != null) 
+        {
+            K k;
+            if ((k = e.key) == key ||
+                (e.hash == hash &amp;&amp; key.equals(k))) 
+            {
+                oldValue = e.value;
+                if (!onlyIfAbsent) 
+                {
+                    e.value = value;
+                    ++modCount;
+                }
+                break;
+            }
+            e = e.next;
+        }
+        else 
+        {
+            if (node != null)
+                node.setNext(first);
+            else
+                node = new HashEntry&lt;K,V&gt;(hash, key, value, first);
+
+            int c = count + 1;
+
+            if (c &gt; threshold &amp;&amp; tab.length &lt; MAXIMUM_CAPACITY)
+                rehash(node);
+            else
+                setEntryAt(tab, index, node);
+
+            ++modCount;
+            count = c;
+            oldValue = null;
+            break;
+        }
+    }
+} 
+finally 
+{
+    unlock();
+}
+return oldValue;
+</code></pre>
+
+<p>}</p>
+
+<h2>段内扩容操作——Segment类的rehash函数</h2>
+
+<p>@SuppressWarnings(&ldquo;unchecked&rdquo;)
+private void rehash(HashEntry&lt;K,V> node)
+{</p>
+
+<pre><code>HashEntry&lt;K,V&gt;[] oldTable = table;
+int oldCapacity = oldTable.length;
+int newCapacity = oldCapacity &lt;&lt; 1;
+
+threshold = (int)(newCapacity * loadFactor);
+
+HashEntry&lt;K,V&gt;[] newTable =
+    (HashEntry&lt;K,V&gt;[]) new HashEntry[newCapacity];
+
+int sizeMask = newCapacity - 1;
+
+for (int i = 0; i &lt; oldCapacity ; i++) 
+{
+    HashEntry&lt;K,V&gt; e = oldTable[i];
+    if (e != null) 
+    {
+        HashEntry&lt;K,V&gt; next = e.next;
+        int idx = e.hash &amp; sizeMask;
+        if (next == null)   //  Single node on list
+            newTable[idx] = e;
+        else { // Reuse consecutive sequence at same slot
+            HashEntry&lt;K,V&gt; lastRun = e;
+            int lastIdx = idx;
+            for (HashEntry&lt;K,V&gt; last = next;
+                 last != null;
+                 last = last.next) {
+                int k = last.hash &amp; sizeMask;
+                if (k != lastIdx) {
+                    lastIdx = k;
+                    lastRun = last;
+                }
+            }
+
+            newTable[lastIdx] = lastRun;
+            // Clone remaining nodes
+            for (HashEntry&lt;K,V&gt; p = e; p != lastRun; p = p.next) 
+            {
+                V v = p.value;
+                int h = p.hash;
+                int k = h &amp; sizeMask;
+                HashEntry&lt;K,V&gt; n = newTable[k];
+                newTable[k] = new HashEntry&lt;K,V&gt;(h, p.key, v, n);
+            }
+        }
+    }
+}
+
+int nodeIndex = node.hash &amp; sizeMask; // add the new node
+node.setNext(newTable[nodeIndex]);
+newTable[nodeIndex] = node;
+table = newTable;
+</code></pre>
+
+<p>}</p>
+
+<h2>存储元素——put函数</h2>
+
+<p><font color=#0000CD><strong>公用的put函数将put操作委托给Segment类的put方法</strong></font><br>
+public V put(K key, V value)
+{
+    Segment&lt;K,V> s;
+    if (value == null)
+    {
+        throw new NullPointerException();
+    }</p>
+
+<pre><code>int hash = hash(key.hashCode());
+int j = (hash &gt;&gt;&gt; segmentShift) &amp; segmentMask;
+
+if ((s = (Segment&lt;K,V&gt;)UNSAFE.getObject          // nonvolatile; recheck
+     (segments, (j &lt;&lt; SSHIFT) + SBASE)) == null) //  in ensureSegment
+    s = ensureSegment(j);
+
+//委托给段的put函数来完成
+return s.put(key, hash, value, false);
+</code></pre>
+
+<p>}</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hashtable源码分析]]></title>
     <link href="http://www.regenthypo.com/blog/2016/07/25/hashtable/"/>
     <updated>2016-07-25T13:26:15+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/07/25/hashtable</id>
     <content type="html"><![CDATA[<p><font color=#FF0000><strong>Hashtable在Map框架图中的位置</strong></font><br>
-{%img /images/Hashtable1.jpg %}</p>
+<img src="/images/Hashtable1.jpg"></p>
 
 <h2>1.定义</h2>
 
@@ -52,7 +582,7 @@ private static final long serialVersionUID = 1421746759512286392L;//序列号
 <h2>Hashtable中的数据结构</h2>
 
 <p><font color=#0000CD><strong>Hashtable的底层结构与HashMap类似，都是数组加链表.</strong></font><br>
-{%img /images/Hashtable2.jpg %}</p>
+<img src="/images/Hashtable2.jpg"></p>
 
 <h2>Hashtable类的构造函数</h2>
 
@@ -102,935 +632,795 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
 <p><strong>Entry为Hashtable的静态内部类</strong><br>
 <font color=#0000CD><strong>链表上的结点都是由Entry对象组成.</strong></font><br>
 <font color=#0000CD><strong>Hashtable中的内部类Entry与HashMap中的内部类Entry类似.</strong></font><br>
-```java
-   private static class Entry&lt;K,V> implements Map.Entry&lt;K,V>
-   {
-        int hash; //hash值
-        K key;  //键 key
-        V value;//值 value
-        Entry&lt;K,V> next;//下一个结点</p>
-
-<pre><code>    protected Entry(int hash, K key, V value, Entry&lt;K,V&gt; next) 
-    {
-        this.hash = hash;
-        this.key = key;
-        this.value = value;
-        this.next = next;
-    }
-
-    protected Object clone() 
-    {
-        return new Entry&lt;&gt;(hash, key, value,
-                              (next==null ? null : (Entry&lt;K,V&gt;) next.clone()));
-    }
-
-    public K getKey() 
-    {
-        return key;
-    }
-
-    public V getValue() 
-    {
-        return value;
-    }
-
-    public V setValue(V value) 
-    {
-        if (value == null)
-            throw new NullPointerException();
-
-        V oldValue = this.value;
-        this.value = value;
-        return oldValue;
-    }
-
-    //判断结点是否相等
-    public boolean equals(Object o) 
-    {
-        if (!(o instanceof Map.Entry))
-            return false;
-        Map.Entry e = (Map.Entry)o;
-
-        return (key==null ? e.getKey()==null : key.equals(e.getKey())) &amp;&amp;
-           (value==null ? e.getValue()==null : value.equals(e.getValue()));
-    }
-
-    public int hashCode() 
-    {
-        return hash ^ (value==null ? 0 : value.hashCode());
-    }
-
-    public String toString() 
-    {
-        return key.toString()+"="+value.toString();
-    }
-}
-</code></pre>
-
-<pre><code>
-##计算添加元素的位置
-</code></pre>
-
-<pre><code>public synchronized int hashCode() 
-{
-
-    int h = 0;
-
-    if (count == 0 || loadFactor &lt; 0)
-    {
-        return h;  // Returns zero
-    }
-
-    loadFactor = -loadFactor;  // Mark hashCode computation in progress
-
-    Entry[] tab = table;
-
-    for (int i = 0; i &lt; tab.length; i++)
-        for (Entry e = tab[i]; e != null; e = e.next)
-            h += e.key.hashCode() ^ e.value.hashCode();
-
-    loadFactor = -loadFactor;  // Mark hashCode computation complete
-
-    return h;
-}
-</code></pre>
-
-<pre><code>&lt;font color=#0000CD&gt;**Hashtable重写了hashCode函数来计算键的hash值**&lt;/font&gt;&lt;br&gt;
-&lt;font color=#0000CD&gt;**这也是与HashMap的不同，HashMap中先使用hashCode函数再使用hash函数来计算数组下标.**&lt;/font&gt;&lt;br&gt;
-&lt;font color=#0000CD&gt;**而Hashtable中先使用hashCode函数再使用(hash &amp; 0x7FFFFFFF) % tab.length运算来计算数组下标.**&lt;/font&gt;&lt;br&gt;
-
-##存储元素——put函数
-</code></pre>
-
-<pre><code>public synchronized V put(K key, V value) 
-{
-    //Hashtable对象中不允许存储的值为null
-    if (value == null) 
-    {
-        throw new NullPointerException();
-    }
-
-    Entry tab[] = table;
-
-    //使用hashCode函数计算键的hash值
-    //键key不能为null,如果为null,这里要抛出NullPointerException异常
-    int hash = key.hashCode();
-
-    //计算键在table数组的下标
-    int index = (hash &amp; 0x7FFFFFFF) % tab.length;
-
-    //如果键已经在Hashtable中，则只需更新该键的值即可
-    for (Entry&lt;K,V&gt; e = tab[index] ; e != null ; e = e.next) 
-    {
-        if ((e.hash == hash) &amp;&amp; e.key.equals(key)) 
-        {
-            V old = e.value;
-            e.value = value;
-            return old;
-        }
-    }
-
-    modCount++;
-
-    //增加一个键值对后要判断Hashtable中键值对个数是否超过阈值
-    if (count &gt;= threshold) //超过阈值则要进行扩容
-    {
-        //调用rehash函数对Hashtable进行扩容
-        rehash();
-
-        tab = table;
-
-        index = (hash &amp; 0x7FFFFFFF) % tab.length;
-    }
-
-    //将当前位置上的结点作为新结点的下一个结点.
-    Entry&lt;K,V&gt; e = tab[index];
-
-    //新建Entry结点,并将其存储在数组中
-    tab[index] = new Entry&lt;&gt;(hash, key, value, e);
-
-    count++;
-
-    return null;
-}
-</code></pre>
-
-<pre><code>
-&lt;font color=#0000CD&gt;**注意Hashtable中键(key)和值(value)都不能为null,这是与HashMap不同的;**&lt;/font&gt;&lt;br&gt;
-&lt;font color=#0000CD&gt;**HashMap允许一个为null键(key)和任一个为null的值(value).**&lt;/font&gt;&lt;br&gt;
-
-
-&lt;font color=#0000CD&gt;**Hashtable扩容-rehash函数**&lt;/font&gt;&lt;br&gt;
-</code></pre>
-
-<pre><code>protected void rehash() 
-{
-    int oldCapacity = table.length;
-
-    Entry[] oldMap = table;
-
-    //新容量为旧容量的两倍再加1
-    int newCapacity = (oldCapacity &lt;&lt; 1) + 1;
-
-    //到达容量极限
-    if (newCapacity - MAX_ARRAY_SIZE &gt; 0) 
-    {
-        if (oldCapacity == MAX_ARRAY_SIZE)
-        {
-            return;
-        }
-
-        newCapacity = MAX_ARRAY_SIZE;
-    }
-
-    //以新容量新建一个Entry数组
-    Entry[] newMap = new Entry[newCapacity];
-
-    modCount++;
-
-    //计算新的阈值
-    threshold = (int)(newCapacity * loadFactor);
-
-    table = newMap;
-
-    //依次将旧table数组中的所有结点拷贝到新的table数组中.
-    for (int i = oldCapacity ; i-- &gt; 0 ;)
-    {
-        for (Entry&lt;K,V&gt; old = oldMap[i] ; old != null ; ) 
-        {
-            Entry&lt;K,V&gt; e = old;
-            old = old.next;
-
-            int index = (e.hash &amp; 0x7FFFFFFF) % newCapacity;
-            e.next = newMap[index];
-            newMap[index] = e;
-        }
-    }
-}
-</code></pre>
-
-<pre><code>&lt;font color=#0000CD&gt;**Hashtable扩容上也与HashMap不一样,HashMap中新数组大小直接扩为原数组的2倍，而Hashtable是扩为原数组大小的2倍再加1.**&lt;/font&gt;&lt;br&gt;
-
-
-##读取元素——get函数
-&lt;font color=#0000CD&gt;**给返回指定键所映射到的值**&lt;/font&gt;&lt;br&gt;
-</code></pre>
-
-<pre><code>public synchronized V get(Object key) 
-{
-    Entry tab[] = table;
-
-    //计算该键的hash值
-    int hash = key.hashCode();
-
-    //计算该键对象的数组下标
-    int index = (hash &amp; 0x7FFFFFFF) % tab.length;
-
-    for (Entry&lt;K,V&gt; e = tab[index] ; e != null ; e = e.next) 
-    {
-        if ((e.hash == hash) &amp;&amp; e.key.equals(key)) 
-        {
-            return e.value;
-        }
-    }
-
-    //如果此Hashtable不包含此键的映射，则返回null
-    return null;
-}
-</code></pre>
-
-<pre><code>
-##移除元素——remove函数
-&lt;font color=#0000CD&gt;**从哈希表中移除该键及其相应的值**&lt;/font&gt;&lt;br&gt;
-</code></pre>
-
-<pre><code>public synchronized V remove(Object key) 
-{
-
-    Entry tab[] = table;
-    int hash = key.hashCode();
-    int index = (hash &amp; 0x7FFFFFFF) % tab.length;
-
-    //在table数组中下标为index的位置寻找该键
-    for (Entry&lt;K,V&gt; e = tab[index], prev = null ; e != null ; prev = e, e = e.next) 
-    {
-        //找到该键对应的值
-        if ((e.hash == hash) &amp;&amp; e.key.equals(key)) 
-        {
-            modCount++;
-
-            if (prev != null) 
-            {
-                prev.next = e.next;
-            } 
-            else
-            {
-                tab[index] = e.next;
-            }
-
-            count--;
-
-            V oldValue = e.value;
-            e.value = null;
-            return oldValue;
-        }
-    }
-
-    //如果该键不在Hashtable中,则此返回null,不执行任何操作
-    return null;
-}
-</code></pre>
-
-<pre><code>
-##equals函数
-&lt;font color=#0000CD&gt;**Hashtable重写了equals方法**&lt;/font&gt;&lt;br&gt;
-</code></pre>
-
-<pre><code>public synchronized boolean equals(Object o) 
-{
-    //直接使用"==",比较对象地址
-    if (o == this)
-    {
-        return true;
-    }
-
-
-    if (!(o instanceof Map))
-    {
-        return false;
-    }
-
-    Map&lt;K,V&gt; t = (Map&lt;K,V&gt;) o;
-
-    if (t.size() != size())
-    {
-        return false;
-    }
-
-    try 
-    {
-        Iterator&lt;Map.Entry&lt;K,V&gt;&gt; i = entrySet().iterator();
-
-        while (i.hasNext()) 
-        {
-            Map.Entry&lt;K,V&gt; e = i.next();
-            K key = e.getKey();
-            V value = e.getValue();
-
-            if (value == null)
-            {
-                if (!(t.get(key)==null &amp;&amp; t.containsKey(key)))
-                {
-                    return false;
-                }
-            } 
-            else 
-            {
-                if (!value.equals(t.get(key)))
-                    return false;
-            }
-        }
-    } 
-    catch (ClassCastException unused)   
-    {
-        return false;
-    } 
-    catch (NullPointerException unused) 
-    {
-        return false;
-    }
-
-    return true;
-}
-</code></pre>
-
-<p>```</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java的七种垃圾收集器]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/22/seven-gc/"/>
-    <updated>2016-07-22T16:28:25+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/22/seven-gc</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[ConcurrentHashMap源码分析]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/22/concurrenthashmap/"/>
-    <updated>2016-07-22T15:11:38+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/22/concurrenthashmap</id>
-    <content type="html"><![CDATA[<h2>1.定义</h2>
-
-<p>public class ConcurrentHashMap&lt;K, V> extends AbstractMap&lt;K, V>
-        implements ConcurrentMap&lt;K, V>, Serializable
-<font color=#FF0000><strong>ConcurrentHashMap继承了AbstractMap类，实现了ConcurrentMap接口.</strong></font><br></p>
-
-<h2>2.ConcurrentHashMap类中变量</h2>
-
-<pre><code>private static final long serialVersionUID = 7249069246763182397L;
-
-
-/* ---------------- 常量 -------------- */
-
-static final int DEFAULT_INITIAL_CAPACITY = 16;//默认的初始容量为16
-
-static final float DEFAULT_LOAD_FACTOR = 0.75f;//默认装载因子
-
-static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-
-static final int MAXIMUM_CAPACITY = 1 &lt;&lt; 30;//最大容量
-
-static final int MIN_SEGMENT_TABLE_CAPACITY = 2;
-
-static final int MAX_SEGMENTS = 1 &lt;&lt; 16; // 
-
-static final int RETRIES_BEFORE_LOCK = 2;
-
-/* ---------------- 成员变量 -------------- */
-
-final int segmentMask;//段掩码
-
-final int segmentShift;//段偏移量
-
-final Segment&lt;K,V&gt;[] segments;//段的数组
-
-transient Set&lt;K&gt; keySet;
-transient Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;
-transient Collection&lt;V&gt; values;
-</code></pre>
-
-<h2>ConcurrentHashMap底层结构</h2>
-
-<p><font color=#0000CD><strong>Hashtable中锁定的单位是整个table数组.只要有一个线程已经锁定了Hashtable，别的线程只能等该线程操作完毕释放锁后，才能对Hashtable进行操作.</strong></font><br>
-{%img /images/concurrentHashMap1.jpg %}</p>
-
-<p><font color=#0000CD><strong>ConcurrentHashMap并不是讲每个方法都在同一个锁上进行同步并使得每次只能有一个线程访问容器，
-    而是使用了一种粒度更细的加锁机制来实现更大程度的共享.</strong></font><br></p>
-
-<p><font color=#0000CD><strong>ConcurrentHashMap锁定的单位是段.</strong></font><br>
-{%img /images/concurrentHashMap2.jpg %}</p>
-
-<h2>ConcurrentHashMap类的构造函数</h2>
-
-<pre><code class="java">    @SuppressWarnings("unchecked")
-    public ConcurrentHashMap(int initialCapacity,
-                             float loadFactor, int concurrencyLevel) 
-    {
-        //判断参数是否合法
-        if (!(loadFactor &gt; 0) || initialCapacity &lt; 0 || concurrencyLevel &lt;= 0)
-            throw new IllegalArgumentException();
-
-        if (concurrencyLevel &gt; MAX_SEGMENTS)
-            concurrencyLevel = MAX_SEGMENTS;
-
-        // Find power-of-two sizes best matching arguments
-        int sshift = 0;
-        int ssize = 1;
-
-        while (ssize &lt; concurrencyLevel) 
-        {
-            ++sshift;
-            ssize &lt;&lt;= 1;
-        }
-
-        this.segmentShift = 32 - sshift;
-
-        this.segmentMask = ssize - 1;
-
-        if (initialCapacity &gt; MAXIMUM_CAPACITY)
-        {
-            initialCapacity = MAXIMUM_CAPACITY;
-        }
-
-        int c = initialCapacity / ssize;
-
-        if (c * ssize &lt; initialCapacity)
-        {
-            ++c;
-        }
-
-        int cap = MIN_SEGMENT_TABLE_CAPACITY;
-
-        while (cap &lt; c)
-        {
-            cap &lt;&lt;= 1;
-        }
-
-
-        // create segments and segments[0]
-        Segment&lt;K,V&gt; s0 =
-            new Segment&lt;K,V&gt;(loadFactor, (int)(cap * loadFactor),
-                             (HashEntry&lt;K,V&gt;[])new HashEntry[cap]);
-
-        Segment&lt;K,V&gt;[] ss = (Segment&lt;K,V&gt;[])new Segment[ssize];
-
-        UNSAFE.putOrderedObject(ss, SBASE, s0); // ordered write of segments[0]
-
-        this.segments = ss;
-    }
-</code></pre>
-
-<pre><code class="java">    public ConcurrentHashMap(int initialCapacity, float loadFactor) 
-    {
-        this(initialCapacity, loadFactor, DEFAULT_CONCURRENCY_LEVEL);
-    }
-</code></pre>
-
-<pre><code class="java">    public ConcurrentHashMap(int initialCapacity) 
-    {
-        this(initialCapacity, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
-    }
-</code></pre>
-
-<pre><code class="java">    public ConcurrentHashMap() 
-    {
-        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
-    }
-</code></pre>
-
-<pre><code class="java">    public ConcurrentHashMap(Map&lt;? extends K, ? extends V&gt; m) 
-    {
-        this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1,
-                      DEFAULT_INITIAL_CAPACITY),
-             DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
-        putAll(m);
-    }
-</code></pre>
-
-<h2>ConcurrentHashMap的内部类(结点)**<br></h2>
-
-<p><font color=#0000CD><strong>链表上的结点都是由HashEntry对象组成.</strong></font><br>
-```java
-static final class HashEntry&lt;K,V>
-{
-        final int hash;//hash值
-        final K key; //键
-        volatile V value; //值
-        volatile HashEntry&lt;K,V> next; //下一个结点</p>
-
-<pre><code>    HashEntry(int hash, K key, V value, HashEntry&lt;K,V&gt; next) 
-    {
-        this.hash = hash;
-        this.key = key;
-        this.value = value;
-        this.next = next;
-    }
-
-    final void setNext(HashEntry&lt;K,V&gt; n) 
-    {
-        UNSAFE.putOrderedObject(this, nextOffset, n);
-    }
-
-    // Unsafe mechanics
-    static final sun.misc.Unsafe UNSAFE;
-    static final long nextOffset;
-    static 
-    {
-        try 
-        {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = HashEntry.class;
-            nextOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("next"));
-        } 
-        catch (Exception e) 
-        {
-            throw new Error(e);
-        }
-    }
-</code></pre>
-
-<p>}
-```</p>
-
-<h2>计算添加元素的位置</h2>
-
-<p><font color=#0000CD><strong> </strong></font><br>
-<code>java
-    private static int hash(int h)
-    {
-        h += (h &lt;&lt;  15) ^ 0xffffcd7d;
-        h ^= (h &gt;&gt;&gt; 10);
-        h += (h &lt;&lt;   3);
-        h ^= (h &gt;&gt;&gt;  6);
-        h += (h &lt;&lt;   2) + (h &lt;&lt; 14);
-        return h ^ (h &gt;&gt;&gt; 16);
-    }
-</code>
-    // Hash-based segment and entry accesses</p>
-
-<pre><code>@SuppressWarnings("unchecked")
-private Segment&lt;K,V&gt; segmentForHash(int h) 
-{
-    long u = (((h &gt;&gt;&gt; segmentShift) &amp; segmentMask) &lt;&lt; SSHIFT) + SBASE;
-    return (Segment&lt;K,V&gt;) UNSAFE.getObjectVolatile(segments, u);
-}
-
-
-@SuppressWarnings("unchecked")
-static final &lt;K,V&gt; HashEntry&lt;K,V&gt; entryForHash(Segment&lt;K,V&gt; seg, int h) 
-{
-    HashEntry&lt;K,V&gt;[] tab;
-    return (seg == null || (tab = seg.table) == null) ? null :
-        (HashEntry&lt;K,V&gt;) UNSAFE.getObjectVolatile
-        (tab, ((long)(((tab.length - 1) &amp; h)) &lt;&lt; TSHIFT) + TBASE);
-}
-</code></pre>
-
-<h2>内部类Segment</h2>
-
-<p><font color=#0000CD><strong>一个ConcurrentHashMap由多个段(Segment)组成,每一个段都包含一个HashEntry结点数组的Hashtable.</strong></font><br>
-```java</p>
-
-<pre><code>static final class Segment&lt;K,V&gt; extends ReentrantLock implements Serializable 
-{
-
-    private static final long serialVersionUID = 2249069246763182397L;
-
-
-    static final int MAX_SCAN_RETRIES =
-        Runtime.getRuntime().availableProcessors() &gt; 1 ? 64 : 1;
-
-
-    transient volatile HashEntry&lt;K,V&gt;[] table;
-
-
-    transient int count;
-
-
-    transient int modCount;
-
-
-    transient int threshold;
-
-
-    final float loadFactor;
-
-    Segment(float lf, int threshold, HashEntry&lt;K,V&gt;[] tab) {
-        this.loadFactor = lf;
-        this.threshold = threshold;
-        this.table = tab;
-    }
-
-    final V put(K key, int hash, V value, boolean onlyIfAbsent) {
-        HashEntry&lt;K,V&gt; node = tryLock() ? null :
-            scanAndLockForPut(key, hash, value);
-        V oldValue;
-        try {
-            HashEntry&lt;K,V&gt;[] tab = table;
-            int index = (tab.length - 1) &amp; hash;
-            HashEntry&lt;K,V&gt; first = entryAt(tab, index);
-            for (HashEntry&lt;K,V&gt; e = first;;) {
-                if (e != null) {
-                    K k;
-                    if ((k = e.key) == key ||
-                        (e.hash == hash &amp;&amp; key.equals(k))) {
-                        oldValue = e.value;
-                        if (!onlyIfAbsent) {
-                            e.value = value;
-                            ++modCount;
-                        }
-                        break;
-                    }
-                    e = e.next;
-                }
-                else {
-                    if (node != null)
-                        node.setNext(first);
-                    else
-                        node = new HashEntry&lt;K,V&gt;(hash, key, value, first);
-                    int c = count + 1;
-                    if (c &gt; threshold &amp;&amp; tab.length &lt; MAXIMUM_CAPACITY)
-                        rehash(node);
-                    else
-                        setEntryAt(tab, index, node);
-                    ++modCount;
-                    count = c;
-                    oldValue = null;
-                    break;
-                }
-            }
-        } finally {
-            unlock();
-        }
-        return oldValue;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void rehash(HashEntry&lt;K,V&gt; node) {
-
-        HashEntry&lt;K,V&gt;[] oldTable = table;
-        int oldCapacity = oldTable.length;
-        int newCapacity = oldCapacity &lt;&lt; 1;
-        threshold = (int)(newCapacity * loadFactor);
-        HashEntry&lt;K,V&gt;[] newTable =
-            (HashEntry&lt;K,V&gt;[]) new HashEntry[newCapacity];
-        int sizeMask = newCapacity - 1;
-        for (int i = 0; i &lt; oldCapacity ; i++) {
-            HashEntry&lt;K,V&gt; e = oldTable[i];
-            if (e != null) {
-                HashEntry&lt;K,V&gt; next = e.next;
-                int idx = e.hash &amp; sizeMask;
-                if (next == null)   //  Single node on list
-                    newTable[idx] = e;
-                else { // Reuse consecutive sequence at same slot
-                    HashEntry&lt;K,V&gt; lastRun = e;
-                    int lastIdx = idx;
-                    for (HashEntry&lt;K,V&gt; last = next;
-                         last != null;
-                         last = last.next) {
-                        int k = last.hash &amp; sizeMask;
-                        if (k != lastIdx) {
-                            lastIdx = k;
-                            lastRun = last;
-                        }
-                    }
-                    newTable[lastIdx] = lastRun;
-                    // Clone remaining nodes
-                    for (HashEntry&lt;K,V&gt; p = e; p != lastRun; p = p.next) {
-                        V v = p.value;
-                        int h = p.hash;
-                        int k = h &amp; sizeMask;
-                        HashEntry&lt;K,V&gt; n = newTable[k];
-                        newTable[k] = new HashEntry&lt;K,V&gt;(h, p.key, v, n);
-                    }
-                }
-            }
-        }
-        int nodeIndex = node.hash &amp; sizeMask; // add the new node
-        node.setNext(newTable[nodeIndex]);
-        newTable[nodeIndex] = node;
-        table = newTable;
-    }
-
-
-    private HashEntry&lt;K,V&gt; scanAndLockForPut(K key, int hash, V value) {
-        HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
-        HashEntry&lt;K,V&gt; e = first;
-        HashEntry&lt;K,V&gt; node = null;
-        int retries = -1; // negative while locating node
-        while (!tryLock()) {
-            HashEntry&lt;K,V&gt; f; // to recheck first below
-            if (retries &lt; 0) {
-                if (e == null) {
-                    if (node == null) // speculatively create node
-                        node = new HashEntry&lt;K,V&gt;(hash, key, value, null);
-                    retries = 0;
-                }
-                else if (key.equals(e.key))
-                    retries = 0;
-                else
-                    e = e.next;
-            }
-            else if (++retries &gt; MAX_SCAN_RETRIES) {
-                lock();
-                break;
-            }
-            else if ((retries &amp; 1) == 0 &amp;&amp;
-                     (f = entryForHash(this, hash)) != first) {
-                e = first = f; // re-traverse if entry changed
-                retries = -1;
-            }
-        }
-        return node;
-    }
-
-
-    private void scanAndLock(Object key, int hash) {
-        // similar to but simpler than scanAndLockForPut
-        HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
-        HashEntry&lt;K,V&gt; e = first;
-        int retries = -1;
-        while (!tryLock()) {
-            HashEntry&lt;K,V&gt; f;
-            if (retries &lt; 0) {
-                if (e == null || key.equals(e.key))
-                    retries = 0;
-                else
-                    e = e.next;
-            }
-            else if (++retries &gt; MAX_SCAN_RETRIES) {
-                lock();
-                break;
-            }
-            else if ((retries &amp; 1) == 0 &amp;&amp;
-                     (f = entryForHash(this, hash)) != first) {
-                e = first = f;
-                retries = -1;
-            }
-        }
-    }
-
-    /**
-     * Remove; match on key only if value null, else match both.
-     */
-    final V remove(Object key, int hash, Object value) {
-        if (!tryLock())
-            scanAndLock(key, hash);
-        V oldValue = null;
-        try {
-            HashEntry&lt;K,V&gt;[] tab = table;
-            int index = (tab.length - 1) &amp; hash;
-            HashEntry&lt;K,V&gt; e = entryAt(tab, index);
-            HashEntry&lt;K,V&gt; pred = null;
-            while (e != null) {
-                K k;
-                HashEntry&lt;K,V&gt; next = e.next;
-                if ((k = e.key) == key ||
-                    (e.hash == hash &amp;&amp; key.equals(k))) {
-                    V v = e.value;
-                    if (value == null || value == v || value.equals(v)) {
-                        if (pred == null)
-                            setEntryAt(tab, index, next);
-                        else
-                            pred.setNext(next);
-                        ++modCount;
-                        --count;
-                        oldValue = v;
-                    }
-                    break;
-                }
-                pred = e;
-                e = next;
-            }
-        } finally {
-            unlock();
-        }
-        return oldValue;
-    }
-
-    final boolean replace(K key, int hash, V oldValue, V newValue) {
-        if (!tryLock())
-            scanAndLock(key, hash);
-        boolean replaced = false;
-        try {
-            HashEntry&lt;K,V&gt; e;
-            for (e = entryForHash(this, hash); e != null; e = e.next) {
-                K k;
-                if ((k = e.key) == key ||
-                    (e.hash == hash &amp;&amp; key.equals(k))) {
-                    if (oldValue.equals(e.value)) {
-                        e.value = newValue;
-                        ++modCount;
-                        replaced = true;
-                    }
-                    break;
-                }
-            }
-        } finally {
-            unlock();
-        }
-        return replaced;
-    }
-
-    final V replace(K key, int hash, V value) {
-        if (!tryLock())
-            scanAndLock(key, hash);
-        V oldValue = null;
-        try {
-            HashEntry&lt;K,V&gt; e;
-            for (e = entryForHash(this, hash); e != null; e = e.next) {
-                K k;
-                if ((k = e.key) == key ||
-                    (e.hash == hash &amp;&amp; key.equals(k))) {
-                    oldValue = e.value;
-                    e.value = value;
-                    ++modCount;
-                    break;
-                }
-            }
-        } finally {
-            unlock();
-        }
-        return oldValue;
-    }
-
-    final void clear() {
-        lock();
-        try {
-            HashEntry&lt;K,V&gt;[] tab = table;
-            for (int i = 0; i &lt; tab.length ; i++)
-                setEntryAt(tab, i, null);
-            ++modCount;
-            count = 0;
-        } finally {
-            unlock();
-        }
-    }
-}
-</code></pre>
-
-<p>```</p>
-
-<h2>存储元素——put函数</h2>
-
-<p><font color=#0000CD><strong>公用的put函数将put操作委托给段的put方法</strong></font><br>
-   public V put(K key, V value)
-   {
-        Segment&lt;K,V> s;
-        if (value == null)
-        {
-            throw new NullPointerException();
-        }</p>
-
-<pre><code>    int hash = hash(key.hashCode());
-    int j = (hash &gt;&gt;&gt; segmentShift) &amp; segmentMask;
-
-    if ((s = (Segment&lt;K,V&gt;)UNSAFE.getObject          // nonvolatile; recheck
-         (segments, (j &lt;&lt; SSHIFT) + SBASE)) == null) //  in ensureSegment
-        s = ensureSegment(j);
-
-    //委托给段的put函数来完成
-    return s.put(key, hash, value, false);
-}
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Java垃圾收集机制]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/22/java-gc/"/>
-    <updated>2016-07-22T15:10:49+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/22/java-gc</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Synchronized关键字——内置锁]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/21/synchronized/"/>
-    <updated>2016-07-21T17:02:27+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/21/synchronized</id>
-    <content type="html"><![CDATA[<p><font color=#FF0000><strong>synchronzied是Java中的关键字,是一种内置锁，可以修饰一下几种:</strong></font><br>
-<font color=#FF0000><strong>修饰一个对象的非静态方法,作用的范围是整个方法,对该对象加锁.</strong></font><br>
-<font color=#FF0000><strong>修饰一个静态方法,作用的范围是整个方法,对该方法所在类的Class对象加锁. </strong></font><br>
-<font color=#FF0000><strong>修饰一个代码块,synchronzied()中参数可指定,对该参数对象进行加锁.</strong></font><br></p>
-
-<p><font color=#0000C6><strong>1.线程在进入同步代码块之前会自动获得锁,并且在退出同步代码块时自动释放锁,而无论是通过正常的控制路径退出，还是通过代码块中抛出异常退出。获得内置锁的唯一途径就是进入由这个锁保护的同步代码块或方法.</strong></font></p>
-
-<p><font color=#0000C6><strong>2.以关键字synchronzied来修饰的方法就是一种横跨整个方法体的同步代码块，其中该同步代码块的锁就是方法调用所在的对象.</strong></font></p>
-
-<p><font color=#0000C6><strong>3.所有对象都自动含有单一的锁(也称为监视器),当在对象上调用其任意synchronzied方法(非静态方法)的时候,此对象都被加锁.此时该对象上的其他synchronzied方法(非静态方法)只有等到前一个方法调用完毕并释放了锁之后才能被调用. </strong></font></p>
-
-<p><font color=#0000C6><strong>4.用synchronzied关键字声明的静态方法,同时只能被一个执行线程访问,但是其他线程可以访问这个对象的非静态方法(synchronzied修饰的非静态方法只要拿到锁也可以同时访问). </strong></font></p>
-
-<p><font color=#0000C6><strong>5.没有被synchronzied修饰的方法可以被所有的线程同时访问.</strong></font></p>
-
-<p><font color=#0000C6><strong>5 同一对象上的所有用synchronzied修饰的非静态方法共用该对象的锁,即所有非静态方法都要竞争这一个锁,获得了锁才可以访问.</strong></font></p>
-
-<p><font color=#0000C6><strong>6 同一个类上的所有用synchronzied修饰的静态方法共用该类所对应Class对象的锁,即所有静态方法都要竞争这一个锁,获得了锁才可以访问.</strong></font></p>
-
-<p><font color=#0000C6><strong>7.用synchronized修饰代码块时,synchronized的参数可以为this,也可以为别的对象.参数是那个对象,那么访问的时候要先获得该对象的锁才能访问. </strong></font></p>
-
-<p><font color=#0000C6><strong>8.当线程访问一个对象的同步方法时,它还可以调用这个对象的其他同步方法(非静态),也包含正在执行的方法,而不必再次去获得这个方法的访问权。即已经获得对象的锁不用再重新获得. </strong></font></p>
-
-<p><font color=#0000C6><strong>9.当一个线程访问object的一个synchronized(this)同步代码块时,另一个线程仍然可以访问该object中的非synchronized(this)同步代码块 </strong></font></p>
-
-<p><strong>代码块</strong><br>
-```java
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+<span class='line-number'>180</span>
+<span class='line-number'>181</span>
+<span class='line-number'>182</span>
+<span class='line-number'>183</span>
+<span class='line-number'>184</span>
+<span class='line-number'>185</span>
+<span class='line-number'>186</span>
+<span class='line-number'>187</span>
+<span class='line-number'>188</span>
+<span class='line-number'>189</span>
+<span class='line-number'>190</span>
+<span class='line-number'>191</span>
+<span class='line-number'>192</span>
+<span class='line-number'>193</span>
+<span class='line-number'>194</span>
+<span class='line-number'>195</span>
+<span class='line-number'>196</span>
+<span class='line-number'>197</span>
+<span class='line-number'>198</span>
+<span class='line-number'>199</span>
+<span class='line-number'>200</span>
+<span class='line-number'>201</span>
+<span class='line-number'>202</span>
+<span class='line-number'>203</span>
+<span class='line-number'>204</span>
+<span class='line-number'>205</span>
+<span class='line-number'>206</span>
+<span class='line-number'>207</span>
+<span class='line-number'>208</span>
+<span class='line-number'>209</span>
+<span class='line-number'>210</span>
+<span class='line-number'>211</span>
+<span class='line-number'>212</span>
+<span class='line-number'>213</span>
+<span class='line-number'>214</span>
+<span class='line-number'>215</span>
+<span class='line-number'>216</span>
+<span class='line-number'>217</span>
+<span class='line-number'>218</span>
+<span class='line-number'>219</span>
+<span class='line-number'>220</span>
+<span class='line-number'>221</span>
+<span class='line-number'>222</span>
+<span class='line-number'>223</span>
+<span class='line-number'>224</span>
+<span class='line-number'>225</span>
+<span class='line-number'>226</span>
+<span class='line-number'>227</span>
+<span class='line-number'>228</span>
+<span class='line-number'>229</span>
+<span class='line-number'>230</span>
+<span class='line-number'>231</span>
+<span class='line-number'>232</span>
+<span class='line-number'>233</span>
+<span class='line-number'>234</span>
+<span class='line-number'>235</span>
+<span class='line-number'>236</span>
+<span class='line-number'>237</span>
+<span class='line-number'>238</span>
+<span class='line-number'>239</span>
+<span class='line-number'>240</span>
+<span class='line-number'>241</span>
+<span class='line-number'>242</span>
+<span class='line-number'>243</span>
+<span class='line-number'>244</span>
+<span class='line-number'>245</span>
+<span class='line-number'>246</span>
+<span class='line-number'>247</span>
+<span class='line-number'>248</span>
+<span class='line-number'>249</span>
+<span class='line-number'>250</span>
+<span class='line-number'>251</span>
+<span class='line-number'>252</span>
+<span class='line-number'>253</span>
+<span class='line-number'>254</span>
+<span class='line-number'>255</span>
+<span class='line-number'>256</span>
+<span class='line-number'>257</span>
+<span class='line-number'>258</span>
+<span class='line-number'>259</span>
+<span class='line-number'>260</span>
+<span class='line-number'>261</span>
+<span class='line-number'>262</span>
+<span class='line-number'>263</span>
+<span class='line-number'>264</span>
+<span class='line-number'>265</span>
+<span class='line-number'>266</span>
+<span class='line-number'>267</span>
+<span class='line-number'>268</span>
+<span class='line-number'>269</span>
+<span class='line-number'>270</span>
+<span class='line-number'>271</span>
+<span class='line-number'>272</span>
+<span class='line-number'>273</span>
+<span class='line-number'>274</span>
+<span class='line-number'>275</span>
+<span class='line-number'>276</span>
+<span class='line-number'>277</span>
+<span class='line-number'>278</span>
+<span class='line-number'>279</span>
+<span class='line-number'>280</span>
+<span class='line-number'>281</span>
+<span class='line-number'>282</span>
+<span class='line-number'>283</span>
+<span class='line-number'>284</span>
+<span class='line-number'>285</span>
+<span class='line-number'>286</span>
+<span class='line-number'>287</span>
+<span class='line-number'>288</span>
+<span class='line-number'>289</span>
+<span class='line-number'>290</span>
+<span class='line-number'>291</span>
+<span class='line-number'>292</span>
+<span class='line-number'>293</span>
+<span class='line-number'>294</span>
+<span class='line-number'>295</span>
+<span class='line-number'>296</span>
+<span class='line-number'>297</span>
+<span class='line-number'>298</span>
+<span class='line-number'>299</span>
+<span class='line-number'>300</span>
+<span class='line-number'>301</span>
+<span class='line-number'>302</span>
+<span class='line-number'>303</span>
+<span class='line-number'>304</span>
+<span class='line-number'>305</span>
+<span class='line-number'>306</span>
+<span class='line-number'>307</span>
+<span class='line-number'>308</span>
+<span class='line-number'>309</span>
+<span class='line-number'>310</span>
+<span class='line-number'>311</span>
+<span class='line-number'>312</span>
+<span class='line-number'>313</span>
+<span class='line-number'>314</span>
+<span class='line-number'>315</span>
+<span class='line-number'>316</span>
+<span class='line-number'>317</span>
+<span class='line-number'>318</span>
+<span class='line-number'>319</span>
+<span class='line-number'>320</span>
+<span class='line-number'>321</span>
+<span class='line-number'>322</span>
+<span class='line-number'>323</span>
+<span class='line-number'>324</span>
+<span class='line-number'>325</span>
+<span class='line-number'>326</span>
+<span class='line-number'>327</span>
+<span class='line-number'>328</span>
+<span class='line-number'>329</span>
+<span class='line-number'>330</span>
+<span class='line-number'>331</span>
+<span class='line-number'>332</span>
+<span class='line-number'>333</span>
+<span class='line-number'>334</span>
+<span class='line-number'>335</span>
+<span class='line-number'>336</span>
+<span class='line-number'>337</span>
+<span class='line-number'>338</span>
+<span class='line-number'>339</span>
+<span class='line-number'>340</span>
+<span class='line-number'>341</span>
+<span class='line-number'>342</span>
+<span class='line-number'>343</span>
+<span class='line-number'>344</span>
+<span class='line-number'>345</span>
+<span class='line-number'>346</span>
+<span class='line-number'>347</span>
+<span class='line-number'>348</span>
+<span class='line-number'>349</span>
+<span class='line-number'>350</span>
+<span class='line-number'>351</span>
+<span class='line-number'>352</span>
+<span class='line-number'>353</span>
+<span class='line-number'>354</span>
+<span class='line-number'>355</span>
+<span class='line-number'>356</span>
+<span class='line-number'>357</span>
+<span class='line-number'>358</span>
+<span class='line-number'>359</span>
+<span class='line-number'>360</span>
+<span class='line-number'>361</span>
+<span class='line-number'>362</span>
+<span class='line-number'>363</span>
+<span class='line-number'>364</span>
+<span class='line-number'>365</span>
+<span class='line-number'>366</span>
+<span class='line-number'>367</span>
+<span class='line-number'>368</span>
+<span class='line-number'>369</span>
+<span class='line-number'>370</span>
+<span class='line-number'>371</span>
+<span class='line-number'>372</span>
+<span class='line-number'>373</span>
+<span class='line-number'>374</span>
+<span class='line-number'>375</span>
+<span class='line-number'>376</span>
+<span class='line-number'>377</span>
+<span class='line-number'>378</span>
+<span class='line-number'>379</span>
+<span class='line-number'>380</span>
+<span class='line-number'>381</span>
+<span class='line-number'>382</span>
+<span class='line-number'>383</span>
+<span class='line-number'>384</span>
+<span class='line-number'>385</span>
+<span class='line-number'>386</span>
+<span class='line-number'>387</span>
+<span class='line-number'>388</span>
+<span class='line-number'>389</span>
+<span class='line-number'>390</span>
+<span class='line-number'>391</span>
+<span class='line-number'>392</span>
+<span class='line-number'>393</span>
+<span class='line-number'>394</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>   <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span>
+</span><span class='line'>   <span class="o">{</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">hash</span><span class="o">;</span> <span class="c1">//hash值</span>
+</span><span class='line'>        <span class="n">K</span> <span class="n">key</span><span class="o">;</span>  <span class="c1">//键 key</span>
+</span><span class='line'>        <span class="n">V</span> <span class="n">value</span><span class="o">;</span><span class="c1">//值 value</span>
+</span><span class='line'>        <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">next</span><span class="o">;</span><span class="c1">//下一个结点&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="kd">protected</span> <span class="nf">Entry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">hash</span> <span class="o">=</span> <span class="n">hash</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">next</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">protected</span> <span class="n">Object</span> <span class="nf">clone</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span>
+</span><span class='line'>                              <span class="o">(</span><span class="n">next</span><span class="o">==</span><span class="kc">null</span> <span class="o">?</span> <span class="kc">null</span> <span class="o">:</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span> <span class="n">next</span><span class="o">.</span><span class="na">clone</span><span class="o">()));</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">K</span> <span class="nf">getKey</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">key</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">V</span> <span class="nf">getValue</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">V</span> <span class="nf">setValue</span><span class="o">(</span><span class="n">V</span> <span class="n">value</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">value</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>            <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//判断结点是否相等</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(!(</span><span class="n">o</span> <span class="k">instanceof</span> <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">))</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span> <span class="n">e</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">)</span><span class="n">o</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">return</span> <span class="o">(</span><span class="n">key</span><span class="o">==</span><span class="kc">null</span> <span class="o">?</span> <span class="n">e</span><span class="o">.</span><span class="na">getKey</span><span class="o">()==</span><span class="kc">null</span> <span class="o">:</span> <span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">getKey</span><span class="o">()))</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span>
+</span><span class='line'>           <span class="o">(</span><span class="n">value</span><span class="o">==</span><span class="kc">null</span> <span class="o">?</span> <span class="n">e</span><span class="o">.</span><span class="na">getValue</span><span class="o">()==</span><span class="kc">null</span> <span class="o">:</span> <span class="n">value</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">getValue</span><span class="o">()));</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">hash</span> <span class="o">^</span> <span class="o">(</span><span class="n">value</span><span class="o">==</span><span class="kc">null</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span> <span class="n">value</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="na">toString</span><span class="o">()+</span><span class="s">&quot;=&quot;</span><span class="o">+</span><span class="n">value</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="err">##</span><span class="n">计算添加元素的位置</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">loadFactor</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">0</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">h</span><span class="o">;</span>  <span class="c1">// Returns zero</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">loadFactor</span> <span class="o">=</span> <span class="o">-</span><span class="n">loadFactor</span><span class="o">;</span>  <span class="c1">// Mark hashCode computation in progress</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">[]</span> <span class="n">tab</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">tab</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span> <span class="n">e</span> <span class="o">=</span> <span class="n">tab</span><span class="o">[</span><span class="n">i</span><span class="o">];</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>            <span class="n">h</span> <span class="o">+=</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">()</span> <span class="o">^</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">.</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">loadFactor</span> <span class="o">=</span> <span class="o">-</span><span class="n">loadFactor</span><span class="o">;</span>  <span class="c1">// Mark hashCode computation complete</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">h</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">Hashtable重写了hashCode函数来计算键的hash值</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">这也是与HashMap的不同</span><span class="err">，</span><span class="n">HashMap中先使用hashCode函数再使用hash函数来计算数组下标</span><span class="o">.**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">而Hashtable中先使用hashCode函数再使用</span><span class="o">(</span><span class="n">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mh">0x7FFFFFFF</span><span class="o">)</span> <span class="o">%</span> <span class="n">tab</span><span class="o">.</span><span class="na">length运算来计算数组下标</span><span class="o">.**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">##</span><span class="n">存储元素</span><span class="err">——</span><span class="n">put函数</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">V</span> <span class="nf">put</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//Hashtable对象中不允许存储的值为null</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">value</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span> <span class="n">tab</span><span class="o">[]</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//使用hashCode函数计算键的hash值</span>
+</span><span class='line'>    <span class="c1">//键key不能为null,如果为null,这里要抛出NullPointerException异常</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//计算键在table数组的下标</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">(</span><span class="n">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mh">0x7FFFFFFF</span><span class="o">)</span> <span class="o">%</span> <span class="n">tab</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果键已经在Hashtable中，则只需更新该键的值即可</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">tab</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">;</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">((</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">hash</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">key</span><span class="o">))</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">V</span> <span class="n">old</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">old</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//增加一个键值对后要判断Hashtable中键值对个数是否超过阈值</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;=</span> <span class="n">threshold</span><span class="o">)</span> <span class="c1">//超过阈值则要进行扩容</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//调用rehash函数对Hashtable进行扩容</span>
+</span><span class='line'>        <span class="n">rehash</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">tab</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">index</span> <span class="o">=</span> <span class="o">(</span><span class="n">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mh">0x7FFFFFFF</span><span class="o">)</span> <span class="o">%</span> <span class="n">tab</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//将当前位置上的结点作为新结点的下一个结点.</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">tab</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//新建Entry结点,并将其存储在数组中</span>
+</span><span class='line'>    <span class="n">tab</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">count</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">注意Hashtable中键</span><span class="o">(</span><span class="n">key</span><span class="o">)</span><span class="n">和值</span><span class="o">(</span><span class="n">value</span><span class="o">)</span><span class="n">都不能为null</span><span class="o">,</span><span class="n">这是与HashMap不同的</span><span class="o">;**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">HashMap允许一个为null键</span><span class="o">(</span><span class="n">key</span><span class="o">)</span><span class="n">和任一个为null的值</span><span class="o">(</span><span class="n">value</span><span class="o">).**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">Hashtable扩容</span><span class="o">-</span><span class="n">rehash函数</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">protected</span> <span class="kt">void</span> <span class="nf">rehash</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">oldCapacity</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">[]</span> <span class="n">oldMap</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//新容量为旧容量的两倍再加1</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">newCapacity</span> <span class="o">=</span> <span class="o">(</span><span class="n">oldCapacity</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//到达容量极限</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">newCapacity</span> <span class="o">-</span> <span class="n">MAX_ARRAY_SIZE</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="mi">0</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">oldCapacity</span> <span class="o">==</span> <span class="n">MAX_ARRAY_SIZE</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">newCapacity</span> <span class="o">=</span> <span class="n">MAX_ARRAY_SIZE</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//以新容量新建一个Entry数组</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">[]</span> <span class="n">newMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">[</span><span class="n">newCapacity</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//计算新的阈值</span>
+</span><span class='line'>    <span class="n">threshold</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)(</span><span class="n">newCapacity</span> <span class="o">*</span> <span class="n">loadFactor</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">table</span> <span class="o">=</span> <span class="n">newMap</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//依次将旧table数组中的所有结点拷贝到新的table数组中.</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">oldCapacity</span> <span class="o">;</span> <span class="n">i</span><span class="o">--</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="mi">0</span> <span class="o">;)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">old</span> <span class="o">=</span> <span class="n">oldMap</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">;</span> <span class="n">old</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">;</span> <span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">old</span><span class="o">;</span>
+</span><span class='line'>            <span class="n">old</span> <span class="o">=</span> <span class="n">old</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mh">0x7FFFFFFF</span><span class="o">)</span> <span class="o">%</span> <span class="n">newCapacity</span><span class="o">;</span>
+</span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">newMap</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
+</span><span class='line'>            <span class="n">newMap</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">Hashtable扩容上也与HashMap不一样</span><span class="o">,</span><span class="n">HashMap中新数组大小直接扩为原数组的2倍</span><span class="err">，</span><span class="n">而Hashtable是扩为原数组大小的2倍再加1</span><span class="o">.**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="err">##</span><span class="n">读取元素</span><span class="err">——</span><span class="n">get函数</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">给返回指定键所映射到的值</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">V</span> <span class="nf">get</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">Entry</span> <span class="n">tab</span><span class="o">[]</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//计算该键的hash值</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//计算该键对象的数组下标</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">(</span><span class="n">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mh">0x7FFFFFFF</span><span class="o">)</span> <span class="o">%</span> <span class="n">tab</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">tab</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">;</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">((</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">hash</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">key</span><span class="o">))</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果此Hashtable不包含此键的映射，则返回null</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="err">##</span><span class="n">移除元素</span><span class="err">——</span><span class="n">remove函数</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">从哈希表中移除该键及其相应的值</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">V</span> <span class="nf">remove</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span> <span class="n">tab</span><span class="o">[]</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">();</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">(</span><span class="n">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mh">0x7FFFFFFF</span><span class="o">)</span> <span class="o">%</span> <span class="n">tab</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//在table数组中下标为index的位置寻找该键</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">tab</span><span class="o">[</span><span class="n">index</span><span class="o">],</span> <span class="n">prev</span> <span class="o">=</span> <span class="kc">null</span> <span class="o">;</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">;</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">e</span><span class="o">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//找到该键对应的值</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">((</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">hash</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">key</span><span class="o">))</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">prev</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="n">prev</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>            <span class="k">else</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="n">tab</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">count</span><span class="o">--;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果该键不在Hashtable中,则此返回null,不执行任何操作</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="err">##</span><span class="n">equals函数</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">Hashtable重写了equals方法</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//直接使用&quot;==&quot;,比较对象地址</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">o</span> <span class="o">==</span> <span class="k">this</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(!(</span><span class="n">o</span> <span class="k">instanceof</span> <span class="n">Map</span><span class="o">))</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Map</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">t</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span> <span class="n">o</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">!=</span> <span class="n">size</span><span class="o">())</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">try</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">Iterator</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">entrySet</span><span class="o">().</span><span class="na">iterator</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">while</span> <span class="o">(</span><span class="n">i</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+</span><span class='line'>            <span class="n">K</span> <span class="n">key</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getKey</span><span class="o">();</span>
+</span><span class='line'>            <span class="n">V</span> <span class="n">value</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getValue</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">value</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">(!(</span><span class="n">t</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">)==</span><span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">t</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">key</span><span class="o">)))</span>
+</span><span class='line'>                <span class="o">{</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>                <span class="o">}</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>            <span class="k">else</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">(!</span><span class="n">value</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">)))</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">catch</span> <span class="o">(</span><span class="n">ClassCastException</span> <span class="n">unused</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">catch</span> <span class="o">(</span><span class="n">NullPointerException</span> <span class="n">unused</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="err">```</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">]]&gt;&lt;/</span><span class="n">content</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="o">&lt;</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">title</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[</span><span class="n">Java的七种垃圾收集器</span><span class="o">]]&gt;&lt;/</span><span class="n">title</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;http://www.regenthypo.com/blog/2016/07/22/seven-gc/&quot;</span><span class="o">/&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">updated</span><span class="o">&gt;</span><span class="mi">2016</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">22</span><span class="nl">T16:</span><span class="mi">28</span><span class="o">:</span><span class="mi">25</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">&lt;/</span><span class="n">updated</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">id</span><span class="o">&gt;</span><span class="nl">http:</span><span class="c1">//www.regenthypo.com/blog/2016/07/22/seven-gc&lt;/id&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">content</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[</span>
+</span><span class='line'><span class="o">]]&gt;&lt;/</span><span class="n">content</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="o">&lt;</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">title</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[</span><span class="n">Java垃圾收集机制</span><span class="o">]]&gt;&lt;/</span><span class="n">title</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;http://www.regenthypo.com/blog/2016/07/22/java-gc/&quot;</span><span class="o">/&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">updated</span><span class="o">&gt;</span><span class="mi">2016</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">22</span><span class="nl">T15:</span><span class="mi">10</span><span class="o">:</span><span class="mi">49</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">&lt;/</span><span class="n">updated</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">id</span><span class="o">&gt;</span><span class="nl">http:</span><span class="c1">//www.regenthypo.com/blog/2016/07/22/java-gc&lt;/id&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">content</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[</span>
+</span><span class='line'><span class="o">]]&gt;&lt;/</span><span class="n">content</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">&lt;/</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="o">&lt;</span><span class="n">entry</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">title</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[</span><span class="n">Synchronized关键字</span><span class="err">——</span><span class="n">内置锁</span><span class="o">]]&gt;&lt;/</span><span class="n">title</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">link</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;http://www.regenthypo.com/blog/2016/07/21/synchronized/&quot;</span><span class="o">/&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">updated</span><span class="o">&gt;</span><span class="mi">2016</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span><span class="nl">T17:</span><span class="mi">02</span><span class="o">:</span><span class="mi">27</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">&lt;/</span><span class="n">updated</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">id</span><span class="o">&gt;</span><span class="nl">http:</span><span class="c1">//www.regenthypo.com/blog/2016/07/21/synchronized&lt;/id&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">content</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;html&quot;</span><span class="o">&gt;&lt;![</span><span class="n">CDATA</span><span class="o">[&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="n">FF0000</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">synchronzied是Java中的关键字</span><span class="o">,</span><span class="n">是一种内置锁</span><span class="err">，</span><span class="nl">可以修饰一下几种:</span><span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="n">FF0000</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">修饰一个对象的非静态方法</span><span class="o">,</span><span class="n">作用的范围是整个方法</span><span class="o">,</span><span class="n">对该对象加锁</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="n">FF0000</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">修饰一个静态方法</span><span class="o">,</span><span class="n">作用的范围是整个方法</span><span class="o">,</span><span class="n">对该方法所在类的Class对象加锁</span><span class="o">.</span> <span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="n">FF0000</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">修饰一个代码块</span><span class="o">,</span><span class="n">synchronzied</span><span class="o">()</span><span class="n">中参数可指定</span><span class="o">,</span><span class="n">对该参数对象进行加锁</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;</span><span class="n">br</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">.</span><span class="na">线程在进入同步代码块之前会自动获得锁</span><span class="o">,</span><span class="n">并且在退出同步代码块时自动释放锁</span><span class="o">,</span><span class="n">而无论是通过正常的控制路径退出</span><span class="err">，</span><span class="n">还是通过代码块中抛出异常退出</span><span class="err">。</span><span class="n">获得内置锁的唯一途径就是进入由这个锁保护的同步代码块或方法</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">2</span><span class="o">.</span><span class="na">以关键字synchronzied来修饰的方法就是一种横跨整个方法体的同步代码块</span><span class="err">，</span><span class="n">其中该同步代码块的锁就是方法调用所在的对象</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">3</span><span class="o">.</span><span class="na">所有对象都自动含有单一的锁</span><span class="o">(</span><span class="n">也称为监视器</span><span class="o">),</span><span class="n">当在对象上调用其任意synchronzied方法</span><span class="o">(</span><span class="n">非静态方法</span><span class="o">)</span><span class="n">的时候</span><span class="o">,</span><span class="n">此对象都被加锁</span><span class="o">.</span><span class="na">此时该对象上的其他synchronzied方法</span><span class="o">(</span><span class="n">非静态方法</span><span class="o">)</span><span class="n">只有等到前一个方法调用完毕并释放了锁之后才能被调用</span><span class="o">.</span> <span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">4</span><span class="o">.</span><span class="na">用synchronzied关键字声明的静态方法</span><span class="o">,</span><span class="n">同时只能被一个执行线程访问</span><span class="o">,</span><span class="n">但是其他线程可以访问这个对象的非静态方法</span><span class="o">(</span><span class="n">synchronzied修饰的非静态方法只要拿到锁也可以同时访问</span><span class="o">).</span> <span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">.</span><span class="na">没有被synchronzied修饰的方法可以被所有的线程同时访问</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">5</span> <span class="n">同一对象上的所有用synchronzied修饰的非静态方法共用该对象的锁</span><span class="o">,</span><span class="n">即所有非静态方法都要竞争这一个锁</span><span class="o">,</span><span class="n">获得了锁才可以访问</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">6</span> <span class="n">同一个类上的所有用synchronzied修饰的静态方法共用该类所对应Class对象的锁</span><span class="o">,</span><span class="n">即所有静态方法都要竞争这一个锁</span><span class="o">,</span><span class="n">获得了锁才可以访问</span><span class="o">.&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">7</span><span class="o">.</span><span class="na">用synchronized修饰代码块时</span><span class="o">,</span><span class="n">synchronized的参数可以为this</span><span class="o">,</span><span class="n">也可以为别的对象</span><span class="o">.</span><span class="na">参数是那个对象</span><span class="o">,</span><span class="n">那么访问的时候要先获得该对象的锁才能访问</span><span class="o">.</span> <span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">8</span><span class="o">.</span><span class="na">当线程访问一个对象的同步方法时</span><span class="o">,</span><span class="n">它还可以调用这个对象的其他同步方法</span><span class="o">(</span><span class="n">非静态</span><span class="o">),</span><span class="n">也包含正在执行的方法</span><span class="o">,</span><span class="n">而不必再次去获得这个方法的访问权</span><span class="err">。</span><span class="n">即已经获得对象的锁不用再重新获得</span><span class="o">.</span> <span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">C6</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="mi">9</span><span class="o">.</span><span class="na">当一个线程访问object的一个synchronized</span><span class="o">(</span><span class="k">this</span><span class="o">)</span><span class="n">同步代码块时</span><span class="o">,</span><span class="n">另一个线程仍然可以访问该object中的非synchronized</span><span class="o">(</span><span class="k">this</span><span class="o">)</span><span class="n">同步代码块</span> <span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;/</span><span class="n">font</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">代码块</span><span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>java
 class DualSynch
 {
     private Object syncObject = new Object();</p>
@@ -1089,13 +1479,13 @@ public void g()
 ```</p>
 
 <p><strong>运行结果</strong><br>
-{%img /images/synchronized1.jpg %}</p>
+<img src="/images/synchronized1.jpg"></p>
 
 <p>运行结果中两个方法是交替访问,说明新线程和主线程分别获得了同步方法的锁和代码块的锁,而且是不同对象的锁,一个是ds对象的锁,
 一个是syncObject对象的锁.所以两个线程可以同时访问.<br></p>
 
 <p><strong>如果把ssynchronized(syncObject)改为synchronized(this)运行结果</strong><br>
-{%img /images/synchronized2.jpg %}</p>
+<img src="/images/synchronized2.jpg"></p>
 
 <p>运行结果中是先打印完f(),再打印g(),说明新线程和主线程不同同时访问同步方法和代码块;其实要访问该同步方法和代码块都要获得ds对象的锁.
 所以得等同步方法访问完释放ds对象的锁之后,才可以再次获得ds对象的锁访问代码块.<br></p>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Bfs | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/bfs/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T16:40:24+08:00</updated>
+  <updated>2016-07-25T17:04:22+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -41,7 +41,7 @@ Visually, the graph looks like the following:</p>
      \_/
 </code></pre>
 
-<p>{%img /images/133.jpg %}</p>
+<p><img src="/images/133.jpg"></p>
 
 <pre><code class="java">package com.hypo.DFS;
 
@@ -204,7 +204,7 @@ public class CloneGraph_T133
 </code></pre>
 
 <p>result:
-{%img /images/133_2.jpg %}</p>
+<img src="/images/133_2.jpg"></p>
 ]]></content>
   </entry>
   

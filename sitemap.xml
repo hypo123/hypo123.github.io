@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://www.regenthypo.com/blog/2016/07/25/concurrenthashmap/</loc>
+<lastmod>2016-07-25T17:01:58+08:00</lastmod>
+</url>
+<url>
 <loc>http://www.regenthypo.com/blog/2016/07/25/hashtable/</loc>
 <lastmod>2016-07-25T13:26:15+08:00</lastmod>
 </url>
@@ -11,10 +15,6 @@
 <url>
 <loc>http://www.regenthypo.com/blog/2016/07/22/seven-gc/</loc>
 <lastmod>2016-07-22T16:28:25+08:00</lastmod>
-</url>
-<url>
-<loc>http://www.regenthypo.com/blog/2016/07/22/concurrenthashmap/</loc>
-<lastmod>2016-07-22T15:11:38+08:00</lastmod>
 </url>
 <url>
 <loc>http://www.regenthypo.com/blog/2016/07/22/java-gc/</loc>

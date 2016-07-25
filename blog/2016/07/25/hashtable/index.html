@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>HashTable - regenthypo's Blog</title>
+  <title>Hashtable源码分析 - regenthypo's Blog</title>
   <meta name="author" content="regenthypo">
 
   
@@ -71,7 +71,7 @@
   
   <header>
     
-      <h1 class="entry-title">HashTable</h1>
+      <h1 class="entry-title">Hashtable源码分析</h1>
     
     
       <p class="meta">
@@ -123,7 +123,7 @@ private static final long serialVersionUID = 1421746759512286392L;//序列号
 <p><font color=#0000CD><strong>Hashtable的底层结构与HashMap类似，都是数组加链表.</strong></font><br>
 <img src="/images/Hashtable2.jpg"></p>
 
-<h2>Hashtable类的结构函数</h2>
+<h2>Hashtable类的构造函数</h2>
 
 <pre><code>//用指定初始容量和指定加载因子构造一个新的空哈希表
 public Hashtable(int initialCapacity, float loadFactor) 
@@ -819,6 +819,12 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
 <time class='entry-date' datetime='2016-07-25T13:26:15+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:26 pm</span></time>
       
 
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/java/'>java</a>
+  
+</span>
+
 
     </p>
     
@@ -834,6 +840,8 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
         <a class="basic-alignment left" href="/blog/2016/07/22/memento-design-pattern/" title="Previous Post: 一天一设计模式之备忘录模式[18]">&laquo; 一天一设计模式之备忘录模式[18]</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/07/25/concurrenthashmap/" title="Next Post: ConcurrentHashMap源码分析">ConcurrentHashMap源码分析 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -847,7 +855,11 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/07/25/hashtable/">HashTable</a>
+        <a href="/blog/2016/07/25/concurrenthashmap/">ConcurrentHashMap源码分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/25/hashtable/">Hashtable源码分析</a>
       </li>
     
       <li class="post">
@@ -856,10 +868,6 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
     
       <li class="post">
         <a href="/blog/2016/07/22/seven-gc/">Java的七种垃圾收集器</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/22/concurrenthashmap/">ConcurrentHashMap源码分析</a>
       </li>
     
       <li class="post">

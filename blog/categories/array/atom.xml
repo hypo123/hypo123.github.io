@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Array | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/array/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T16:40:24+08:00</updated>
+  <updated>2016-07-25T17:04:22+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -32,7 +32,7 @@ You should return [1,2,3,6,9,8,7,4,5].</p>
 
 <p>Difficulty: Medium</p>
 
-<p>{%img /images/54.jpg %}</p>
+<p><img src="/images/54.jpg"></p>
 
 <pre><code class="java">package com.hypo.Array;
 
@@ -118,7 +118,7 @@ public class SpiralMatrix_T54
 </code></pre>
 
 <p>运行结果:
-{%img /images/54_2.jpg %}</p>
+<img src="/images/54_2.jpg"></p>
 ]]></content>
   </entry>
   

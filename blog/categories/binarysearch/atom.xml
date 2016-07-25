@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Binarysearch | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/binarysearch/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T16:40:24+08:00</updated>
+  <updated>2016-07-25T17:04:22+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -39,7 +39,7 @@ Given target = 5, return true.</p>
 
 <p>Difficulty: Medium</p>
 
-<p>{%img /images/240.jpg %}</p>
+<p><img src="/images/240.jpg"></p>
 
 <pre><code class="java">package com.hypo.BinarySearch;
 
@@ -93,7 +93,7 @@ public class Search2DMatrixII_T240
 </code></pre>
 
 <p>运行结果:
-{%img /images/240_2.jpg %}</p>
+<img src="/images/240_2.jpg"></p>
 ]]></content>
   </entry>
   
@@ -119,7 +119,7 @@ Given target = 3, return true.</p>
 
 <p>Difficulty: Medium</p>
 
-<p>{%img /images/74.jpg %}</p>
+<p><img src="/images/74.jpg"></p>
 
 <pre><code class="java">package com.hypo.BinarySearch;
 
@@ -195,7 +195,7 @@ public class Search2DMatrix_T74
 </code></pre>
 
 <p>运行结果:
-{%img /images/74_2.jpg %}</p>
+<img src="/images/74_2.jpg"></p>
 ]]></content>
   </entry>
   
