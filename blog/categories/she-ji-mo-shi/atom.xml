@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-22T14:59:39+08:00</updated>
+  <updated>2016-07-25T13:20:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,308 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之备忘录模式[18]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/22/memento-design-pattern/"/>
+    <updated>2016-07-22T16:42:01+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/22/memento-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[行为模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>在不破坏封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态。这样以后就可以将该对象恢复到原先保存的状态。</strong></font></p>
+
+<p><font color=#FF0000><strong>别名:Token</strong></font></p>
+
+<p><strong>备忘录模式结构</strong><br>
+<img src="/images/mementodp1.jpg"></p>
+
+<p><strong>备忘录模式角色</strong><br>
+<img src="/images/mementodp2.jpg"></p>
+
+<p><strong>备忘录模式代码</strong></p>
+
+<p><strong>发起人</strong><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">发起人角色</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">发起人角色利用一个新创建的备忘录对象将自己内部状态存储起来</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Originator</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="n">state</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  工厂方法 , 返回一个新的备忘录对象 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">Memento</span> <span class="nf">createMemento</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//由发起人新建备忘录对象，并将自己的状态存储在备忘录对象中</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">new</span> <span class="nf">Memento</span><span class="o">(</span><span class="n">state</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  将发起人恢复到备忘录对象所记载的状态 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">restoreMemento</span><span class="o">(</span><span class="n">Memento</span> <span class="n">memento</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">memento</span><span class="o">.</span><span class="na">getState</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  状态的取值方法 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">getState</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">state</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  状态的赋值方法 </span>
+</span><span class='line'><span class="cm"> *  设定发起人对象的内部状态</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setState</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;CurrentState = &quot;</span> <span class="o">+</span> <span class="k">this</span><span class="o">.</span><span class="na">state</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>备忘录</strong><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">备忘录角色</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">备忘录对象将发起人对象传入的状态存储起来</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Memento</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="n">state</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="nf">Memento</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  状态的取值方法 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">getState</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">state</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  状态的赋值方法 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setState</span><span class="o">(</span><span class="n">String</span> <span class="n">state</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">**</span><span class="n">负责人</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">负责人角色</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">负责人角色负责保存备忘录对象</span><span class="err">，</span><span class="n">但从不修改</span><span class="o">(</span><span class="n">甚至不查看</span><span class="o">)</span><span class="n">备忘录对象的内容</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Caretaker</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//负责人持有备忘录对象的引用.</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Memento</span> <span class="n">memento</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  备忘录的取值方法 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">Memento</span> <span class="nf">retrieveMemento</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">memento</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  备忘录的赋值方法 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">saveMemento</span><span class="o">(</span><span class="n">Memento</span> <span class="n">memento</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">memento</span> <span class="o">=</span> <span class="n">memento</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>测试</strong><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
+</span><span class='line'> <span class="o">*</span>  <span class="n">客户端角色</span>
+</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Originator</span> <span class="n">o</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Originator</span><span class="o">();</span><span class="c1">//发起人</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Caretaker</span> <span class="n">c</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Caretaker</span><span class="o">();</span><span class="c1">//负责人&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//改变负责人的状态</span>
+</span><span class='line'>    <span class="n">o</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="s">&quot;on&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">o</span><span class="o">.</span><span class="na">getState</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//创建备忘录对象，并将发起人对象的状态存储起来</span>
+</span><span class='line'>    <span class="n">c</span><span class="o">.</span><span class="na">saveMemento</span><span class="o">(</span><span class="n">o</span><span class="o">.</span><span class="na">createMemento</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//改变负责人的状态</span>
+</span><span class='line'>    <span class="n">o</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="s">&quot;off&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">o</span><span class="o">.</span><span class="na">getState</span><span class="o">());</span>
+</span><span class='line'>    <span class="c1">//恢复发起人对象的状态</span>
+</span><span class='line'>    <span class="n">o</span><span class="o">.</span><span class="na">restoreMemento</span><span class="o">(</span><span class="n">c</span><span class="o">.</span><span class="na">retrieveMemento</span><span class="o">());</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">o</span><span class="o">.</span><span class="na">getState</span><span class="o">());</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之代理模式[17]]]></title>
@@ -914,176 +1216,6 @@ public class ConcreteComponent implements Component
 
 <p><strong>装饰模式缺点</strong><br>
 <img src="/images/decoratordp5.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之适配器模式[13]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/20/adapter-design-pattern/"/>
-    <updated>2016-07-20T19:38:22+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/20/adapter-design-pattern</id>
-    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
-
-<p><font color=#FF0000><strong>将一个类的接口转换成客户希望的另外一个接口，适配器模式使得原本由于接口 不兼容而 不能一起工作的哪些类可以一起工作.</strong></font></p>
-
-<p><font color=#FF0000><strong>别名:包装器 Wrapper</strong></font></p>
-
-<p><strong>类的适配器模式结构</strong><br>
-<img src="/images/adapterdp1.jpg"></p>
-
-<p><strong>对象的适配器模式结构</strong><br>
-<img src="/images/adapterdp2.jpg"></p>
-
-<p><strong>类的适配器模式角色</strong><br>
-<img src="/images/adapterdp3.jpg"></p>
-
-<p><strong>对象的适配器模式角色</strong><br>
-<img src="/images/adapterdp4.jpg"></p>
-
-<p><strong>类的适配器模式代码</strong></p>
-
-<pre><code class="java ">/**
- *  源角色 
- */
-public class Adaptee
-{
-    /**
-     *  源类含有的方法 sampleOperation1
-     */
-    public void sampleOperation1()
-    {
-        System.out.println("oper1...");
-    }
-}
-</code></pre>
-
-<pre><code class="java ">/**
- *  目标角色
- */
-public interface Target
-{
-    //这是源类也有的方法
-    void sampleOperation1();
-
-    //这是源类没有的方法
-    void sampleOperation2();
-
-}
-</code></pre>
-
-<pre><code class="java ">/**
- *  适配器角色 
- *  适配器将源接口转换成目标接口
- *
- *  类的适配器类继承源角色类来提供源角色类已有的方法,
- *  实现目标角色接口来添加目标角色有而源角色没有的方法.
- */
-public class Adapter extends Adaptee implements Target
-{
-    //源角色也有的方法
-    @Override
-    public void sampleOperation1()
-    {
-        super.sampleOperation1();
-    }
-
-    /**
-     * 源类Adaptee没有此方法,由适配器类添加
-     */
-    @Override
-    public void sampleOperation2()
-    {
-        System.out.println("oper2...");
-    }
-}
-</code></pre>
-
-<pre><code class="java ">//测试
-public class test
-{
-    private final static Target tar = new Adapter();
-
-    public static void main(String[] args)
-    {
-        tar.sampleOperation1();
-        tar.sampleOperation2();
-    }
-
-}
-</code></pre>
-
-<p><strong>对象的适配器模式代码</strong></p>
-
-<pre><code class="java">/**
- *  源角色 
- */
-public class Adaptee
-{
-    //源类有方法sampleOperation1
-    public void sampleOperation1()
-    {
-        System.out.println("源角色自有方法sampleOperation1.");
-    }
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  目标角色 
- */
-public interface Target
-{
-    //源类也有的方法sampleOperation1
-    void sampleOperation1();
-
-    //源类没有的方法sampleOperation2
-    void sampleOperation2();
-}
-</code></pre>
-
-<pre><code class="java">/**
- *  适配器角色 
- */
-public class Adapter implements Target
-{
-    private Adaptee adaptee;//源角色类
-
-    //适配器类和源角色类之间是聚合关系.
-    public Adapter(Adaptee adaptee)
-    {
-        this.adaptee = adaptee;
-    }
-
-    //源类也有的方法sampleOperation1
-    @Override
-    public void sampleOperation1()
-    {
-        adaptee.sampleOperation1();
-    }
-
-    //源类没有的方法,由适配器类来补充此方法
-    @Override
-    public void sampleOperation2()
-    {
-        System.out.println("适配器类增补方法sampleOperation2.");
-    }
-}
-</code></pre>
-
-<pre><code class="java">//测试
-public class test2_1
-{
-    public static void main(String[] args)
-    {
-        Target target = new Adapter(new Adaptee());
-
-        target.sampleOperation1();
-        target.sampleOperation2();
-    }
-}
-</code></pre>
-
-<p><strong>适配器模式适用情况</strong><br>
-<img src="/images/adapterdp4.jpg"></p>
 ]]></content>
   </entry>
   
