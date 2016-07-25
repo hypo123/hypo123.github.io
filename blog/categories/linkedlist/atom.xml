@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Linkedlist | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/linkedlist/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T15:22:14+08:00</updated>
+  <updated>2016-07-25T16:40:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -34,7 +34,7 @@
 
 <p><font color=#FF0000>Difficulty: Medium</font><br></p>
 
-<p><img src="/images/61.jpg"></p>
+<p>{%img /images/61.jpg %}</p>
 
 <pre><code class="java">package com.hypo.LinkedList;
 
@@ -116,7 +116,7 @@ public class T61_RotateList
 
 <p>运行时间:</p>
 
-<p><img src="/images/61_2.jpg"></p>
+<p>{%img /images/61_2.jpg %}</p>
 ]]></content>
   </entry>
   

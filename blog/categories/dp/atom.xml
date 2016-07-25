@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Dp | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/dp/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T15:22:14+08:00</updated>
+  <updated>2016-07-25T16:40:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -30,7 +30,7 @@
 有2条不同路径<br></p>
 
 <p><font color=#FF0000>Difficulty: Medium</font><br>
-<img src="/images/63.jpg"></p>
+{%img /images/63.jpg %}</p>
 
 <p>分析:
 可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
@@ -90,7 +90,7 @@ public class T63_UniquePathsII
                           {0,1,0},
                           {0,0,0}};
 
-        int[][] grid2 = 1;
+        int[][] grid2 = {{1}};
 
         System.out.println(t63.uniquePathsWithObstacles(grid));
     }
@@ -98,7 +98,7 @@ public class T63_UniquePathsII
 </code></pre>
 
 <p>运行时间:
-<img src="/images/63_2.jpg"></p>
+{%img /images/63_2.jpg %}</p>
 
 <p>代码简化，但运行时间更长</p>
 
@@ -142,7 +142,7 @@ public class T63_UniquePathsII
 
 <p>运行时间:</p>
 
-<p><img src="/images/63_3.jpg"></p>
+<p>{%img /images/63_3.jpg %}</p>
 ]]></content>
   </entry>
   
@@ -152,10 +152,10 @@ public class T63_UniquePathsII
     <updated>2016-03-16T21:04:30+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/03/16/leetcode62-unique-paths-dp</id>
     <content type="html"><![CDATA[<p>给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动.
-<img src="/images/62.jpg"></p>
+{%img /images/62.jpg %}</p>
 
 <p><font color=#FF0000>Difficulty: Medium</font><br>
-<img src="/images/62_2.jpg"></p>
+{%img /images/62_2.jpg %}</p>
 
 <p>分析:
 可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
@@ -246,7 +246,7 @@ public class T62_UniquePaths
 
 <p>```</p>
 
-<p><img src="/images/62_3.jpg"></p>
+<p>{%img /images/62_3.jpg %}</p>
 
 <p>还有数学公式的方法更优</p>
 ]]></content>

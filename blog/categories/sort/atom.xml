@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Sort | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/sort/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T15:22:14+08:00</updated>
+  <updated>2016-07-25T16:40:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -119,7 +119,7 @@ public class MaximumGap_T164
 </code></pre>
 
 <p>运行结果:
-<img src="/images/164.jpg"></p>
+{%img /images/164.jpg %}</p>
 ]]></content>
   </entry>
   

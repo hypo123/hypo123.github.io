@@ -4,7 +4,7 @@
   <title><![CDATA[Category: String | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/string/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T15:22:14+08:00</updated>
+  <updated>2016-07-25T16:40:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -20,7 +20,7 @@
     <id>http://www.regenthypo.com/blog/2016/03/25/leetcode43-multiply-strings-string</id>
     <content type="html"><![CDATA[<p>这其实是一道大数相乘的题目<br>
 这个要注意一个小技巧:即nums[i]*nums[j]产生的积在[i+j,i+j+1]位上，如下图<br>
-<img src="/images/jc43.jpg"></p>
+{%img /images/jc43.jpg %}</p>
 
 <pre><code class="java">package tencent;
 
@@ -79,7 +79,7 @@ public class BigNumberMultiply
 }
 </code></pre>
 
-<p><img src="/images/jc43_2.jpg"></p>
+<p>{%img /images/jc43_2.jpg %}</p>
 ]]></content>
   </entry>
   
@@ -114,7 +114,7 @@ path = &ldquo;/home//foo/&rdquo; , => &ldquo;/home/foo&rdquo;</p>
 
 <p>Difficulty: Medium</p>
 
-<p><img src="/images/71.jpg"></p>
+<p>{%img /images/71.jpg %}</p>
 
 <ul>
 <li>分析：</li>
@@ -184,7 +184,7 @@ public class Simplify_Path
 </code></pre>
 
 <p>运行结果:
-<img src="/images/71_2.jpg"></p>
+{%img /images/71_2.jpg %}</p>
 ]]></content>
   </entry>
   

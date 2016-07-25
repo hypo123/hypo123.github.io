@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T15:22:14+08:00</updated>
+  <updated>2016-07-25T16:40:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,441 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[HashTable源码分析]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/25/hashtable/"/>
+    <updated>2016-07-25T13:26:15+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/25/hashtable</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>Hashtable在Map框架图中的位置</strong></font><br>
+{%img /images/Hashtable1.jpg %}</p>
+
+<h2>1.定义</h2>
+
+<p>public class Hashtable&lt;K,V> extends Dictionary&lt;K,V> implements Map&lt;K,V>, Cloneable, java.io.Serializable</p>
+
+<p>public class HashMap&lt;K,V> extends AbstractMap&lt;K,V>  implements Map&lt;K,V>, Cloneable, Serializable</p>
+
+<p><font color=#0000CD><strong>Hashtable实现了Map接口，继承了Dictionary类，其中Map接口定义了键值的映射规则，而Dictionary类是任何可将键映射到相应值的类的抽象父类.</strong></font></p>
+
+<p><font color=#FF0000><strong>Hashtable中的函数都是用了synchronized关键字进行同步，是线程安全的;而HashMap则没有，不是线程安全的.</strong></font><br></p>
+
+<h2>2.Hashtable类中变量</h2>
+
+<pre><code>//Hashtable的底层类似于HashMap也是基于数组和链表来实现,其中的数组指的的table数组
+private transient Entry[] table;
+
+private transient int count;//存储的键值对个数
+
+private int threshold;//阈值 当实际大小超过阈值时，会进行扩容  阈值=容量*加载因子
+
+
+private float loadFactor;//加载因子
+
+
+private transient int modCount = 0;//Hashtable结构被改变的次数
+
+private static final long serialVersionUID = 1421746759512286392L;//序列号
+</code></pre>
+
+<h2>Hashtable中的数据结构</h2>
+
+<p><font color=#0000CD><strong>Hashtable的底层结构与HashMap类似，都是数组加链表.</strong></font><br>
+{%img /images/Hashtable2.jpg %}</p>
+
+<h2>Hashtable类的构造函数</h2>
+
+<pre><code>//用指定初始容量和指定加载因子构造一个新的空哈希表
+public Hashtable(int initialCapacity, float loadFactor) 
+{
+    //检查参数是否合法
+    if (initialCapacity &lt; 0)
+        throw new IllegalArgumentException("Illegal Capacity: "+
+                                           initialCapacity);
+    //检查参数是否合法
+    if (loadFactor &lt;= 0 || Float.isNaN(loadFactor))
+        throw new IllegalArgumentException("Illegal Load: "+loadFactor);
+
+    if (initialCapacity==0)
+        initialCapacity = 1;
+
+    this.loadFactor = loadFactor;
+
+    //初始化一个大小为initialCapacity的Entry数组(table数组)
+    table = new Entry[initialCapacity];
+
+    //阈值等于初始容量*装载因子
+    threshold = (int)(initialCapacity * loadFactor);
+}
+
+//用指定初始容量和默认的加载因子0.75构造一个新的空哈希表
+public Hashtable(int initialCapacity) 
+{
+    this(initialCapacity, 0.75f);
+}
+
+//用默认的初始容量11和加载因子0.75构造一个新的空哈希表
+public Hashtable() 
+{
+    this(11, 0.75f);
+}
+
+//构造一个与给定的 Map 具有相同映射关系的新哈希表
+public Hashtable(Map&lt;? extends K, ? extends V&gt; t) 
+{
+    this(Math.max(2*t.size(), 11), 0.75f);
+    putAll(t);
+}
+</code></pre>
+
+<p><strong>Entry为Hashtable的静态内部类</strong><br>
+<font color=#0000CD><strong>链表上的结点都是由Entry对象组成.</strong></font><br>
+<font color=#0000CD><strong>Hashtable中的内部类Entry与HashMap中的内部类Entry类似.</strong></font><br>
+```java
+   private static class Entry&lt;K,V> implements Map.Entry&lt;K,V>
+   {
+        int hash; //hash值
+        K key;  //键 key
+        V value;//值 value
+        Entry&lt;K,V> next;//下一个结点</p>
+
+<pre><code>    protected Entry(int hash, K key, V value, Entry&lt;K,V&gt; next) 
+    {
+        this.hash = hash;
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+
+    protected Object clone() 
+    {
+        return new Entry&lt;&gt;(hash, key, value,
+                              (next==null ? null : (Entry&lt;K,V&gt;) next.clone()));
+    }
+
+    public K getKey() 
+    {
+        return key;
+    }
+
+    public V getValue() 
+    {
+        return value;
+    }
+
+    public V setValue(V value) 
+    {
+        if (value == null)
+            throw new NullPointerException();
+
+        V oldValue = this.value;
+        this.value = value;
+        return oldValue;
+    }
+
+    //判断结点是否相等
+    public boolean equals(Object o) 
+    {
+        if (!(o instanceof Map.Entry))
+            return false;
+        Map.Entry e = (Map.Entry)o;
+
+        return (key==null ? e.getKey()==null : key.equals(e.getKey())) &amp;&amp;
+           (value==null ? e.getValue()==null : value.equals(e.getValue()));
+    }
+
+    public int hashCode() 
+    {
+        return hash ^ (value==null ? 0 : value.hashCode());
+    }
+
+    public String toString() 
+    {
+        return key.toString()+"="+value.toString();
+    }
+}
+</code></pre>
+
+<pre><code>
+##计算添加元素的位置
+</code></pre>
+
+<pre><code>public synchronized int hashCode() 
+{
+
+    int h = 0;
+
+    if (count == 0 || loadFactor &lt; 0)
+    {
+        return h;  // Returns zero
+    }
+
+    loadFactor = -loadFactor;  // Mark hashCode computation in progress
+
+    Entry[] tab = table;
+
+    for (int i = 0; i &lt; tab.length; i++)
+        for (Entry e = tab[i]; e != null; e = e.next)
+            h += e.key.hashCode() ^ e.value.hashCode();
+
+    loadFactor = -loadFactor;  // Mark hashCode computation complete
+
+    return h;
+}
+</code></pre>
+
+<pre><code>&lt;font color=#0000CD&gt;**Hashtable重写了hashCode函数来计算键的hash值**&lt;/font&gt;&lt;br&gt;
+&lt;font color=#0000CD&gt;**这也是与HashMap的不同，HashMap中先使用hashCode函数再使用hash函数来计算数组下标.**&lt;/font&gt;&lt;br&gt;
+&lt;font color=#0000CD&gt;**而Hashtable中先使用hashCode函数再使用(hash &amp; 0x7FFFFFFF) % tab.length运算来计算数组下标.**&lt;/font&gt;&lt;br&gt;
+
+##存储元素——put函数
+</code></pre>
+
+<pre><code>public synchronized V put(K key, V value) 
+{
+    //Hashtable对象中不允许存储的值为null
+    if (value == null) 
+    {
+        throw new NullPointerException();
+    }
+
+    Entry tab[] = table;
+
+    //使用hashCode函数计算键的hash值
+    //键key不能为null,如果为null,这里要抛出NullPointerException异常
+    int hash = key.hashCode();
+
+    //计算键在table数组的下标
+    int index = (hash &amp; 0x7FFFFFFF) % tab.length;
+
+    //如果键已经在Hashtable中，则只需更新该键的值即可
+    for (Entry&lt;K,V&gt; e = tab[index] ; e != null ; e = e.next) 
+    {
+        if ((e.hash == hash) &amp;&amp; e.key.equals(key)) 
+        {
+            V old = e.value;
+            e.value = value;
+            return old;
+        }
+    }
+
+    modCount++;
+
+    //增加一个键值对后要判断Hashtable中键值对个数是否超过阈值
+    if (count &gt;= threshold) //超过阈值则要进行扩容
+    {
+        //调用rehash函数对Hashtable进行扩容
+        rehash();
+
+        tab = table;
+
+        index = (hash &amp; 0x7FFFFFFF) % tab.length;
+    }
+
+    //将当前位置上的结点作为新结点的下一个结点.
+    Entry&lt;K,V&gt; e = tab[index];
+
+    //新建Entry结点,并将其存储在数组中
+    tab[index] = new Entry&lt;&gt;(hash, key, value, e);
+
+    count++;
+
+    return null;
+}
+</code></pre>
+
+<pre><code>
+&lt;font color=#0000CD&gt;**注意Hashtable中键(key)和值(value)都不能为null,这是与HashMap不同的;**&lt;/font&gt;&lt;br&gt;
+&lt;font color=#0000CD&gt;**HashMap允许一个为null键(key)和任一个为null的值(value).**&lt;/font&gt;&lt;br&gt;
+
+
+&lt;font color=#0000CD&gt;**Hashtable扩容-rehash函数**&lt;/font&gt;&lt;br&gt;
+</code></pre>
+
+<pre><code>protected void rehash() 
+{
+    int oldCapacity = table.length;
+
+    Entry[] oldMap = table;
+
+    //新容量为旧容量的两倍再加1
+    int newCapacity = (oldCapacity &lt;&lt; 1) + 1;
+
+    //到达容量极限
+    if (newCapacity - MAX_ARRAY_SIZE &gt; 0) 
+    {
+        if (oldCapacity == MAX_ARRAY_SIZE)
+        {
+            return;
+        }
+
+        newCapacity = MAX_ARRAY_SIZE;
+    }
+
+    //以新容量新建一个Entry数组
+    Entry[] newMap = new Entry[newCapacity];
+
+    modCount++;
+
+    //计算新的阈值
+    threshold = (int)(newCapacity * loadFactor);
+
+    table = newMap;
+
+    //依次将旧table数组中的所有结点拷贝到新的table数组中.
+    for (int i = oldCapacity ; i-- &gt; 0 ;)
+    {
+        for (Entry&lt;K,V&gt; old = oldMap[i] ; old != null ; ) 
+        {
+            Entry&lt;K,V&gt; e = old;
+            old = old.next;
+
+            int index = (e.hash &amp; 0x7FFFFFFF) % newCapacity;
+            e.next = newMap[index];
+            newMap[index] = e;
+        }
+    }
+}
+</code></pre>
+
+<pre><code>&lt;font color=#0000CD&gt;**Hashtable扩容上也与HashMap不一样,HashMap中新数组大小直接扩为原数组的2倍，而Hashtable是扩为原数组大小的2倍再加1.**&lt;/font&gt;&lt;br&gt;
+
+
+##读取元素——get函数
+&lt;font color=#0000CD&gt;**给返回指定键所映射到的值**&lt;/font&gt;&lt;br&gt;
+</code></pre>
+
+<pre><code>public synchronized V get(Object key) 
+{
+    Entry tab[] = table;
+
+    //计算该键的hash值
+    int hash = key.hashCode();
+
+    //计算该键对象的数组下标
+    int index = (hash &amp; 0x7FFFFFFF) % tab.length;
+
+    for (Entry&lt;K,V&gt; e = tab[index] ; e != null ; e = e.next) 
+    {
+        if ((e.hash == hash) &amp;&amp; e.key.equals(key)) 
+        {
+            return e.value;
+        }
+    }
+
+    //如果此Hashtable不包含此键的映射，则返回null
+    return null;
+}
+</code></pre>
+
+<pre><code>
+##移除元素——remove函数
+&lt;font color=#0000CD&gt;**从哈希表中移除该键及其相应的值**&lt;/font&gt;&lt;br&gt;
+</code></pre>
+
+<pre><code>public synchronized V remove(Object key) 
+{
+
+    Entry tab[] = table;
+    int hash = key.hashCode();
+    int index = (hash &amp; 0x7FFFFFFF) % tab.length;
+
+    //在table数组中下标为index的位置寻找该键
+    for (Entry&lt;K,V&gt; e = tab[index], prev = null ; e != null ; prev = e, e = e.next) 
+    {
+        //找到该键对应的值
+        if ((e.hash == hash) &amp;&amp; e.key.equals(key)) 
+        {
+            modCount++;
+
+            if (prev != null) 
+            {
+                prev.next = e.next;
+            } 
+            else
+            {
+                tab[index] = e.next;
+            }
+
+            count--;
+
+            V oldValue = e.value;
+            e.value = null;
+            return oldValue;
+        }
+    }
+
+    //如果该键不在Hashtable中,则此返回null,不执行任何操作
+    return null;
+}
+</code></pre>
+
+<pre><code>
+##equals函数
+&lt;font color=#0000CD&gt;**Hashtable重写了equals方法**&lt;/font&gt;&lt;br&gt;
+</code></pre>
+
+<pre><code>public synchronized boolean equals(Object o) 
+{
+    //直接使用"==",比较对象地址
+    if (o == this)
+    {
+        return true;
+    }
+
+
+    if (!(o instanceof Map))
+    {
+        return false;
+    }
+
+    Map&lt;K,V&gt; t = (Map&lt;K,V&gt;) o;
+
+    if (t.size() != size())
+    {
+        return false;
+    }
+
+    try 
+    {
+        Iterator&lt;Map.Entry&lt;K,V&gt;&gt; i = entrySet().iterator();
+
+        while (i.hasNext()) 
+        {
+            Map.Entry&lt;K,V&gt; e = i.next();
+            K key = e.getKey();
+            V value = e.getValue();
+
+            if (value == null)
+            {
+                if (!(t.get(key)==null &amp;&amp; t.containsKey(key)))
+                {
+                    return false;
+                }
+            } 
+            else 
+            {
+                if (!value.equals(t.get(key)))
+                    return false;
+            }
+        }
+    } 
+    catch (ClassCastException unused)   
+    {
+        return false;
+    } 
+    catch (NullPointerException unused) 
+    {
+        return false;
+    }
+
+    return true;
+}
+</code></pre>
+
+<p>```</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Java的七种垃圾收集器]]></title>
@@ -27,7 +462,531 @@
     <link href="http://www.regenthypo.com/blog/2016/07/22/concurrenthashmap/"/>
     <updated>2016-07-22T15:11:38+08:00</updated>
     <id>http://www.regenthypo.com/blog/2016/07/22/concurrenthashmap</id>
-    <content type="html"><![CDATA[
+    <content type="html"><![CDATA[<h2>1.定义</h2>
+
+<p>public class ConcurrentHashMap&lt;K, V> extends AbstractMap&lt;K, V>
+        implements ConcurrentMap&lt;K, V>, Serializable
+<font color=#FF0000><strong>ConcurrentHashMap继承了AbstractMap类，实现了ConcurrentMap接口.</strong></font><br></p>
+
+<h2>2.ConcurrentHashMap类中变量</h2>
+
+<pre><code>private static final long serialVersionUID = 7249069246763182397L;
+
+
+/* ---------------- 常量 -------------- */
+
+static final int DEFAULT_INITIAL_CAPACITY = 16;//默认的初始容量为16
+
+static final float DEFAULT_LOAD_FACTOR = 0.75f;//默认装载因子
+
+static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+
+static final int MAXIMUM_CAPACITY = 1 &lt;&lt; 30;//最大容量
+
+static final int MIN_SEGMENT_TABLE_CAPACITY = 2;
+
+static final int MAX_SEGMENTS = 1 &lt;&lt; 16; // 
+
+static final int RETRIES_BEFORE_LOCK = 2;
+
+/* ---------------- 成员变量 -------------- */
+
+final int segmentMask;//段掩码
+
+final int segmentShift;//段偏移量
+
+final Segment&lt;K,V&gt;[] segments;//段的数组
+
+transient Set&lt;K&gt; keySet;
+transient Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;
+transient Collection&lt;V&gt; values;
+</code></pre>
+
+<h2>ConcurrentHashMap底层结构</h2>
+
+<p><font color=#0000CD><strong>Hashtable中锁定的单位是整个table数组.只要有一个线程已经锁定了Hashtable，别的线程只能等该线程操作完毕释放锁后，才能对Hashtable进行操作.</strong></font><br>
+{%img /images/concurrentHashMap1.jpg %}</p>
+
+<p><font color=#0000CD><strong>ConcurrentHashMap并不是讲每个方法都在同一个锁上进行同步并使得每次只能有一个线程访问容器，
+    而是使用了一种粒度更细的加锁机制来实现更大程度的共享.</strong></font><br></p>
+
+<p><font color=#0000CD><strong>ConcurrentHashMap锁定的单位是段.</strong></font><br>
+{%img /images/concurrentHashMap2.jpg %}</p>
+
+<h2>ConcurrentHashMap类的构造函数</h2>
+
+<pre><code class="java">    @SuppressWarnings("unchecked")
+    public ConcurrentHashMap(int initialCapacity,
+                             float loadFactor, int concurrencyLevel) 
+    {
+        //判断参数是否合法
+        if (!(loadFactor &gt; 0) || initialCapacity &lt; 0 || concurrencyLevel &lt;= 0)
+            throw new IllegalArgumentException();
+
+        if (concurrencyLevel &gt; MAX_SEGMENTS)
+            concurrencyLevel = MAX_SEGMENTS;
+
+        // Find power-of-two sizes best matching arguments
+        int sshift = 0;
+        int ssize = 1;
+
+        while (ssize &lt; concurrencyLevel) 
+        {
+            ++sshift;
+            ssize &lt;&lt;= 1;
+        }
+
+        this.segmentShift = 32 - sshift;
+
+        this.segmentMask = ssize - 1;
+
+        if (initialCapacity &gt; MAXIMUM_CAPACITY)
+        {
+            initialCapacity = MAXIMUM_CAPACITY;
+        }
+
+        int c = initialCapacity / ssize;
+
+        if (c * ssize &lt; initialCapacity)
+        {
+            ++c;
+        }
+
+        int cap = MIN_SEGMENT_TABLE_CAPACITY;
+
+        while (cap &lt; c)
+        {
+            cap &lt;&lt;= 1;
+        }
+
+
+        // create segments and segments[0]
+        Segment&lt;K,V&gt; s0 =
+            new Segment&lt;K,V&gt;(loadFactor, (int)(cap * loadFactor),
+                             (HashEntry&lt;K,V&gt;[])new HashEntry[cap]);
+
+        Segment&lt;K,V&gt;[] ss = (Segment&lt;K,V&gt;[])new Segment[ssize];
+
+        UNSAFE.putOrderedObject(ss, SBASE, s0); // ordered write of segments[0]
+
+        this.segments = ss;
+    }
+</code></pre>
+
+<pre><code class="java">    public ConcurrentHashMap(int initialCapacity, float loadFactor) 
+    {
+        this(initialCapacity, loadFactor, DEFAULT_CONCURRENCY_LEVEL);
+    }
+</code></pre>
+
+<pre><code class="java">    public ConcurrentHashMap(int initialCapacity) 
+    {
+        this(initialCapacity, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
+    }
+</code></pre>
+
+<pre><code class="java">    public ConcurrentHashMap() 
+    {
+        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
+    }
+</code></pre>
+
+<pre><code class="java">    public ConcurrentHashMap(Map&lt;? extends K, ? extends V&gt; m) 
+    {
+        this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1,
+                      DEFAULT_INITIAL_CAPACITY),
+             DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL);
+        putAll(m);
+    }
+</code></pre>
+
+<h2>ConcurrentHashMap的内部类(结点)**<br></h2>
+
+<p><font color=#0000CD><strong>链表上的结点都是由HashEntry对象组成.</strong></font><br>
+```java
+static final class HashEntry&lt;K,V>
+{
+        final int hash;//hash值
+        final K key; //键
+        volatile V value; //值
+        volatile HashEntry&lt;K,V> next; //下一个结点</p>
+
+<pre><code>    HashEntry(int hash, K key, V value, HashEntry&lt;K,V&gt; next) 
+    {
+        this.hash = hash;
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+
+    final void setNext(HashEntry&lt;K,V&gt; n) 
+    {
+        UNSAFE.putOrderedObject(this, nextOffset, n);
+    }
+
+    // Unsafe mechanics
+    static final sun.misc.Unsafe UNSAFE;
+    static final long nextOffset;
+    static 
+    {
+        try 
+        {
+            UNSAFE = sun.misc.Unsafe.getUnsafe();
+            Class k = HashEntry.class;
+            nextOffset = UNSAFE.objectFieldOffset
+                (k.getDeclaredField("next"));
+        } 
+        catch (Exception e) 
+        {
+            throw new Error(e);
+        }
+    }
+</code></pre>
+
+<p>}
+```</p>
+
+<h2>计算添加元素的位置</h2>
+
+<p><font color=#0000CD><strong> </strong></font><br>
+<code>java
+    private static int hash(int h)
+    {
+        h += (h &lt;&lt;  15) ^ 0xffffcd7d;
+        h ^= (h &gt;&gt;&gt; 10);
+        h += (h &lt;&lt;   3);
+        h ^= (h &gt;&gt;&gt;  6);
+        h += (h &lt;&lt;   2) + (h &lt;&lt; 14);
+        return h ^ (h &gt;&gt;&gt; 16);
+    }
+</code>
+    // Hash-based segment and entry accesses</p>
+
+<pre><code>@SuppressWarnings("unchecked")
+private Segment&lt;K,V&gt; segmentForHash(int h) 
+{
+    long u = (((h &gt;&gt;&gt; segmentShift) &amp; segmentMask) &lt;&lt; SSHIFT) + SBASE;
+    return (Segment&lt;K,V&gt;) UNSAFE.getObjectVolatile(segments, u);
+}
+
+
+@SuppressWarnings("unchecked")
+static final &lt;K,V&gt; HashEntry&lt;K,V&gt; entryForHash(Segment&lt;K,V&gt; seg, int h) 
+{
+    HashEntry&lt;K,V&gt;[] tab;
+    return (seg == null || (tab = seg.table) == null) ? null :
+        (HashEntry&lt;K,V&gt;) UNSAFE.getObjectVolatile
+        (tab, ((long)(((tab.length - 1) &amp; h)) &lt;&lt; TSHIFT) + TBASE);
+}
+</code></pre>
+
+<h2>内部类Segment</h2>
+
+<p><font color=#0000CD><strong>一个ConcurrentHashMap由多个段(Segment)组成,每一个段都包含一个HashEntry结点数组的Hashtable.</strong></font><br>
+```java</p>
+
+<pre><code>static final class Segment&lt;K,V&gt; extends ReentrantLock implements Serializable 
+{
+
+    private static final long serialVersionUID = 2249069246763182397L;
+
+
+    static final int MAX_SCAN_RETRIES =
+        Runtime.getRuntime().availableProcessors() &gt; 1 ? 64 : 1;
+
+
+    transient volatile HashEntry&lt;K,V&gt;[] table;
+
+
+    transient int count;
+
+
+    transient int modCount;
+
+
+    transient int threshold;
+
+
+    final float loadFactor;
+
+    Segment(float lf, int threshold, HashEntry&lt;K,V&gt;[] tab) {
+        this.loadFactor = lf;
+        this.threshold = threshold;
+        this.table = tab;
+    }
+
+    final V put(K key, int hash, V value, boolean onlyIfAbsent) {
+        HashEntry&lt;K,V&gt; node = tryLock() ? null :
+            scanAndLockForPut(key, hash, value);
+        V oldValue;
+        try {
+            HashEntry&lt;K,V&gt;[] tab = table;
+            int index = (tab.length - 1) &amp; hash;
+            HashEntry&lt;K,V&gt; first = entryAt(tab, index);
+            for (HashEntry&lt;K,V&gt; e = first;;) {
+                if (e != null) {
+                    K k;
+                    if ((k = e.key) == key ||
+                        (e.hash == hash &amp;&amp; key.equals(k))) {
+                        oldValue = e.value;
+                        if (!onlyIfAbsent) {
+                            e.value = value;
+                            ++modCount;
+                        }
+                        break;
+                    }
+                    e = e.next;
+                }
+                else {
+                    if (node != null)
+                        node.setNext(first);
+                    else
+                        node = new HashEntry&lt;K,V&gt;(hash, key, value, first);
+                    int c = count + 1;
+                    if (c &gt; threshold &amp;&amp; tab.length &lt; MAXIMUM_CAPACITY)
+                        rehash(node);
+                    else
+                        setEntryAt(tab, index, node);
+                    ++modCount;
+                    count = c;
+                    oldValue = null;
+                    break;
+                }
+            }
+        } finally {
+            unlock();
+        }
+        return oldValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void rehash(HashEntry&lt;K,V&gt; node) {
+
+        HashEntry&lt;K,V&gt;[] oldTable = table;
+        int oldCapacity = oldTable.length;
+        int newCapacity = oldCapacity &lt;&lt; 1;
+        threshold = (int)(newCapacity * loadFactor);
+        HashEntry&lt;K,V&gt;[] newTable =
+            (HashEntry&lt;K,V&gt;[]) new HashEntry[newCapacity];
+        int sizeMask = newCapacity - 1;
+        for (int i = 0; i &lt; oldCapacity ; i++) {
+            HashEntry&lt;K,V&gt; e = oldTable[i];
+            if (e != null) {
+                HashEntry&lt;K,V&gt; next = e.next;
+                int idx = e.hash &amp; sizeMask;
+                if (next == null)   //  Single node on list
+                    newTable[idx] = e;
+                else { // Reuse consecutive sequence at same slot
+                    HashEntry&lt;K,V&gt; lastRun = e;
+                    int lastIdx = idx;
+                    for (HashEntry&lt;K,V&gt; last = next;
+                         last != null;
+                         last = last.next) {
+                        int k = last.hash &amp; sizeMask;
+                        if (k != lastIdx) {
+                            lastIdx = k;
+                            lastRun = last;
+                        }
+                    }
+                    newTable[lastIdx] = lastRun;
+                    // Clone remaining nodes
+                    for (HashEntry&lt;K,V&gt; p = e; p != lastRun; p = p.next) {
+                        V v = p.value;
+                        int h = p.hash;
+                        int k = h &amp; sizeMask;
+                        HashEntry&lt;K,V&gt; n = newTable[k];
+                        newTable[k] = new HashEntry&lt;K,V&gt;(h, p.key, v, n);
+                    }
+                }
+            }
+        }
+        int nodeIndex = node.hash &amp; sizeMask; // add the new node
+        node.setNext(newTable[nodeIndex]);
+        newTable[nodeIndex] = node;
+        table = newTable;
+    }
+
+
+    private HashEntry&lt;K,V&gt; scanAndLockForPut(K key, int hash, V value) {
+        HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
+        HashEntry&lt;K,V&gt; e = first;
+        HashEntry&lt;K,V&gt; node = null;
+        int retries = -1; // negative while locating node
+        while (!tryLock()) {
+            HashEntry&lt;K,V&gt; f; // to recheck first below
+            if (retries &lt; 0) {
+                if (e == null) {
+                    if (node == null) // speculatively create node
+                        node = new HashEntry&lt;K,V&gt;(hash, key, value, null);
+                    retries = 0;
+                }
+                else if (key.equals(e.key))
+                    retries = 0;
+                else
+                    e = e.next;
+            }
+            else if (++retries &gt; MAX_SCAN_RETRIES) {
+                lock();
+                break;
+            }
+            else if ((retries &amp; 1) == 0 &amp;&amp;
+                     (f = entryForHash(this, hash)) != first) {
+                e = first = f; // re-traverse if entry changed
+                retries = -1;
+            }
+        }
+        return node;
+    }
+
+
+    private void scanAndLock(Object key, int hash) {
+        // similar to but simpler than scanAndLockForPut
+        HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
+        HashEntry&lt;K,V&gt; e = first;
+        int retries = -1;
+        while (!tryLock()) {
+            HashEntry&lt;K,V&gt; f;
+            if (retries &lt; 0) {
+                if (e == null || key.equals(e.key))
+                    retries = 0;
+                else
+                    e = e.next;
+            }
+            else if (++retries &gt; MAX_SCAN_RETRIES) {
+                lock();
+                break;
+            }
+            else if ((retries &amp; 1) == 0 &amp;&amp;
+                     (f = entryForHash(this, hash)) != first) {
+                e = first = f;
+                retries = -1;
+            }
+        }
+    }
+
+    /**
+     * Remove; match on key only if value null, else match both.
+     */
+    final V remove(Object key, int hash, Object value) {
+        if (!tryLock())
+            scanAndLock(key, hash);
+        V oldValue = null;
+        try {
+            HashEntry&lt;K,V&gt;[] tab = table;
+            int index = (tab.length - 1) &amp; hash;
+            HashEntry&lt;K,V&gt; e = entryAt(tab, index);
+            HashEntry&lt;K,V&gt; pred = null;
+            while (e != null) {
+                K k;
+                HashEntry&lt;K,V&gt; next = e.next;
+                if ((k = e.key) == key ||
+                    (e.hash == hash &amp;&amp; key.equals(k))) {
+                    V v = e.value;
+                    if (value == null || value == v || value.equals(v)) {
+                        if (pred == null)
+                            setEntryAt(tab, index, next);
+                        else
+                            pred.setNext(next);
+                        ++modCount;
+                        --count;
+                        oldValue = v;
+                    }
+                    break;
+                }
+                pred = e;
+                e = next;
+            }
+        } finally {
+            unlock();
+        }
+        return oldValue;
+    }
+
+    final boolean replace(K key, int hash, V oldValue, V newValue) {
+        if (!tryLock())
+            scanAndLock(key, hash);
+        boolean replaced = false;
+        try {
+            HashEntry&lt;K,V&gt; e;
+            for (e = entryForHash(this, hash); e != null; e = e.next) {
+                K k;
+                if ((k = e.key) == key ||
+                    (e.hash == hash &amp;&amp; key.equals(k))) {
+                    if (oldValue.equals(e.value)) {
+                        e.value = newValue;
+                        ++modCount;
+                        replaced = true;
+                    }
+                    break;
+                }
+            }
+        } finally {
+            unlock();
+        }
+        return replaced;
+    }
+
+    final V replace(K key, int hash, V value) {
+        if (!tryLock())
+            scanAndLock(key, hash);
+        V oldValue = null;
+        try {
+            HashEntry&lt;K,V&gt; e;
+            for (e = entryForHash(this, hash); e != null; e = e.next) {
+                K k;
+                if ((k = e.key) == key ||
+                    (e.hash == hash &amp;&amp; key.equals(k))) {
+                    oldValue = e.value;
+                    e.value = value;
+                    ++modCount;
+                    break;
+                }
+            }
+        } finally {
+            unlock();
+        }
+        return oldValue;
+    }
+
+    final void clear() {
+        lock();
+        try {
+            HashEntry&lt;K,V&gt;[] tab = table;
+            for (int i = 0; i &lt; tab.length ; i++)
+                setEntryAt(tab, i, null);
+            ++modCount;
+            count = 0;
+        } finally {
+            unlock();
+        }
+    }
+}
+</code></pre>
+
+<p>```</p>
+
+<h2>存储元素——put函数</h2>
+
+<p><font color=#0000CD><strong>公用的put函数将put操作委托给段的put方法</strong></font><br>
+   public V put(K key, V value)
+   {
+        Segment&lt;K,V> s;
+        if (value == null)
+        {
+            throw new NullPointerException();
+        }</p>
+
+<pre><code>    int hash = hash(key.hashCode());
+    int j = (hash &gt;&gt;&gt; segmentShift) &amp; segmentMask;
+
+    if ((s = (Segment&lt;K,V&gt;)UNSAFE.getObject          // nonvolatile; recheck
+         (segments, (j &lt;&lt; SSHIFT) + SBASE)) == null) //  in ensureSegment
+        s = ensureSegment(j);
+
+    //委托给段的put函数来完成
+    return s.put(key, hash, value, false);
+}
+</code></pre>
 ]]></content>
   </entry>
   
@@ -71,142 +1030,75 @@
 <p><font color=#0000C6><strong>9.当一个线程访问object的一个synchronized(this)同步代码块时,另一个线程仍然可以访问该object中的非synchronized(this)同步代码块 </strong></font></p>
 
 <p><strong>代码块</strong><br>
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">DualSynch</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">Object</span> <span class="n">syncObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Object</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//同步方法</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">f</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">5</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;f()&quot;</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="c1">//暂停当前线程,执行其他线程(包括当前线程),具体执行那个线程有CPU决定</span>
-</span><span class='line'>        <span class="n">Thread</span><span class="o">.</span><span class="na">yield</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">g</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="c1">//同步代码块</span>
-</span><span class='line'>    <span class="kd">synchronized</span><span class="o">(</span><span class="n">syncObject</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">5</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">{</span>
-</span><span class='line'>            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;g()&quot;</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>            <span class="n">Thread</span><span class="o">.</span><span class="na">yield</span><span class="o">();</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SyncObject</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="kd">final</span> <span class="n">DualSynch</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">DualSynch</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="c1">//启动新线程</span>
-</span><span class='line'>    <span class="k">new</span> <span class="nf">Thread</span><span class="o">()</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span>
-</span><span class='line'>        <span class="o">{</span>
-</span><span class='line'>            <span class="c1">//新线程要获得对象DualSynch类的对象ds的锁</span>
-</span><span class='line'>            <span class="n">ds</span><span class="o">.</span><span class="na">f</span><span class="o">();</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}.</span><span class="na">start</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">//主线程执行,主线程要获得Object类的对象syncObject的锁</span>
-</span><span class='line'>    <span class="n">ds</span><span class="o">.</span><span class="na">g</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
+```java
+class DualSynch
+{
+    private Object syncObject = new Object();</p>
+
+<pre><code>//同步方法
+public synchronized void f()
+{
+    for(int i = 0 ; i &lt; 5 ; ++i)
+    {
+        System.out.println("f()");
+
+        //暂停当前线程,执行其他线程(包括当前线程),具体执行那个线程有CPU决定
+        Thread.yield();
+    }
+}
+
+public void g()
+{
+    //同步代码块
+    synchronized(syncObject)
+    {
+        for(int i = 0 ; i &lt; 5 ; ++i)
+        {
+            System.out.println("g()");
+
+            Thread.yield();
+        }
+    }
+}
+</code></pre>
+
+<p>}</p>
+
+<p>public class SyncObject
+{
+    public static void main(String[] args)
+    {
+        final DualSynch ds = new DualSynch();</p>
+
+<pre><code>    //启动新线程
+    new Thread()
+    {
+        public void run()
+        {
+            //新线程要获得对象DualSynch类的对象ds的锁
+            ds.f();
+        }
+    }.start();
+
+    //主线程执行,主线程要获得Object类的对象syncObject的锁
+    ds.g();
+}
+</code></pre>
+
+<p>}
+```</p>
 
 <p><strong>运行结果</strong><br>
-<img src="/images/synchronized1.jpg"></p>
+{%img /images/synchronized1.jpg %}</p>
 
 <p>运行结果中两个方法是交替访问,说明新线程和主线程分别获得了同步方法的锁和代码块的锁,而且是不同对象的锁,一个是ds对象的锁,
 一个是syncObject对象的锁.所以两个线程可以同时访问.<br></p>
 
 <p><strong>如果把ssynchronized(syncObject)改为synchronized(this)运行结果</strong><br>
-<img src="/images/synchronized2.jpg"></p>
+{%img /images/synchronized2.jpg %}</p>
 
 <p>运行结果中是先打印完f(),再打印g(),说明新线程和主线程不同同时访问同步方法和代码块;其实要访问该同步方法和代码块都要获得ds对象的锁.
 所以得等同步方法访问完释放ds对象的锁之后,才可以再次获得ds对象的锁访问代码块.<br></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[java集合之Map总结]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/04/java-collection-map/"/>
-    <updated>2016-07-04T15:41:49+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/04/java-collection-map</id>
-    <content type="html"><![CDATA[<p>集合框架图<br>
-<img src="/images/list1.jpg"></p>
-
-<p>Map框架图<br>
-<img src="/images/Map2.jpg"></p>
 ]]></content>
   </entry>
   

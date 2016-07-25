@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Lintcode | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/lintcode/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T15:22:14+08:00</updated>
+  <updated>2016-07-25T16:40:24+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -31,7 +31,7 @@
 
 <p>1.整数:<br></p>
 
-<p><img src="/images/lintcode417_1.jpg"></p>
+<p>{%img /images/lintcode417_1.jpg %}</p>
 
 <p>该有限自动机(DFA)有s1,s2,s3三个状态。s1为起始状态,s3为合法结束状态.<br>
 如果输入字符串最后停在状态s3(同心圆),则该字符串表示的数字时合法的.<br>
@@ -40,13 +40,13 @@
 
 <p>2.整数和小数<br></p>
 
-<p><img src="/images/lintcode417_2.jpg"></p>
+<p>{%img /images/lintcode417_2.jpg %}</p>
 
 <p>需注意,&ldquo;.3"或"3."都是合法的小数(分别表示0.3和3.0)，但单独一个”.”符号则是非法的。</p>
 
 <p>3.整数、小数和科学计数法<br></p>
 
-<p><img src="/images/lintcode417_3.jpg"></p>
+<p>{%img /images/lintcode417_3.jpg %}</p>
 
 <p>表示有限状态自动机的方法有很多，可以用一个二维数组，数组中存储的是相应的输入所应该跳转到的状态位置。或者是用函数表示法，每个状态用一个函数表示，状态的转移用函数的调用表示.<br></p>
 
