@@ -1,0 +1,683 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>LinkedHashMap源码分析 - regenthypo's Blog</title>
+  <meta name="author" content="regenthypo">
+
+  
+  <meta name="description" content="定义 1
+public class LinkedHashMap&lt;K,V&gt; extends HashMap&lt;K,V&gt; implements Map&lt;K,V&gt; LinkedHashMap继承了HashMap类，实现了Map接口. LinkedHashMap类中变量 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.regenthypo.com/blog/2016/07/26/linkedhashmap/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="regenthypo's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">regenthypo's Blog</a></h1>
+  
+    <h2>The greatest test of courage on earth is to bear defeat without losing heart</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.regenthypo.com">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/Java">Java</a></li>
+  <li><a href="/blog/leetcode">leetcode</a></li>
+  <li><a href="/blog/about">about</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">LinkedHashMap源码分析</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-26T16:01:38+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:01 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>定义</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#FF0000><strong>LinkedHashMap继承了HashMap类，实现了Map接口.</strong></font><br></p>
+
+<h2>LinkedHashMap类中变量</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//双向链表的表头结点</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">transient</span> <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">header</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//默认false。如果是true则表示get()命中后,把当前元素放到链表最后</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="kt">boolean</span> <span class="n">accessOrder</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>LinkedHashMap底层结构</h2>
+
+<p><img src="/images/linkedhashmap4.jpg"></p>
+
+<p><img src="/images/linkedhashmap5.jpg"></p>
+
+<h2>LinkedHashMap类的构造函数</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">LinkedHashMap</span><span class="o">(</span><span class="kt">int</span> <span class="n">initialCapacity</span><span class="o">,</span> <span class="kt">float</span> <span class="n">loadFactor</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">(</span><span class="n">initialCapacity</span><span class="o">,</span> <span class="n">loadFactor</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">accessOrder</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">LinkedHashMap</span><span class="o">(</span><span class="kt">int</span> <span class="n">initialCapacity</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">(</span><span class="n">initialCapacity</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">accessOrder</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">LinkedHashMap</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">accessOrder</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>构造一个带指定初始容量、加载因子和排序模式的空LinkedHashMap实例.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">LinkedHashMap</span><span class="o">(</span><span class="kt">int</span> <span class="n">initialCapacity</span><span class="o">,</span> <span class="kt">float</span> <span class="n">loadFactor</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">accessOrder</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">super</span><span class="o">(</span><span class="n">initialCapacity</span><span class="o">,</span> <span class="n">loadFactor</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">accessOrder</span> <span class="o">=</span> <span class="n">accessOrder</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>LinkedHashMap中的构造函数都是调用了HashMap类中的构造函数.</strong></font><br>
+<font color=#0000CD><strong>HashMap构造函数都调用了init方法进行初始化,在HashMap类中init方法是一个空方法,什么都不做.</strong></font><br>
+<font color=#0000CD><strong>LinkedHashMap中对init方法进行了重写.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kt">void</span> <span class="nf">init</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">header</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&lt;&gt;(-</span><span class="mi">1</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">header</span><span class="o">.</span><span class="na">before</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="na">after</span> <span class="o">=</span> <span class="n">header</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#FF0000><strong>经过init函数初始化后,header结点的before和after都指向header结点自己.</strong></font><br>
+<img src="/images/linkedhashmap1.jpg"></p>
+
+<h2>LinkedHashMap的内部类-结点</h2>
+
+<p><font color=#0000CD><strong>双向链表上的结点都是由Entry对象组成.</strong></font><br>
+<font color=#0000CD><strong>LinkedHashMap类的内部类Entry继承了HashMap类的内部类Entry</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">HashMap</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="c1">//结点的双向链属性</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">before</span><span class="o">,</span> <span class="n">after</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="n">HashMap</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="kd">super</span><span class="o">(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">next</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//双向链表中删除结点</span>
+</span><span class='line'>    <span class="c1">//并不是从table的链表中删除结点</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">remove</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">before</span><span class="o">.</span><span class="na">after</span> <span class="o">=</span> <span class="n">after</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">after</span><span class="o">.</span><span class="na">before</span> <span class="o">=</span> <span class="n">before</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//双向链表中,在给定结点existingEntry前插入结点</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">addBefore</span><span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">existingEntry</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">after</span>  <span class="o">=</span> <span class="n">existingEntry</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">before</span> <span class="o">=</span> <span class="n">existingEntry</span><span class="o">.</span><span class="na">before</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">before</span><span class="o">.</span><span class="na">after</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">after</span><span class="o">.</span><span class="na">before</span> <span class="o">=</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//此方法提供LRU实现</span>
+</span><span class='line'>    <span class="kt">void</span> <span class="nf">recordAccess</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">lm</span> <span class="o">=</span> <span class="o">(</span><span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;)</span><span class="n">m</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//如果当前LinkedHashMap的accessOrder为true</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">lm</span><span class="o">.</span><span class="na">accessOrder</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>          <span class="c1">//Map结构修改次数加1</span>
+</span><span class='line'>            <span class="n">lm</span><span class="o">.</span><span class="na">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">//从结点链表中移除当前结点</span>
+</span><span class='line'>            <span class="n">remove</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">//将当前结点添加到原头结点的前面</span>
+</span><span class='line'>            <span class="n">addBefore</span><span class="o">(</span><span class="n">lm</span><span class="o">.</span><span class="na">header</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//重写了HashMap内部类Entry中的recordRemoval方法</span>
+</span><span class='line'>    <span class="kt">void</span> <span class="nf">recordRemoval</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">remove</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#FF0000><strong>因为Entry继承自HashMap类的内部类Entry,本来已有成员变量key,value,hash , next;</strong></font><br>
+<font color=#FF0000><strong>特别是已有next指向单链表的下一个结点; 在LinkedHashMap类的内部类Entry中由添加了成员变量before和after.</strong></font><br>
+<font color=#FF0000><strong>实际上Entry结点共有next,before和after来指向不同的结点.</strong></font><br>
+<font color=#FF0000><strong>其中next指针来控制table数组中的单链表,连接起同一个桶的结点</strong></font><br>
+<font color=#FF0000><strong>before和after指针来形成双向链表,来表示结点的访问顺序.</strong></font><br></p>
+
+<h2>存储元素——put函数</h2>
+
+<p><font color=#0000CD><strong>LinkedHashMap继承了HashMap的put函数，但是并没有重写put函数,而是重写put函数里调用的函数addEntry.</strong></font><br>
+<font color=#0000CD><strong>所以调用LinkedHashMap的put函数会产生于HashMap的put函数不一样的效果.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kt">void</span> <span class="nf">addEntry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bucketIndex</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">createEntry</span><span class="o">(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">bucketIndex</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">eldest</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="na">after</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果removeEldestEntry函数返回值为true,则从链表中移除eldest结点.</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">removeEldestEntry</span><span class="o">(</span><span class="n">eldest</span><span class="o">))</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">removeEntryForKey</span><span class="o">(</span><span class="n">eldest</span><span class="o">.</span><span class="na">key</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//如果size大于等于阈值,要对table数组进行扩容.</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">size</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>          <span class="n">resize</span><span class="o">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>addEntry函数是LinkedHashMap类中唯一用到removeEldestEntry函数的地方.即之后如果要重写removeEldestEntry函数，
+    会在这里产生效果.</strong></font><br>
+<font color=#0000CD><strong>LinkedHashMap重写了HashMap中的createEntry方法.</strong></font><br>
+<font color=#0000CD><strong>新建结点</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kt">void</span> <span class="nf">createEntry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bucketIndex</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">HashMap</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">old</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//hash值,键key , 值value , old结点作为新建结点的下一个结点</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&lt;&gt;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">old</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//设置当前结点的单链表属性</span>
+</span><span class='line'>    <span class="c1">//将当前结点设置为单链表的头结点</span>
+</span><span class='line'>    <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//设置当前结点的双向链表属性</span>
+</span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">addBefore</span><span class="o">(</span><span class="n">header</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">size</span><span class="o">++;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>  <br/>
+<font color=#000000><strong>第一次执行e.addBefore(header)操作</strong></font><br>
+<img src="/images/linkedhashmap2.jpg"></p>
+
+<p><font color=#000000><strong>再继续执行c.addBefore(header)操作</strong></font><br>
+<img src="/images/linkedhashmap3.jpg"></p>
+
+<p><font color=#0000CD><strong>LinkedHashMap中的removeEldestEntry函数默认返回值为false,如果要返回true,可重写该方法.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">removeEldestEntry</span><span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">eldest</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>读取元素——get函数</h2>
+
+<p><font color=#0000CD><strong>LinkedHashMap重写了HashMap中的get方法.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">V</span> <span class="nf">get</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//getEntry为HashMap类中的方法,可根据键得到结点Entry对象</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;)</span><span class="n">getEntry</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//LRU处理</span>
+</span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">recordAccess</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#000000><strong>LinkedHashMap中键key和值value都可以为null.</strong></font><br></p>
+
+<p><font color=#000000><strong>LinkedHashMap类的内部类Entry的recordAccess方法.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//此方法提供LRU实现</span>
+</span><span class='line'><span class="kt">void</span> <span class="nf">recordAccess</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">lm</span> <span class="o">=</span> <span class="o">(</span><span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;)</span><span class="n">m</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果当前LinkedHashMap的accessOrder为true</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">lm</span><span class="o">.</span><span class="na">accessOrder</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//Map结构修改次数加1</span>
+</span><span class='line'>        <span class="n">lm</span><span class="o">.</span><span class="na">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//从双向链表中移除当前结点</span>
+</span><span class='line'>        <span class="n">remove</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//将当前结点插入到header结点后的第一个结点.</span>
+</span><span class='line'>        <span class="n">addBefore</span><span class="o">(</span><span class="n">lm</span><span class="o">.</span><span class="na">header</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>删除元素——remove函数</h2>
+
+<p><font color=#000000><strong>LinkedHashMap没有重写remove(Object key)方法,但重写了被remove调用的recordRemoval方法.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kt">void</span> <span class="nf">recordRemoval</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">remove</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">remove</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">before</span><span class="o">.</span><span class="na">after</span> <span class="o">=</span> <span class="n">after</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">after</span><span class="o">.</span><span class="na">before</span> <span class="o">=</span> <span class="n">before</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#FF0000><strong>recordRemoval方法是因为LinkedHashMap中结点不仅有单链表的关系，还有双向链表的关系.</strong></font><br>
+<font color=#FF0000><strong>所以LinkedHashMap中删除结点,不仅要处理该结点单链表中的指向关系,还要处理该结点在双向链表中的指向关系.</strong></font><br>
+<font color=#FF0000><strong>而recordRemoval函数中调用remove函数就是处理该结点的双向链表关系.</strong></font><br></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">regenthypo</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-26T16:01:38+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:01 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/java/'>java</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/26/linkedhashmap/" title="Previous Post: Linkedhashmap">&laquo; Linkedhashmap</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/07/26/linkedhashmap/">LinkedHashMap源码分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/26/linkedhashmap/">Linkedhashmap</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/25/concurrenthashmap/">ConcurrentHashMap源码分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/25/hashtable/">Hashtable源码分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/22/memento-design-pattern/">一天一设计模式之备忘录模式[18]</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'hypo123',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>    	
+    <ul id="weibo">
+    <li>
+
+ <iframe width="100%" height="300" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=300&fansRow=1&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1956661252&verifier=d9191102&dpc=1"></iframe>
+      </li>
+    </ul>
+</section><section>
+  <h1>访客地图</h1>
+  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/1.js?i=55gx2i6yqf0&amp;s=220&amp;m=6&amp;v=false&amp;r=false&amp;b=000000&amp;n=false&amp;c=ff0000" async="async"></script>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - regenthypo -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
