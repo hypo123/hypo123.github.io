@@ -9,7 +9,7 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="Implement a basic calculator to evaluate a simple expression string. The expression string may contain open ( and closing parentheses ), the plus + &hellip;">
+  <meta name="description" content="Given an unsorted array, find the maximum difference between the successive elements in its sorted form. Try to solve it in linear time/space. Return &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,213 +68,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode224-basic-calculator-stack/">Leetcode224 Basic Calculator [Stack]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:16:04+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:16 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Implement a basic calculator to evaluate a simple expression string.</p>
-
-<p>The expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers and empty spaces .</p>
-
-<p>You may assume that the given expression is always valid.</p>
-
-<p>Some examples:
-&ldquo;1 + 1&rdquo; = 2
-&ldquo; 2-1 + 2 &rdquo; = 3
-&ldquo;(1+(4+5+2)-3)+(6+8)&rdquo; = 23
-Note: Do not use the eval built-in library function.</p>
-
-<p>Difficulty: Medium</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-<span class='line-number'>79</span>
-<span class='line-number'>80</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">String</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Stack</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BasicCalculator_T224</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">int</span> <span class="nf">calculate2</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">len</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">Stack</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Stack</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;();</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">number</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span><span class="c1">//1为正,-1为负</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span> <span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">c</span><span class="o">))</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">number</span> <span class="o">=</span> <span class="n">number</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="o">(</span><span class="kt">int</span><span class="o">)(</span><span class="n">c</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="o">);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;+&#39;</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">result</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">number</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">number</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span><span class="c1">//下个数符号为正</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">result</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">number</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">number</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span><span class="c1">//下个数符号为负</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;(&#39;</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">stack</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="n">result</span><span class="o">);</span><span class="c1">//左括号前所求的运算值</span>
-</span><span class='line'>              <span class="n">stack</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="n">sign</span><span class="o">);</span><span class="c1">//左括号前的符号</span>
-</span><span class='line'>              <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;)&#39;</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">result</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">number</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">number</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">result</span> <span class="o">*=</span> <span class="n">stack</span><span class="o">.</span><span class="na">pop</span><span class="o">();</span><span class="c1">//弹出左括号前符号与括号内的运算值相乘</span>
-</span><span class='line'>              <span class="n">result</span> <span class="o">+=</span> <span class="n">stack</span><span class="o">.</span><span class="na">pop</span><span class="o">();</span><span class="c1">//弹出括号前所求的运算值</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">number</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//以数符结束字符串要特殊处理</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">result</span> <span class="o">+=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">number</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//   test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">BasicCalculator_T224</span> <span class="n">t224</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">BasicCalculator_T224</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;(1+(4+5+2)-3)+(6+8)&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;1 + 1&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s3</span> <span class="o">=</span> <span class="s">&quot;2-(5-6)&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s4</span> <span class="o">=</span> <span class="s">&quot;0-2147483647&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s5</span> <span class="o">=</span> <span class="s">&quot; 2-1 + 2 &quot;</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t224</span><span class="o">.</span><span class="na">calculate2</span><span class="o">(</span><span class="n">s</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t224</span><span class="o">.</span><span class="na">calculate2</span><span class="o">(</span><span class="n">s2</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t224</span><span class="o">.</span><span class="na">calculate2</span><span class="o">(</span><span class="n">s3</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t224</span><span class="o">.</span><span class="na">calculate2</span><span class="o">(</span><span class="n">s4</span><span class="o">));</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t224</span><span class="o">.</span><span class="na">calculate2</span><span class="o">(</span><span class="n">s5</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果:
-<img src="/images/224.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -1194,10 +987,6 @@ Visually, the graph looks like the following:</p>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/26/linkedhashmap/">Linkedhashmap</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/07/25/concurrenthashmap/">ConcurrentHashMap源码分析</a>
       </li>
     
@@ -1207,6 +996,10 @@ Visually, the graph looks like the following:</p>
     
       <li class="post">
         <a href="/blog/2016/07/22/memento-design-pattern/">一天一设计模式之备忘录模式[18]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/22/seven-gc/">Java的七种垃圾收集器</a>
       </li>
     
   </ul>
