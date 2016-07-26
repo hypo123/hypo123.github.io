@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-25T21:10:30+08:00</updated>
+  <updated>2016-07-26T11:04:55+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -79,8 +79,7 @@
 
 <h2>ConcurrentHashMap类的构造函数</h2>
 
-<pre><code class="java">    @SuppressWarnings("unchecked")
-    public ConcurrentHashMap(int initialCapacity,
+<pre><code class="java">    public ConcurrentHashMap(int initialCapacity,
                              float loadFactor, int concurrencyLevel) 
     {
         //判断参数是否合法
@@ -90,8 +89,7 @@
         if (concurrencyLevel &gt; MAX_SEGMENTS)
             concurrencyLevel = MAX_SEGMENTS;
 
-        // Find power-of-two sizes best matching arguments
-        int sshift = 0;
+        int sshift = 0;//ssize左移次数
         int ssize = 1;
 
         while (ssize &lt; concurrencyLevel) 
@@ -100,9 +98,9 @@
             ssize &lt;&lt;= 1;
         }
 
-        this.segmentShift = 32 - sshift;
+        this.segmentShift = 32 - sshift;//段偏移
 
-        this.segmentMask = ssize - 1;
+        this.segmentMask = ssize - 1;//段掩码
 
         if (initialCapacity &gt; MAXIMUM_CAPACITY)
         {
@@ -181,8 +179,8 @@
 <span class='line-number'>40</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span>
 </span><span class='line'><span class="o">{</span>
-</span><span class='line'>        <span class="kd">final</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">;</span><span class="c1">//hash值</span>
-</span><span class='line'>        <span class="kd">final</span> <span class="n">K</span> <span class="n">key</span><span class="o">;</span> <span class="c1">//键</span>
+</span><span class='line'>        <span class="kd">final</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">;</span><span class="c1">//hash值 final修饰</span>
+</span><span class='line'>        <span class="kd">final</span> <span class="n">K</span> <span class="n">key</span><span class="o">;</span> <span class="c1">//键       final修饰</span>
 </span><span class='line'>        <span class="kd">volatile</span> <span class="n">V</span> <span class="n">value</span><span class="o">;</span> <span class="c1">//值</span>
 </span><span class='line'>        <span class="kd">volatile</span> <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">next</span><span class="o">;</span> <span class="c1">//下一个结点&lt;/p&gt;</span>
 </span><span class='line'>
@@ -219,13 +217,15 @@
 </span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
+</span></code></pre></td></tr></table></div></figure>
+<font color=#0000CD><strong>HashEntry的成员变量hash和key都是final修饰;</strong></font><br>
+<font color=#0000CD><strong>HashEntry的成员变量value和next都是volatile修饰;</strong></font><br></p>
 
 <h2>计算添加元素的位置</h2>
 
-<p><font color=#0000CD><strong> </strong></font><br></p>
-
-<pre><code class="java">    private static int hash(int h) 
+<p><font color=#0000CD><strong> </strong></font><br>
+<code>java
+    private static int hash(int h)
     {
         h += (h &lt;&lt;  15) ^ 0xffffcd7d;
         h ^= (h &gt;&gt;&gt; 10);
@@ -234,7 +234,7 @@
         h += (h &lt;&lt;   2) + (h &lt;&lt; 14);
         return h ^ (h &gt;&gt;&gt; 16);
     }
-</code></pre>
+</code></p>
 
 <pre><code class="java">    //由hash值得到段
     private Segment&lt;K,V&gt; segmentForHash(int h) 
@@ -254,7 +254,8 @@
     }
 </code></pre>
 
-<p><font color=#0000CD><strong>ConcurrentHashMap并没有重写hashCode方法.</strong></font><br></p>
+<p><font color=#0000CD><strong>ConcurrentHashMap并没有重写hashCode方法.</strong></font><br>
+<font color=#0000CD><strong>先定位段segment,再确定到段中数组的下标.</strong></font><br></p>
 
 <h2>内部类Segment</h2>
 
@@ -270,13 +271,19 @@
         static final int MAX_SCAN_RETRIES =
             Runtime.getRuntime().availableProcessors() &gt; 1 ? 64 : 1;
 
-        //table数组
+        /** 
+         * table 是由 HashEntry 对象组成的数组
+         * 如果散列时发生碰撞，碰撞的 HashEntry 对象就以链表的形式链接成一个链表
+         * table 数组的数组成员代表散列映射表的一个桶
+         * 每个 table 守护整个 ConcurrentHashMap 包含桶总数的一部分
+         * 如果并发级别为 16，table 则守护 ConcurrentHashMap 包含的桶总数的 1/16 
+         */ 
         transient volatile HashEntry&lt;K,V&gt;[] table;
 
         //段中键值对个数
         transient int count;
 
-        //段的修改操作次数
+        //段中table被更新的次数
         transient int modCount;
 
         //阈值
@@ -292,98 +299,20 @@
             this.table = tab;
         }
 
-        private void scanAndLock(Object key, int hash) {
-            // similar to but simpler than scanAndLockForPut
-            HashEntry&lt;K,V&gt; first = entryForHash(this, hash);
-            HashEntry&lt;K,V&gt; e = first;
-            int retries = -1;
-            while (!tryLock()) {
-                HashEntry&lt;K,V&gt; f;
-                if (retries &lt; 0) {
-                    if (e == null || key.equals(e.key))
-                        retries = 0;
-                    else
-                        e = e.next;
-                }
-                else if (++retries &gt; MAX_SCAN_RETRIES) {
-                    lock();
-                    break;
-                }
-                else if ((retries &amp; 1) == 0 &amp;&amp;
-                         (f = entryForHash(this, hash)) != first) {
-                    e = first = f;
-                    retries = -1;
-                }
-            }
-        }
 
-        final boolean replace(K key, int hash, V oldValue, V newValue) {
-            if (!tryLock())
-                scanAndLock(key, hash);
-            boolean replaced = false;
-            try {
-                HashEntry&lt;K,V&gt; e;
-                for (e = entryForHash(this, hash); e != null; e = e.next) {
-                    K k;
-                    if ((k = e.key) == key ||
-                        (e.hash == hash &amp;&amp; key.equals(k))) {
-                        if (oldValue.equals(e.value)) {
-                            e.value = newValue;
-                            ++modCount;
-                            replaced = true;
-                        }
-                        break;
-                    }
-                }
-            } finally {
-                unlock();
-            }
-            return replaced;
-        }
 
-        final V replace(K key, int hash, V value) {
-            if (!tryLock())
-                scanAndLock(key, hash);
-            V oldValue = null;
-            try {
-                HashEntry&lt;K,V&gt; e;
-                for (e = entryForHash(this, hash); e != null; e = e.next) {
-                    K k;
-                    if ((k = e.key) == key ||
-                        (e.hash == hash &amp;&amp; key.equals(k))) {
-                        oldValue = e.value;
-                        e.value = value;
-                        ++modCount;
-                        break;
-                    }
-                }
-            } finally {
-                unlock();
-            }
-            return oldValue;
-        }
 
-        final void clear() {
-            lock();
-            try {
-                HashEntry&lt;K,V&gt;[] tab = table;
-                for (int i = 0; i &lt; tab.length ; i++)
-                    setEntryAt(tab, i, null);
-                ++modCount;
-                count = 0;
-            } finally {
-                unlock();
-            }
-        }
     }
 </code></pre>
 
 <h2>段内存储元素——Segment类的put函数</h2>
 
-<p><font color=#0000CD><strong> </strong></font><br></p>
+<p><font color=#0000CD><strong>在之前的JDK版本中,Segment的put操作开始时就会先加锁,直到put完成才释放锁.而在JDK7中采用了自旋锁机制,
+    进一步减少了加锁的可能性.</strong></font><br></p>
 
 <pre><code class="java">final V put(K key, int hash, V value, boolean onlyIfAbsent) 
 {
+    //试图获取锁,如果成功获得继续往下执行;如果获取失败调用scanAndLockForPut函数.
     HashEntry&lt;K,V&gt; node = tryLock() ? null :  scanAndLockForPut(key, hash, value);
 
     V oldValue;
@@ -391,14 +320,20 @@
     try {
 
         HashEntry&lt;K,V&gt;[] tab = table;
+
         int index = (tab.length - 1) &amp; hash;
+
+        //找到数组对应桶中第一个链表结点
         HashEntry&lt;K,V&gt; first = entryAt(tab, index);
 
         for (HashEntry&lt;K,V&gt; e = first;;) 
         {
+            //如果当前链表结点不为null
             if (e != null) 
             {
                 K k;
+
+                //该键已存在,更新该键的值然后退出循环
                 if ((k = e.key) == key || (e.hash == hash &amp;&amp; key.equals(k))) 
                 {
                     oldValue = e.value;
@@ -409,26 +344,39 @@
                     }
                     break;
                 }
+
+                //继续往链表下一个结点遍历
                 e = e.next;
             }
-            else 
+            else //如果当前链表结点为null
             {
+
+                //如果结点链表中没有找到键相当的结点,则新建结点,并将新建结点作为链表头结点插入到链表中
                 if (node != null)
+                {
                     node.setNext(first);
+                }
                 else
+                {
+                    //创建新HashEntry结点
                     node = new HashEntry&lt;K,V&gt;(hash, key, value, first);
+                }
 
                 int c = count + 1;
 
-                //扩容
+                //判断是否需要扩容
                 if (c &gt; threshold &amp;&amp; tab.length &lt; MAXIMUM_CAPACITY)
                     rehash(node);
                 else
                     setEntryAt(tab, index, node);
 
+
                 ++modCount;
+
                 count = c;
+
                 oldValue = null;
+
                 break;
             }
         }
@@ -437,9 +385,267 @@
     {
         unlock();
     }
+
     return oldValue;
 }
 </code></pre>
+
+<p><font color=#0000CD><strong>如果scanAndLockForPut操作返回了一个非空HashEntry,则表示在scanAndLockForPut遍历key对应结点链表时没有找到相应的</strong></font><br>
+<font color=#0000CD><strong>此时需要创建新的结点,因而在scanAndLockForPut中预先创建了HashEntry结点.</strong></font><br></p>
+
+<pre><code class="java">static final &lt;K,V&gt; HashEntry&lt;K,V&gt; entryAt(HashEntry&lt;K,V&gt;[] tab, int i) 
+{
+    return (tab == null) ? null :
+        (HashEntry&lt;K,V&gt;) UNSAFE.getObjectVolatile
+        (tab, ((long)i &lt;&lt; TSHIFT) + TBASE);
+}
+</code></pre>
+
+<pre><code class="java">static final &lt;K,V&gt; void setEntryAt(HashEntry&lt;K,V&gt;[] tab, int i, HashEntry&lt;K,V&gt; e) 
+{
+    UNSAFE.putOrderedObject(tab, ((long)i &lt;&lt; TSHIFT) + TBASE, e);
+}
+</code></pre>
+
+<p><font color=#0000CD><strong>put操作第一步获取锁未成功则进行scanAndLockForPut操作</strong></font><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="nf">scanAndLockForPut</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">first</span> <span class="o">=</span> <span class="n">entryForHash</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">hash</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">first</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">node</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//试图获得锁的次数</span>
+</span><span class='line'><span class="kt">int</span> <span class="n">retries</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span> <span class="c1">// negative while locating node</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//自旋锁</span>
+</span><span class='line'><span class="k">while</span> <span class="o">(!</span><span class="n">tryLock</span><span class="o">())</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">f</span><span class="o">;</span> <span class="c1">// to recheck first below</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">retries</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">0</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="c1">//预先新建结点</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="n">node</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">))</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="c1">//尝试次数达到最长次数</span>
+</span><span class='line'>    <span class="k">else</span> <span class="nf">if</span> <span class="o">(++</span><span class="n">retries</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">MAX_SCAN_RETRIES</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">lock</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">break</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="c1">//在自旋过程中发现结点链表的头结点发生了变化,则要更新结点链表的头结点,并重置retries的值为-1</span>
+</span><span class='line'>    <span class="c1">//重新为尝试获取锁而自旋遍历.</span>
+</span><span class='line'>    <span class="k">else</span> <span class="nf">if</span> <span class="o">((</span><span class="n">retries</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="o">(</span><span class="n">f</span> <span class="o">=</span> <span class="n">entryForHash</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">hash</span><span class="o">))</span> <span class="o">!=</span> <span class="n">first</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">e</span> <span class="o">=</span> <span class="n">first</span> <span class="o">=</span> <span class="n">f</span><span class="o">;</span> <span class="c1">// re-traverse if entry changed</span>
+</span><span class='line'>        <span class="n">retries</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure>
+<font color=#0000CD><strong>由上面put函数源码所示,当put操作尝试加锁没有成功时,它不是直接进入等待状态,而是调用scanAndLockForPut方法.</strong></font><br>
+<font color=#0000CD><strong>该操作持续查找key对应的结点链中是已存在该结点,如果没有找到已存在的结点,则预创建一个新结点,并且尝试n次,</strong></font><br>
+<font color=#0000CD><strong>直到尝试次数达到操作限制,才真正进入等待状态,即自旋等待.</strong></font><br>
+<font color=#FF0000><strong>最大尝试次数,单核次数为1,多核为64.</strong></font><br>
+<font color=#FF0000><strong>scanAndLockForPut操作,它先获取key对应的结点链表的头结点,然后持续遍历该链,如果结点链表中不存在要插入的结点,</strong></font><br>
+<font color=#0000CD><strong>则预先创建一个结点,否则retries值自增,直到操作最大尝试次数而进入等待状态.</strong></font><br></p>
+
+<h2>段内扩容操作——Segment类的rehash函数</h2>
+
+<p><font color=#0000CD><strong>扩容</strong></font><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">rehash</span><span class="o">(</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">)</span>
+</span><span class='line'><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;[]</span> <span class="n">oldTable</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'><span class="kt">int</span> <span class="n">oldCapacity</span> <span class="o">=</span> <span class="n">oldTable</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'><span class="kt">int</span> <span class="n">newCapacity</span> <span class="o">=</span> <span class="n">oldCapacity</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">threshold</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)(</span><span class="n">newCapacity</span> <span class="o">*</span> <span class="n">loadFactor</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;[]</span> <span class="n">newTable</span> <span class="o">=</span>
+</span><span class='line'>    <span class="o">(</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;[])</span> <span class="k">new</span> <span class="n">HashEntry</span><span class="o">[</span><span class="n">newCapacity</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">int</span> <span class="n">sizeMask</span> <span class="o">=</span> <span class="n">newCapacity</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">oldCapacity</span> <span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">oldTable</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">next</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">sizeMask</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">next</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>   <span class="c1">//  Single node on list</span>
+</span><span class='line'>            <span class="n">newTable</span><span class="o">[</span><span class="n">idx</span><span class="o">]</span> <span class="o">=</span> <span class="n">e</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'>        <span class="o">{</span> <span class="c1">// Reuse consecutive sequence at same slot</span>
+</span><span class='line'>            <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">lastRun</span> <span class="o">=</span> <span class="n">e</span><span class="o">;</span>
+</span><span class='line'>            <span class="kt">int</span> <span class="n">lastIdx</span> <span class="o">=</span> <span class="n">idx</span><span class="o">;</span>
+</span><span class='line'>            <span class="k">for</span> <span class="o">(</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">last</span> <span class="o">=</span> <span class="n">next</span><span class="o">;</span> <span class="n">last</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="n">last</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="na">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">sizeMask</span><span class="o">;</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">(</span><span class="n">k</span> <span class="o">!=</span> <span class="n">lastIdx</span><span class="o">)</span>
+</span><span class='line'>                <span class="o">{</span>
+</span><span class='line'>                    <span class="n">lastIdx</span> <span class="o">=</span> <span class="n">k</span><span class="o">;</span>
+</span><span class='line'>                    <span class="n">lastRun</span> <span class="o">=</span> <span class="n">last</span><span class="o">;</span>
+</span><span class='line'>                <span class="o">}</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="n">newTable</span><span class="o">[</span><span class="n">lastIdx</span><span class="o">]</span> <span class="o">=</span> <span class="n">lastRun</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// Clone remaining nodes</span>
+</span><span class='line'>            <span class="k">for</span> <span class="o">(</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">e</span><span class="o">;</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">lastRun</span><span class="o">;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="n">V</span> <span class="n">v</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>                <span class="kt">int</span> <span class="n">h</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">hash</span><span class="o">;</span>
+</span><span class='line'>                <span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="n">h</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">sizeMask</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">n</span> <span class="o">=</span> <span class="n">newTable</span><span class="o">[</span><span class="n">k</span><span class="o">];</span>
+</span><span class='line'>                <span class="n">newTable</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;(</span><span class="n">h</span><span class="o">,</span> <span class="n">p</span><span class="o">.</span><span class="na">key</span><span class="o">,</span> <span class="n">v</span><span class="o">,</span> <span class="n">n</span><span class="o">);</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">int</span> <span class="n">nodeIndex</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">sizeMask</span><span class="o">;</span> <span class="c1">// add the new node</span>
+</span><span class='line'><span class="n">node</span><span class="o">.</span><span class="na">setNext</span><span class="o">(</span><span class="n">newTable</span><span class="o">[</span><span class="n">nodeIndex</span><span class="o">]);</span>
+</span><span class='line'><span class="n">newTable</span><span class="o">[</span><span class="n">nodeIndex</span><span class="o">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+</span><span class='line'><span class="n">table</span> <span class="o">=</span> <span class="n">newTable</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h2>段内移除元素——Segment类的remove函数</h2>
 
 <p><font color=#0000CD><strong> </strong></font><br>
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -483,28 +689,114 @@
 <span class='line-number'>39</span>
 <span class='line-number'>40</span>
 <span class='line-number'>41</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="nf">scanAndLockForPut</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">)</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">final</span> <span class="n">V</span> <span class="nf">remove</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">,</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">Object</span> <span class="n">value</span><span class="o">)</span>
 </span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(!</span><span class="n">tryLock</span><span class="o">())</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//第一次获取锁失败,进入自旋状态</span>
+</span><span class='line'>        <span class="n">scanAndLock</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">hash</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="k">try</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;[]</span> <span class="n">tab</span> <span class="o">=</span> <span class="n">table</span><span class="o">;</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">(</span><span class="n">tab</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">hash</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">entryAt</span><span class="o">(</span><span class="n">tab</span><span class="o">,</span> <span class="n">index</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">pred</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">while</span> <span class="o">(</span><span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">K</span> <span class="n">k</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">next</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">((</span><span class="n">k</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">)</span> <span class="o">==</span> <span class="n">key</span> <span class="o">||</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">hash</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">k</span><span class="o">)))</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">V</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">value</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">value</span> <span class="o">==</span> <span class="n">v</span> <span class="o">||</span> <span class="n">value</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">v</span><span class="o">))</span>
+</span><span class='line'>            <span class="o">{</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">(</span><span class="n">pred</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>                    <span class="n">setEntryAt</span><span class="o">(</span><span class="n">tab</span><span class="o">,</span> <span class="n">index</span><span class="o">,</span> <span class="n">next</span><span class="o">);</span>
+</span><span class='line'>                <span class="k">else</span>
+</span><span class='line'>                    <span class="n">pred</span><span class="o">.</span><span class="na">setNext</span><span class="o">(</span><span class="n">next</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="o">++</span><span class="n">modCount</span><span class="o">;</span>
+</span><span class='line'>                <span class="o">--</span><span class="n">count</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">oldValue</span> <span class="o">=</span> <span class="n">v</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>            <span class="k">break</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">pred</span> <span class="o">=</span> <span class="n">e</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">e</span> <span class="o">=</span> <span class="n">next</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">finally</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">unlock</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><font color=#0000CD><strong>remove操作中第一步获取锁失败进行scanAndLock操作</strong></font><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">scanAndLock</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">,</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">// similar to but simpler than scanAndLockForPut</span>
 </span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">first</span> <span class="o">=</span> <span class="n">entryForHash</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">hash</span><span class="o">);</span>
 </span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">first</span><span class="o">;</span>
-</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">node</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">retries</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//试图获得锁的次数</span>
-</span><span class='line'><span class="kt">int</span> <span class="n">retries</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span> <span class="c1">// negative while locating node</span>
-</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//自旋锁</span>
 </span><span class='line'><span class="k">while</span> <span class="o">(!</span><span class="n">tryLock</span><span class="o">())</span>
 </span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">f</span><span class="o">;</span> <span class="c1">// to recheck first below</span>
-</span><span class='line'>
+</span><span class='line'>    <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">f</span><span class="o">;</span>
 </span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">retries</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">0</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">{</span>
-</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="c1">// speculatively create node</span>
-</span><span class='line'>                <span class="n">node</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
-</span><span class='line'>            <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">))</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">))</span>
 </span><span class='line'>            <span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 </span><span class='line'>        <span class="k">else</span>
 </span><span class='line'>            <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
@@ -516,119 +808,75 @@
 </span><span class='line'>    <span class="o">}</span>
 </span><span class='line'>    <span class="k">else</span> <span class="nf">if</span> <span class="o">((</span><span class="n">retries</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="o">(</span><span class="n">f</span> <span class="o">=</span> <span class="n">entryForHash</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">hash</span><span class="o">))</span> <span class="o">!=</span> <span class="n">first</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="n">e</span> <span class="o">=</span> <span class="n">first</span> <span class="o">=</span> <span class="n">f</span><span class="o">;</span> <span class="c1">// re-traverse if entry changed</span>
+</span><span class='line'>        <span class="n">e</span> <span class="o">=</span> <span class="n">first</span> <span class="o">=</span> <span class="n">f</span><span class="o">;</span>
 </span><span class='line'>        <span class="n">retries</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
 </span><span class='line'>    <span class="o">}</span>
 </span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="k">return</span> <span class="n">node</span><span class="o">;</span>
 </span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
+</span></code></pre></td></tr></table></div></figure>
+<font color=#0000CD><strong>scanAndLock和scanAndLockForPut类似,只是它不做预创建节点的步骤</strong></font><br></p>
 
-<h2>段内扩容操作——Segment类的rehash函数</h2>
+<h2>段内替换操作1——Segment类的replace函数</h2>
 
-<p><font color=#0000CD><strong> </strong></font><br></p>
-
-<pre><code class="java">@SuppressWarnings("unchecked")
-private void rehash(HashEntry&lt;K,V&gt; node) 
+<pre><code class="java">final boolean replace(K key, int hash, V oldValue, V newValue) 
 {
-
-    HashEntry&lt;K,V&gt;[] oldTable = table;
-    int oldCapacity = oldTable.length;
-    int newCapacity = oldCapacity &lt;&lt; 1;
-
-    threshold = (int)(newCapacity * loadFactor);
-
-    HashEntry&lt;K,V&gt;[] newTable =
-        (HashEntry&lt;K,V&gt;[]) new HashEntry[newCapacity];
-
-    int sizeMask = newCapacity - 1;
-
-    for (int i = 0; i &lt; oldCapacity ; i++) 
+    if (!tryLock())
     {
-        HashEntry&lt;K,V&gt; e = oldTable[i];
-        if (e != null) 
-        {
-            HashEntry&lt;K,V&gt; next = e.next;
-            int idx = e.hash &amp; sizeMask;
-            if (next == null)   //  Single node on list
-                newTable[idx] = e;
-            else { // Reuse consecutive sequence at same slot
-                HashEntry&lt;K,V&gt; lastRun = e;
-                int lastIdx = idx;
-                for (HashEntry&lt;K,V&gt; last = next;
-                     last != null;
-                     last = last.next) {
-                    int k = last.hash &amp; sizeMask;
-                    if (k != lastIdx) {
-                        lastIdx = k;
-                        lastRun = last;
-                    }
-                }
-
-                newTable[lastIdx] = lastRun;
-                // Clone remaining nodes
-                for (HashEntry&lt;K,V&gt; p = e; p != lastRun; p = p.next) 
-                {
-                    V v = p.value;
-                    int h = p.hash;
-                    int k = h &amp; sizeMask;
-                    HashEntry&lt;K,V&gt; n = newTable[k];
-                    newTable[k] = new HashEntry&lt;K,V&gt;(h, p.key, v, n);
-                }
-            }
-        }
+        scanAndLock(key, hash);
     }
 
-    int nodeIndex = node.hash &amp; sizeMask; // add the new node
-    node.setNext(newTable[nodeIndex]);
-    newTable[nodeIndex] = node;
-    table = newTable;
+    boolean replaced = false;
+    try 
+    {
+        HashEntry&lt;K,V&gt; e;
+        for (e = entryForHash(this, hash); e != null; e = e.next) 
+        {
+            K k;
+            if ((k = e.key) == key || (e.hash == hash &amp;&amp; key.equals(k))) 
+            {
+                if (oldValue.equals(e.value)) 
+                {
+                    e.value = newValue;
+                    ++modCount;
+                    replaced = true;
+                }
+                break;
+            }
+        }
+    } 
+    finally 
+    {
+        unlock();
+    }
+    return replaced;
 }
 </code></pre>
 
-<h2>段内移除元素——Segment类的remove函数</h2>
+<h2>段内替换操作2——Segment类的replace函数</h2>
 
-<p><font color=#0000CD><strong> </strong></font><br></p>
-
-<pre><code class="java">final V remove(Object key, int hash, Object value) 
+<pre><code class="java">final V replace(K key, int hash, V value) 
 {
     if (!tryLock())
+    {
         scanAndLock(key, hash);
+    }
 
     V oldValue = null;
     try 
     {
-        HashEntry&lt;K,V&gt;[] tab = table;
-        int index = (tab.length - 1) &amp; hash;
-        HashEntry&lt;K,V&gt; e = entryAt(tab, index);
-        HashEntry&lt;K,V&gt; pred = null;
-
-        while (e != null) 
+        HashEntry&lt;K,V&gt; e;
+        for (e = entryForHash(this, hash); e != null; e = e.next) 
         {
             K k;
-            HashEntry&lt;K,V&gt; next = e.next;
-
             if ((k = e.key) == key || (e.hash == hash &amp;&amp; key.equals(k))) 
             {
-                V v = e.value;
-
-                if (value == null || value == v || value.equals(v)) 
-                {
-                    if (pred == null)
-                        setEntryAt(tab, index, next);
-                    else
-                        pred.setNext(next);
-
-                    ++modCount;
-                    --count;
-                    oldValue = v;
-                }
+                oldValue = e.value;
+                e.value = value;
+                ++modCount;
                 break;
             }
-            pred = e;
-            e = next;
         }
     } 
     finally 
@@ -636,6 +884,28 @@ private void rehash(HashEntry&lt;K,V&gt; node)
         unlock();
     }
     return oldValue;
+}
+</code></pre>
+
+<h2>段内清除操作——Segment类的clear函数</h2>
+
+<pre><code class="java">final void clear() 
+{
+    lock();//加锁
+    try 
+    {
+        HashEntry&lt;K,V&gt;[] tab = table;
+        for (int i = 0; i &lt; tab.length ; i++)
+        {
+            setEntryAt(tab, i, null);
+        }
+        ++modCount;
+        count = 0;
+    } 
+    finally 
+    {
+        unlock();//释放锁
+    }
 }
 </code></pre>
 
@@ -695,6 +965,12 @@ private void rehash(HashEntry&lt;K,V&gt; node)
 <span class='line-number'>51</span>
 <span class='line-number'>52</span>
 <span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">V</span> <span class="nf">put</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">)</span>
 </span><span class='line'><span class="o">{</span>
 </span><span class='line'>    <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">s</span><span class="o">;</span>
@@ -704,11 +980,15 @@ private void rehash(HashEntry&lt;K,V&gt; node)
 </span><span class='line'>    <span class="o">}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">hash</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//得到hash值对应的 segments 数组的下标值</span>
 </span><span class='line'><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="o">(</span><span class="n">hash</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">segmentShift</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">segmentMask</span><span class="o">;</span>
 </span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="o">((</span><span class="n">s</span> <span class="o">=</span> <span class="o">(</span><span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span><span class="n">UNSAFE</span><span class="o">.</span><span class="na">getObject</span>          <span class="c1">// nonvolatile; recheck</span>
-</span><span class='line'>     <span class="o">(</span><span class="n">segments</span><span class="o">,</span> <span class="o">(</span><span class="n">j</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">SSHIFT</span><span class="o">)</span> <span class="o">+</span> <span class="n">SBASE</span><span class="o">))</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="c1">//  in ensureSegment</span>
+</span><span class='line'><span class="c1">//根据下标值返回散列码对应的Segment对象</span>
+</span><span class='line'><span class="k">if</span> <span class="o">((</span><span class="n">s</span> <span class="o">=</span> <span class="o">(</span><span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span><span class="n">UNSAFE</span><span class="o">.</span><span class="na">getObject</span><span class="o">(</span><span class="n">segments</span><span class="o">,</span> <span class="o">(</span><span class="n">j</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">SSHIFT</span><span class="o">)</span> <span class="o">+</span> <span class="n">SBASE</span><span class="o">))</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
 </span><span class='line'>    <span class="n">s</span> <span class="o">=</span> <span class="n">ensureSegment</span><span class="o">(</span><span class="n">j</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
 </span><span class='line'>
 </span><span class='line'><span class="c1">//委托给段的put函数来完成</span>
 </span><span class='line'><span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">hash</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
@@ -716,15 +996,17 @@ private void rehash(HashEntry&lt;K,V&gt; node)
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
 </span><span class='line'><span class="o">&lt;</span><span class="n">code</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span> <span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
+</span><span class='line'><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">font</span> <span class="n">color</span><span class="o">=</span><span class="err">#</span><span class="mi">0000</span><span class="n">CD</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;**</span><span class="n">ensureSegment函数</span><span class="o">**&amp;</span><span class="n">lt</span><span class="o">;/</span><span class="n">font</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">br</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span>
 </span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;</span><span class="n">java</span>
 </span><span class='line'><span class="kd">private</span> <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="nf">ensureSegment</span><span class="o">(</span><span class="kt">int</span> <span class="n">k</span><span class="o">)</span>
 </span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">final</span> <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;[]</span> <span class="n">ss</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">segments</span><span class="o">;</span>
-</span><span class='line'>    <span class="kt">long</span> <span class="n">u</span> <span class="o">=</span> <span class="o">(</span><span class="n">k</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">SSHIFT</span><span class="o">)</span> <span class="o">+</span> <span class="n">SBASE</span><span class="o">;</span> <span class="c1">// raw offset</span>
-</span><span class='line'>    <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">seg</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;[]</span> <span class="n">ss</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">segments</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="o">((</span><span class="n">seg</span> <span class="o">=</span> <span class="o">(</span><span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span><span class="n">UNSAFE</span><span class="o">.</span><span class="na">getObjectVolatile</span><span class="o">(</span><span class="n">ss</span><span class="o">,</span> <span class="n">u</span><span class="o">))</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">long</span> <span class="n">u</span> <span class="o">=</span> <span class="o">(</span><span class="n">k</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">SSHIFT</span><span class="o">)</span> <span class="o">+</span> <span class="n">SBASE</span><span class="o">;</span> <span class="c1">// raw offset</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">seg</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="o">((</span><span class="n">seg</span> <span class="o">=</span> <span class="o">(</span><span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span><span class="n">UNSAFE</span><span class="o">.</span><span class="na">getObjectVolatile</span><span class="o">(</span><span class="n">ss</span><span class="o">,</span> <span class="n">u</span><span class="o">))</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
 </span><span class='line'><span class="o">{</span>
 </span><span class='line'>    <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">proto</span> <span class="o">=</span> <span class="n">ss</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span>
 </span><span class='line'>    <span class="kt">int</span> <span class="n">cap</span> <span class="o">=</span> <span class="n">proto</span><span class="o">.</span><span class="na">table</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
@@ -748,36 +1030,142 @@ private void rehash(HashEntry&lt;K,V&gt; node)
 </span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
+</span></code></pre></td></tr></table></div></figure>
+<font color=#0000CD><strong>ensureSegment函数使用CAS来实现.</strong></font><br></p>
 
 <h2>读取元素——get函数</h2>
 
-<p><font color=#0000CD><strong>返回指定键所映射到的值,如果此映射不包含该键的映射关系,则返回null。</strong></font><br></p>
+<p><font color=#0000CD><strong>返回指定键所映射到的值,如果此映射不包含该键的映射关系,则返回null。</strong></font><br>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">V</span> <span class="nf">get</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">s</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;[]</span> <span class="n">tab</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">int</span> <span class="n">h</span> <span class="o">=</span> <span class="n">hash</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">long</span> <span class="n">u</span> <span class="o">=</span> <span class="o">(((</span><span class="n">h</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">segmentShift</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">segmentMask</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">SSHIFT</span><span class="o">)</span> <span class="o">+</span> <span class="n">SBASE</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="o">((</span><span class="n">s</span> <span class="o">=</span> <span class="o">(</span><span class="n">Segment</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span><span class="n">UNSAFE</span><span class="o">.</span><span class="na">getObjectVolatile</span><span class="o">(</span><span class="n">segments</span><span class="o">,</span> <span class="n">u</span><span class="o">))</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">(</span><span class="n">tab</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">table</span><span class="o">)</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">(</span><span class="n">HashEntry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;)</span> <span class="n">UNSAFE</span><span class="o">.</span><span class="na">getObjectVolatile</span>
+</span><span class='line'>             <span class="o">(</span><span class="n">tab</span><span class="o">,</span> <span class="o">((</span><span class="kt">long</span><span class="o">)(((</span><span class="n">tab</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">h</span><span class="o">))</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">TSHIFT</span><span class="o">)</span> <span class="o">+</span> <span class="n">TBASE</span><span class="o">);</span>
+</span><span class='line'>         <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">K</span> <span class="n">k</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">((</span><span class="n">k</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">)</span> <span class="o">==</span> <span class="n">key</span> <span class="o">||</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">h</span> <span class="o">&amp;</span><span class="n">amp</span><span class="o">;&amp;</span><span class="n">amp</span><span class="o">;</span> <span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">k</span><span class="o">)))</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</span></code></pre></td></tr></table></div></figure>
+<font color=#0000CD><strong>ConcurrentHashMap中读不需要加锁.</strong></font><br></p>
 
-<pre><code class="java">public V get(Object key) 
+<h2>共用非全局操作——get()/containsKey()/put()/putIfAbsent()/replace()/Remove()/clear()操作</h2>
+
+<p><font color=#0000CD><strong>这些操作只需要找到相应的Segment对象,通过Segment找到结点链表,然后遍历结点链表即可.</strong></font><br>
+<font color=#0000CD><strong>这些操作都是局限在某一个Segment内.</strong></font><br></p>
+
+<h2>共用全局操作——size()/containsValue()/contains()/isEmpty()操作</h2>
+
+<p><font color=#0000CD><strong>这些操作需要全局扫描整个Map,正常情况下需要先获得所有Segment实例的锁，然后做相应的查找、计算得到结果，再解锁，返回值。然而为了竟可能的减少锁对性能的影响，Doug Lea在这里并没有直接加锁，而是先尝试的遍历查找、计算2遍，如果两遍遍历过程中整个Map没有发生修改（即两次所有Segment实例中modCount值的和一致），则可以认为整个查找、计算过程中Map没有发生改变，我们计算的结果是正确的，否则，在顺序的在所有Segment实例加锁，计算，解锁，然后返回。</strong></font><br></p>
+
+<pre><code class="java">public boolean containsValue(Object value) 
 {
-    Segment&lt;K,V&gt; s; 
+    // Same idea as size()
+    if (value == null)
+        throw new NullPointerException();
 
-    HashEntry&lt;K,V&gt;[] tab;
-
-    int h = hash(key.hashCode());
-
-    long u = (((h &gt;&gt;&gt; segmentShift) &amp; segmentMask) &lt;&lt; SSHIFT) + SBASE;
-
-    if ((s = (Segment&lt;K,V&gt;)UNSAFE.getObjectVolatile(segments, u)) != null &amp;&amp;
-        (tab = s.table) != null) 
-    {
-        for (HashEntry&lt;K,V&gt; e = (HashEntry&lt;K,V&gt;) UNSAFE.getObjectVolatile
-                 (tab, ((long)(((tab.length - 1) &amp; h)) &lt;&lt; TSHIFT) + TBASE);
-             e != null; e = e.next) 
+    final Segment&lt;K,V&gt;[] segments = this.segments;
+    boolean found = false;
+    long last = 0;
+    int retries = -1;
+    try {
+        outer: for (;;) 
         {
-            K k;
+            if (retries++ == RETRIES_BEFORE_LOCK) 
+            {
+                for (int j = 0; j &lt; segments.length; ++j)
+                {
+                    ensureSegment(j).lock(); // force creation
+                }
+            }
+            long hashSum = 0L;
+            int sum = 0;
+            for (int j = 0; j &lt; segments.length; ++j) 
+            {
+                HashEntry&lt;K,V&gt;[] tab;
+                Segment&lt;K,V&gt; seg = segmentAt(segments, j);
 
-            if ((k = e.key) == key || (e.hash == h &amp;&amp; key.equals(k)))
-                return e.value;
+                if (seg != null &amp;&amp; (tab = seg.table) != null) 
+                {
+                    for (int i = 0 ; i &lt; tab.length; i++) 
+                    {
+                        HashEntry&lt;K,V&gt; e;
+                        for (e = entryAt(tab, i); e != null; e = e.next) 
+                        {
+                            V v = e.value;
+                            if (v != null &amp;&amp; value.equals(v)) 
+                            {
+                                found = true;
+                                break outer;
+                            }
+                        }
+                    }
+                    sum += seg.modCount;
+                }
+            }
+            if (retries &gt; 0 &amp;&amp; sum == last)
+            {
+                break;
+            }
+            last = sum;
+        }
+    } 
+    finally 
+    {
+        if (retries &gt; RETRIES_BEFORE_LOCK) 
+        {
+            for (int j = 0; j &lt; segments.length; ++j)
+            {
+                segmentAt(segments, j).unlock();
+            }
+
         }
     }
-    return null;
+    return found;
 }
 </code></pre>
 ]]></content>
