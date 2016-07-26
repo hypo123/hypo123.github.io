@@ -4,7 +4,7 @@
   <title><![CDATA[regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-26T21:20:33+08:00</updated>
+  <updated>2016-07-26T21:28:21+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -418,12 +418,14 @@
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
 <span class='line-number'>19</span>
+<span class='line-number'>20</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//此方法提供LRU实现</span>
 </span><span class='line'><span class="kt">void</span> <span class="nf">recordAccess</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span>
 </span><span class='line'><span class="o">{</span>
 </span><span class='line'>    <span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">lm</span> <span class="o">=</span> <span class="o">(</span><span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;)</span><span class="n">m</span><span class="o">;</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="c1">//如果当前LinkedHashMap的accessOrder为true</span>
+</span><span class='line'>    <span class="c1">//则把当前结点插入到header结点的后面.</span>
 </span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">lm</span><span class="o">.</span><span class="na">accessOrder</span><span class="o">)</span>
 </span><span class='line'>    <span class="o">{</span>
 </span><span class='line'>        <span class="c1">//Map结构修改次数加1</span>
@@ -439,6 +441,9 @@
 </span><span class='line'><span class="o">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
+
+<p><font color=#FF0000><strong>LinkedHashMap类中accessOrder变量只在recordAccess方法中用到,而recordAccess方法只在get方法中用到.</strong></font><br>
+<font color=#FF0000><strong>所以设置accessOrder的值只会影响到使用get方法访问结点的时候.</strong></font><br></p>
 
 <h2>删除元素——remove函数</h2>
 
