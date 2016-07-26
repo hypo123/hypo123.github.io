@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Java | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-26T21:28:21+08:00</updated>
+  <updated>2016-07-26T21:47:36+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -472,8 +472,14 @@ private void remove()
 <span class='line-number'>36</span>
 <span class='line-number'>37</span>
 <span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">LinkedHashIterator</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
 </span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//第一个结点是从header结点after所指结点.</span>
+</span><span class='line'>    <span class="c1">//header作为双向链表的头一个结点，那么是从双向链表的最后一个结点开始遍历的.</span>
 </span><span class='line'>    <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">nextEntry</span>    <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="na">after</span><span class="o">;</span>
 </span><span class='line'>    <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">lastReturned</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 </span><span class='line'>
@@ -504,6 +510,8 @@ private void remove()
 </span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">NoSuchElementException</span><span class="o">();</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="n">Entry</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">lastReturned</span> <span class="o">=</span> <span class="n">nextEntry</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>
 </span><span class='line'>    <span class="n">nextEntry</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">after</span><span class="o">;</span>
 </span><span class='line'>    <span class="k">return</span> <span class="n">e</span><span class="o">;</span>
 </span><span class='line'><span class="o">}</span>
