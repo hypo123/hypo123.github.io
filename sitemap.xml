@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://www.regenthypo.com/blog/2016/07/27/effective-java-21/</loc>
+<lastmod>2016-07-27T15:44:16+08:00</lastmod>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/2016/07/27/java-generic/</loc>
+<lastmod>2016-07-27T14:50:07+08:00</lastmod>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/2016/07/27/java-serializable/</loc>
+<lastmod>2016-07-27T14:23:25+08:00</lastmod>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/2016/07/27/java-iterator/</loc>
+<lastmod>2016-07-27T14:22:38+08:00</lastmod>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/2016/07/27/template-method-design-pattern/</loc>
+<lastmod>2016-07-27T13:52:25+08:00</lastmod>
+</url>
+<url>
 <loc>http://www.regenthypo.com/blog/2016/07/27/iterator-design-pattern/</loc>
 <lastmod>2016-07-27T12:10:54+08:00</lastmod>
 </url>
@@ -349,5 +369,8 @@
 </url>
 <url>
 <loc>http://www.regenthypo.com/blog/categories/lintcode/</loc>
+</url>
+<url>
+<loc>http://www.regenthypo.com/blog/categories/effective/</loc>
 </url>
 </urlset>

@@ -9,21 +9,15 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="[对象行为模式] 提供一种方法顺序访问一个集合对象中各个元素，而又不需暴露该对象的内部表示. 迭代器模式结构 迭代器模式角色 迭代器模式代码——白箱集合 1
+  <meta name="description" content="在Java中,函数指针的主要用途就是实现策略模式,为了在Java中实现这个模式,要声明一个接口来表示该策略.
+并且为每个具体策略声明一个实现了该接口的类. 策略模式结构 抽象策略 1
 2
 3
 4
 5
 6
-7
-8
-9
-10
-11
-12
-13
-/** * 抽象集合角色 */
-public abstract class &hellip;">
+public interface Comparator&lt;T&gt;
+{ int &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -82,6 +76,505 @@ public abstract class &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/27/effective-java-21/">[Effective Java]第21条:用函数对象表示策略</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-27T15:44:16+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:44 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><font color=#FF0000><strong>在Java中,函数指针的主要用途就是实现策略模式,为了在Java中实现这个模式,要声明一个接口来表示该策略.</strong></font><br>
+<font color=#FF0000><strong>并且为每个具体策略声明一个实现了该接口的类.</strong></font><br></p>
+
+<p><font color=#0000CD><strong>策略模式结构</strong></font><br>
+<img src="/images/item21_1.jpg"></p>
+
+<p><font color=#000000><strong>抽象策略</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Comparator</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">T</span> <span class="n">o1</span><span class="o">,</span> <span class="n">T</span> <span class="n">o2</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">obj</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#000000><strong>Arrays.sort参数中的匿名类为具体策略类.</strong></font><br></p>
+
+<p><font color=#FF0000><strong>当一个具体策略只被使用一次时,通常使用匿名类来声明和实例化这个具体策略类.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Comparator</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">StringCompare</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">String</span><span class="o">[]</span> <span class="n">str</span> <span class="o">=</span> <span class="o">{</span><span class="s">&quot;abc&quot;</span><span class="o">,</span><span class="s">&quot;d&quot;</span><span class="o">,</span><span class="s">&quot;ef&quot;</span><span class="o">,</span><span class="s">&quot;zzzz&quot;</span><span class="o">};</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//Arrays类的sort方法根据Comparator的不同实现来使用不同策略排序.</span>
+</span><span class='line'>      <span class="n">Arrays</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">str</span> <span class="o">,</span> <span class="k">new</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="nd">@Override</span>
+</span><span class='line'>                  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">String</span> <span class="n">o1</span><span class="o">,</span> <span class="n">String</span> <span class="n">o2</span><span class="o">)</span>
+</span><span class='line'>                  <span class="o">{</span>
+</span><span class='line'>                      <span class="k">return</span> <span class="n">o1</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">-</span> <span class="n">o2</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</span><span class='line'>                  <span class="o">}</span>
+</span><span class='line'>              <span class="o">});</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span> <span class="o">:</span> <span class="n">str</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>运行结果</strong></font><br>
+<img src="/images/item21_2.jpg"></p>
+
+<p><font color=#FF0000><strong>当一个具体策略是设计用来重复使用的时候,它的类通常就要被实现为私有的静态成员类,并通过公用的静态final域被导出,其类型为该策略接口.</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">import</span> <span class="nn">java.util.Comparator</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Host</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="c1">//具体策略类StrLengthCmp</span>
+</span><span class='line'>  <span class="c1">//抽象策略仍是Comparator接口</span>
+</span><span class='line'>  <span class="c1">//私有静态成员类</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">StrLengthCmp</span> <span class="kd">implements</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="nd">@Override</span>
+</span><span class='line'>      <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compare</span><span class="o">(</span><span class="n">String</span> <span class="n">o1</span><span class="o">,</span> <span class="n">String</span> <span class="n">o2</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="n">o1</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">-</span> <span class="n">o2</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">//公用的静态final域</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Comparator</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">StrCompare</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StrLengthCmp</span><span class="o">();</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">String</span> <span class="n">s1</span> <span class="o">=</span><span class="s">&quot;abcd&quot;</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;ef&quot;</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">Host</span><span class="o">.</span><span class="na">StrCompare</span><span class="o">.</span><span class="na">compare</span><span class="o">(</span><span class="n">s1</span><span class="o">,</span> <span class="n">s2</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/27/java-generic/">Java泛型</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-27T14:50:07+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:50 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/27/java-serializable/">Java序列化</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-27T14:23:25+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:23 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/27/java-iterator/">Java迭代器</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-27T14:22:38+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:22 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>//TODO</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/27/template-method-design-pattern/">一天一设计模式之模板方法模式[20]</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-27T13:52:25+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:52 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><font color=#FF0000><strong>[类行为模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>意图:定义一个操作中的算法的骨架,而将一些步骤延迟到子类中。模板方法使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤. </strong></font></p>
+
+<p><strong>模板方法模式结构</strong><br>
+<img src="/images/templatedp1.jpg"></p>
+
+<p><strong>模板方法模式角色</strong><br>
+<img src="/images/templatedp2.jpg"></p>
+
+<p><strong>模板方法模式代码</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//抽象模板 </span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Account</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">protected</span> <span class="n">String</span> <span class="n">accountNumber</span><span class="o">;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">public</span> <span class="nf">Account</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>          <span class="n">accountNumber</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="nf">Account</span><span class="o">(</span><span class="n">String</span> <span class="n">accountNumber</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">accountNumber</span> <span class="o">=</span> <span class="n">accountNumber</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  模板方法:计算利息数额 </span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">final</span> <span class="kt">double</span> <span class="nf">calculateInterest</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">double</span> <span class="n">interestRate</span> <span class="o">=</span> <span class="n">doCalculateInterestType</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">String</span> <span class="n">accountType</span> <span class="o">=</span> <span class="n">doCalculateAccountType</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">double</span> <span class="n">amount</span> <span class="o">=</span> <span class="n">calculateAmount</span><span class="o">(</span><span class="n">accountType</span> <span class="o">,</span> <span class="n">accountNumber</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">return</span> <span class="n">amount</span> <span class="o">*</span> <span class="n">interestRate</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="kd">protected</span> <span class="kd">abstract</span> <span class="n">String</span> <span class="nf">doCalculateAccountType</span><span class="o">();</span>
+</span><span class='line'>  <span class="kd">protected</span> <span class="kd">abstract</span> <span class="kt">double</span> <span class="nf">doCalculateInterestType</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">final</span> <span class="kt">double</span> <span class="nf">calculateAmount</span><span class="o">(</span><span class="n">String</span> <span class="n">accountType</span> <span class="o">,</span> <span class="n">String</span> <span class="n">accountNumber</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="mf">7000.00</span><span class="n">D</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  具体模板</span>
+</span><span class='line'><span class="cm"> *   定期存款账号 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CDAccount</span> <span class="kd">extends</span> <span class="n">Account</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="nd">@Override</span>
+</span><span class='line'>  <span class="kd">protected</span> <span class="kt">double</span> <span class="nf">doCalculateInterestType</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="mf">0.065</span><span class="n">D</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="nd">@Override</span>
+</span><span class='line'>  <span class="kd">protected</span> <span class="n">String</span> <span class="nf">doCalculateAccountType</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="s">&quot;Certificate of Deposite&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> *  具体模板</span>
+</span><span class='line'><span class="cm"> *   货币市场账号 </span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MoneyMakerAccount</span> <span class="kd">extends</span> <span class="n">Account</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="nd">@Override</span>
+</span><span class='line'>  <span class="kd">protected</span> <span class="kt">double</span> <span class="nf">doCalculateInterestType</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="mf">0.045</span><span class="n">D</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="nd">@Override</span>
+</span><span class='line'>  <span class="kd">protected</span> <span class="n">String</span> <span class="nf">doCalculateAccountType</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="s">&quot;Money Market&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//测试</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">Account</span> <span class="n">acct</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">acct</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MoneyMakerAccount</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;货币市场利息 &quot;</span> <span class="o">+</span> <span class="n">acct</span><span class="o">.</span><span class="na">calculateInterest</span><span class="o">());</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">acct</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">CDAccount</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;定期存款利息 &quot;</span> <span class="o">+</span> <span class="n">acct</span><span class="o">.</span><span class="na">calculateInterest</span><span class="o">());</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -4492,694 +4985,6 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/07/22/seven-gc/">Java的七种垃圾收集器</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-07-22T16:28:25+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>4:28 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content">
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/07/22/java-gc/">Java垃圾收集机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-07-22T15:10:49+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>3:10 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content">
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/07/21/synchronized/">Synchronized关键字——内置锁</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-07-21T17:02:27+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>5:02 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><font color=#FF0000><strong>synchronzied是Java中的关键字,是一种内置锁，可以修饰一下几种:</strong></font><br>
-<font color=#FF0000><strong>修饰一个对象的非静态方法,作用的范围是整个方法,对该对象加锁.</strong></font><br>
-<font color=#FF0000><strong>修饰一个静态方法,作用的范围是整个方法,对该方法所在类的Class对象加锁. </strong></font><br>
-<font color=#FF0000><strong>修饰一个代码块,synchronzied()中参数可指定,对该参数对象进行加锁.</strong></font><br></p>
-
-<p><font color=#0000C6><strong>1.线程在进入同步代码块之前会自动获得锁,并且在退出同步代码块时自动释放锁,而无论是通过正常的控制路径退出，还是通过代码块中抛出异常退出。获得内置锁的唯一途径就是进入由这个锁保护的同步代码块或方法.</strong></font></p>
-
-<p><font color=#0000C6><strong>2.以关键字synchronzied来修饰的方法就是一种横跨整个方法体的同步代码块，其中该同步代码块的锁就是方法调用所在的对象.</strong></font></p>
-
-<p><font color=#0000C6><strong>3.所有对象都自动含有单一的锁(也称为监视器),当在对象上调用其任意synchronzied方法(非静态方法)的时候,此对象都被加锁.此时该对象上的其他synchronzied方法(非静态方法)只有等到前一个方法调用完毕并释放了锁之后才能被调用. </strong></font></p>
-
-<p><font color=#0000C6><strong>4.用synchronzied关键字声明的静态方法,同时只能被一个执行线程访问,但是其他线程可以访问这个对象的非静态方法(synchronzied修饰的非静态方法只要拿到锁也可以同时访问). </strong></font></p>
-
-<p><font color=#0000C6><strong>5.没有被synchronzied修饰的方法可以被所有的线程同时访问.</strong></font></p>
-
-<p><font color=#0000C6><strong>5 同一对象上的所有用synchronzied修饰的非静态方法共用该对象的锁,即所有非静态方法都要竞争这一个锁,获得了锁才可以访问.</strong></font></p>
-
-<p><font color=#0000C6><strong>6 同一个类上的所有用synchronzied修饰的静态方法共用该类所对应Class对象的锁,即所有静态方法都要竞争这一个锁,获得了锁才可以访问.</strong></font></p>
-
-<p><font color=#0000C6><strong>7.用synchronized修饰代码块时,synchronized的参数可以为this,也可以为别的对象.参数是那个对象,那么访问的时候要先获得该对象的锁才能访问. </strong></font></p>
-
-<p><font color=#0000C6><strong>8.当线程访问一个对象的同步方法时,它还可以调用这个对象的其他同步方法(非静态),也包含正在执行的方法,而不必再次去获得这个方法的访问权。即已经获得对象的锁不用再重新获得. </strong></font></p>
-
-<p><font color=#0000C6><strong>9.当一个线程访问object的一个synchronized(this)同步代码块时,另一个线程仍然可以访问该object中的非synchronized(this)同步代码块 </strong></font></p>
-
-<p><strong>代码块</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">DualSynch</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">Object</span> <span class="n">syncObject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Object</span><span class="o">();</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//同步方法</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">f</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;f()&quot;</span><span class="o">);</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="c1">//暂停当前线程,执行其他线程(包括当前线程),具体执行那个线程有CPU决定</span>
-</span><span class='line'>          <span class="n">Thread</span><span class="o">.</span><span class="na">yield</span><span class="o">();</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">g</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">//同步代码块</span>
-</span><span class='line'>      <span class="kd">synchronized</span><span class="o">(</span><span class="n">syncObject</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;g()&quot;</span><span class="o">);</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="n">Thread</span><span class="o">.</span><span class="na">yield</span><span class="o">();</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SyncObject</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="kd">final</span> <span class="n">DualSynch</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">DualSynch</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//启动新线程</span>
-</span><span class='line'>      <span class="k">new</span> <span class="nf">Thread</span><span class="o">()</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="c1">//新线程要获得对象DualSynch类的对象ds的锁</span>
-</span><span class='line'>              <span class="n">ds</span><span class="o">.</span><span class="na">f</span><span class="o">();</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}.</span><span class="na">start</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="c1">//主线程执行,主线程要获得Object类的对象syncObject的锁</span>
-</span><span class='line'>      <span class="n">ds</span><span class="o">.</span><span class="na">g</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>运行结果</strong><br>
-<img src="/images/synchronized1.jpg"></p>
-
-<p>运行结果中两个方法是交替访问,说明新线程和主线程分别获得了同步方法的锁和代码块的锁,而且是不同对象的锁,一个是ds对象的锁,
-一个是syncObject对象的锁.所以两个线程可以同时访问.<br></p>
-
-<p><strong>如果把ssynchronized(syncObject)改为synchronized(this)运行结果</strong><br>
-<img src="/images/synchronized2.jpg"></p>
-
-<p>运行结果中是先打印完f(),再打印g(),说明新线程和主线程不同同时访问同步方法和代码块;其实要访问该同步方法和代码块都要获得ds对象的锁.
-所以得等同步方法访问完释放ds对象的锁之后,才可以再次获得ds对象的锁访问代码块.<br></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/07/21/proxy-design-pattern/">一天一设计模式之代理模式[17]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-07-21T15:24:50+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:24 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>静态代理</h2>
-
-<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
-
-<p><font color=#FF0000><strong>为其他对象提供一种代理以控制对这个对象的访问.</strong></font></p>
-
-<p><strong>代理模式结构</strong><br>
-<img src="/images/proxydp1.jpg"></p>
-
-<p><strong>代理模式角色</strong><br>
-<img src="/images/proxydp2.jpg"></p>
-
-<p><strong>代理模式代码</strong></p>
-
-<p><strong>抽象主题</strong></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   抽象主题角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Subject</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">abstract</span> <span class="kt">void</span> <span class="nf">request</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>真实主题</strong></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   真实主题角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RealSubject</span> <span class="kd">extends</span> <span class="n">Subject</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">request</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;from real subject&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>代理主题</strong></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   代理主题角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ProxySubject</span> <span class="kd">extends</span> <span class="n">Subject</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="c1">//代理对象含有RealSubject对象的引用</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">RealSubject</span> <span class="n">realsubject</span><span class="o">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/**</span>
-</span><span class='line'><span class="cm">  *  请求前操作 </span>
-</span><span class='line'><span class="cm">  */</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">void</span> <span class="nf">preRequest</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;prerequest!&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/**</span>
-</span><span class='line'><span class="cm">  *  请求后操作 </span>
-</span><span class='line'><span class="cm">  */</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kt">void</span> <span class="nf">postRequest</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;postrequest&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="cm">/**</span>
-</span><span class='line'><span class="cm">  * 实现请求方法</span>
-</span><span class='line'><span class="cm">  */</span>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">request</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">preRequest</span><span class="o">();</span><span class="c1">//可插入业务代码</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">realsubject</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">realsubject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">RealSubject</span><span class="o">();</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">realsubject</span><span class="o">.</span><span class="na">request</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">postRequest</span><span class="o">();</span><span class="c1">//可插入业务代码</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>测试</strong></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">test</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">Subject</span> <span class="n">subject</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ProxySubject</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">subject</span><span class="o">.</span><span class="na">request</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>动态代理</h2>
-
-<p>//TODO</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/07/21/state-design-pattern/">一天一设计模式之状态模式[16]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-07-21T14:31:13+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>2:31 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><font color=#FF0000><strong>[行为模式]</strong></font></p>
-
-<p><font color=#FF0000><strong>允许一个对象在其内部状态改变时改变它的行为,看起来似乎修改了它的类.</strong></font></p>
-
-<p><font color=#FF0000><strong>别名:状态对象(Objects for States)</strong></font></p>
-
-<p><strong>状态模式结构</strong><br>
-<img src="/images/statedp1.jpg"></p>
-
-<p><strong>状态模式角色</strong><br>
-<img src="/images/statedp2.jpg"></p>
-
-<p><strong>状态模式代码</strong></p>
-
-<p><strong>抽象状态</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   抽象状态角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">State</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="c1">//定义与Context一个特定状态相关的行为</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>具体状态</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   具体状态角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteState1</span> <span class="kd">implements</span> <span class="n">State</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;state1 operation!&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>具体状态</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   具体状态角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteState2</span> <span class="kd">implements</span> <span class="n">State</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;state2 operation!&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>具体状态</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   具体状态角色 </span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteState3</span> <span class="kd">implements</span> <span class="n">State</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="nd">@Override</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;state3 operation!&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>环境</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
-</span><span class='line'><span class="cm"> *   环境角色</span>
-</span><span class='line'><span class="cm"> */</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Context</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="c1">//环境类持有一个具体状态类的实例</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="n">State</span> <span class="n">state</span><span class="o">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//环境类与状态类之间是聚合关系</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setState</span><span class="o">(</span><span class="n">State</span> <span class="n">state</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">this</span><span class="o">.</span><span class="na">state</span> <span class="o">=</span> <span class="n">state</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">operation</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">//当持有的具体状态类不同时,该操作产生不同的行为</span>
-</span><span class='line'>      <span class="n">state</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>客户端</strong><br></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">Context</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Context</span><span class="o">();</span><span class="c1">//环境类</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">ConcreteState1</span> <span class="n">state1</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteState1</span><span class="o">();</span><span class="c1">//具体状态1</span>
-</span><span class='line'>      <span class="n">ConcreteState2</span> <span class="n">state2</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteState2</span><span class="o">();</span><span class="c1">//具体状态2</span>
-</span><span class='line'>      <span class="n">ConcreteState3</span> <span class="n">state3</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteState3</span><span class="o">();</span><span class="c1">//具体状态3</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">state1</span><span class="o">);</span><span class="c1">//设定环境状态</span>
-</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------------------&quot;</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">state2</span><span class="o">);</span><span class="c1">//设定环境状态</span>
-</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------------------&quot;</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">setState</span><span class="o">(</span><span class="n">state3</span><span class="o">);</span><span class="c1">//设定环境状态</span>
-</span><span class='line'>      <span class="n">context</span><span class="o">.</span><span class="na">operation</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;------------------------------&quot;</span><span class="o">);</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>运行结果</strong><br>
-<img src="/images/statedp3.jpg"></p>
-
-<p><strong>状态模式适用情况</strong><br>
-<img src="/images/statedp4.jpg"></p>
-
-<p><strong>状态模式效果</strong><br>
-<img src="/images/statedp5.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -5195,23 +5000,23 @@ public Hashtable(Map&lt;? extends K, ? extends V&gt; t)
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/07/27/iterator-design-pattern/">一天一设计模式之迭代器模式[19]</a>
+        <a href="/blog/2016/07/27/effective-java-21/">[Effective Java]第21条:用函数对象表示策略</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/26/linkedhashmap/">LinkedHashMap源码分析</a>
+        <a href="/blog/2016/07/27/java-generic/">Java泛型</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/25/concurrenthashmap/">ConcurrentHashMap源码分析</a>
+        <a href="/blog/2016/07/27/java-serializable/">Java序列化</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/25/hashtable/">Hashtable源码分析</a>
+        <a href="/blog/2016/07/27/java-iterator/">Java迭代器</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/22/memento-design-pattern/">一天一设计模式之备忘录模式[18]</a>
+        <a href="/blog/2016/07/27/template-method-design-pattern/">一天一设计模式之模板方法模式[20]</a>
       </li>
     
   </ul>

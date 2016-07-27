@@ -9,9 +9,7 @@
   <meta name="author" content="regenthypo">
 
   
-  <meta name="description" content="给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动. Difficulty: Medium 分析:
-可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];
-即到(i,j)点路径的种类，由到(i-1,j)点和到(i,j &hellip;">
+  <meta name="description" content="设计模式分类 设计模式之间的关系 设计模式所支持的设计可变方面 软件设计原则 ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,6 +68,1404 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/18/design-pattern/">Java设计模式</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-18T09:32:47+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:32 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>设计模式分类<br></h3>
+
+<p><img src="/images/dp2.jpg"></p>
+
+<p>设计模式之间的关系<br>
+<img src="/images/dp.jpg"></p>
+
+<p>设计模式所支持的设计可变方面<br>
+<img src="/images/dp3.jpg"></p>
+
+<h3>软件设计原则<br></h3>
+
+<p><img src="/images/dp4.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/17/hashmap-dot-java/">HashMap源码分析</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-17T19:37:01+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:37 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><font color=#FF0000><strong>HashMap在Map框架图中的位置</strong></font><br>
+<img src="/images/hashmap1.jpg"></p>
+
+<h2>1.定义</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">AbstractMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;,</span> <span class="n">Cloneable</span><span class="o">,</span> <span class="n">Serializable</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>HashMap实现了Map接口，继承了AbstractMap类，其中Map接口定义了键值的映射规则，而AbstractMap类提供了Map接口的基本实现.</strong></font></p>
+
+<h2>2.HashMap类中变量</h2>
+
+<pre><code>static final int DEFAULT_INITIAL_CAPACITY = 16;//默认的初始容量，必须是2的幂
+
+
+static final int MAXIMUM_CAPACITY = 1 &lt;&lt; 30;//最大容量（必须是2的幂且小于2的30次方，传入容量过大将被这个值替换）
+
+
+static final float DEFAULT_LOAD_FACTOR = 0.75f;//负载因子  尺寸/容量
+
+//HashMap的底层主要是基于数组和链表来实现,其中的数组指的的table数组
+//Entry为HashMap类的内部类
+transient Entry[] table;
+
+
+transient int size;//存的键值对的数量
+
+
+int threshold;//阈值 当实际大小超过阈值时，会进行扩容  阈值=容量*加载因子
+
+
+final float loadFactor;//加载因子
+
+
+transient int modCount;//map结构被改变的次数
+</code></pre>
+
+<h2>HashMap中的数据结构</h2>
+
+<p><font color=#FF0000><strong>HashMap底层的数组加链表结构</strong></font><br>
+<img src="/images/hashmap2.jpg"></p>
+
+<p><font color=#FF0000><strong>HashMap其中一个构造函数</strong></font></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">HashMap</span><span class="o">(</span><span class="kt">int</span> <span class="n">initialCapacity</span><span class="o">,</span> <span class="kt">float</span> <span class="n">loadFactor</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//构造一个带指定初始容量和加载因子的空HashMap </span>
+</span><span class='line'>    <span class="c1">//确保参数合法</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">initialCapacity</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span>
+</span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;Illegal initial capacity: &quot;</span> <span class="o">+</span>
+</span><span class='line'>                                         <span class="n">initialCapacity</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果参数初始容量大于最大容量(1&lt;&lt;30)，则初始容量被置为最大容量</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">initialCapacity</span> <span class="o">&gt;</span> <span class="n">MAXIMUM_CAPACITY</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">initialCapacity</span> <span class="o">=</span> <span class="n">MAXIMUM_CAPACITY</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//最大容量（必须是2的幂且小于2的30次方，传入容量过大将被这个值替换）</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//确保参数合法</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">loadFactor</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">Float</span><span class="o">.</span><span class="na">isNaN</span><span class="o">(</span><span class="n">loadFactor</span><span class="o">))</span>
+</span><span class='line'>        <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;Illegal load factor: &quot;</span> <span class="o">+</span>
+</span><span class='line'>                                           <span class="n">loadFactor</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//循环控制capacity刚好是大于initialCapacity的某个2的n次方数.</span>
+</span><span class='line'>    <span class="k">while</span> <span class="o">(</span><span class="n">capacity</span> <span class="o">&lt;</span> <span class="n">initialCapacity</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">capacity</span> <span class="o">&lt;&lt;=</span> <span class="mi">1</span><span class="o">;</span><span class="c1">//容量一定要是2的n次方,其值等于或稍大于传入参数.</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">loadFactor</span> <span class="o">=</span> <span class="n">loadFactor</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">threshold</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)(</span><span class="n">capacity</span> <span class="o">*</span> <span class="n">loadFactor</span><span class="o">);</span><span class="c1">//初始化阈值 = 容量*加载因子</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//开一个大小为capacity的内部类Entry的数组,</span>
+</span><span class='line'>    <span class="n">table</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">[</span><span class="n">capacity</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">init</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>由上面HashMap的构造函数可知,每次new一个HashMap对象,都会先初始化一个table数组,table数组的元素为Entry对象.</strong></font></p>
+
+<p><strong>Entry为HashMap的静态内部类</strong><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//hashmap类的内部类Entry,底层数组中存储的就是Entry对象的引用</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">static</span> <span class="kd">class</span> <span class="nc">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">K</span> <span class="n">key</span><span class="o">;</span><span class="c1">//键</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">V</span> <span class="n">value</span><span class="o">;</span><span class="c1">//值</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">next</span><span class="o">;</span><span class="c1">//下一个结点</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">final</span> <span class="kt">int</span> <span class="n">hash</span><span class="o">;</span><span class="c1">//hash值</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//构造函数</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">(</span><span class="kt">int</span> <span class="n">h</span><span class="o">,</span> <span class="n">K</span> <span class="n">k</span><span class="o">,</span> <span class="n">V</span> <span class="n">v</span><span class="o">,</span> <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">n</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="n">v</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">next</span> <span class="o">=</span> <span class="n">n</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">key</span> <span class="o">=</span> <span class="n">k</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">hash</span> <span class="o">=</span> <span class="n">h</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">final</span> <span class="n">K</span> <span class="nf">getKey</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">key</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">final</span> <span class="n">V</span> <span class="nf">getValue</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">final</span> <span class="n">V</span> <span class="nf">setValue</span><span class="o">(</span><span class="n">V</span> <span class="n">newValue</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="n">newValue</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//Entry的equals方法</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">final</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="n">Object</span> <span class="n">o</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(!(</span><span class="n">o</span> <span class="k">instanceof</span> <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">))</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span> <span class="n">e</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">)</span><span class="n">o</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">Object</span> <span class="n">k1</span> <span class="o">=</span> <span class="n">getKey</span><span class="o">();</span>
+</span><span class='line'>        <span class="n">Object</span> <span class="n">k2</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getKey</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">k1</span> <span class="o">==</span> <span class="n">k2</span> <span class="o">||</span> <span class="o">(</span><span class="n">k1</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">k1</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">k2</span><span class="o">)))</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">Object</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">getValue</span><span class="o">();</span>
+</span><span class='line'>            <span class="n">Object</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getValue</span><span class="o">();</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">v1</span> <span class="o">==</span> <span class="n">v2</span> <span class="o">||</span> <span class="o">(</span><span class="n">v1</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">v1</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">v2</span><span class="o">)))</span>
+</span><span class='line'>                <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="nf">hashCode</span><span class="o">()</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="o">(</span><span class="n">key</span><span class="o">==</span><span class="kc">null</span>   <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span> <span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">())</span> <span class="o">^</span>
+</span><span class='line'>               <span class="o">(</span><span class="n">value</span><span class="o">==</span><span class="kc">null</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span> <span class="n">value</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">final</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">getKey</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;=&quot;</span> <span class="o">+</span> <span class="n">getValue</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * This method is invoked whenever the value in an entry is</span>
+</span><span class='line'><span class="cm">     * overwritten by an invocation of put(k,v) for a key k that&#39;s already</span>
+</span><span class='line'><span class="cm">     * in the HashMap.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kt">void</span> <span class="nf">recordAccess</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">     * This method is invoked whenever the entry is</span>
+</span><span class='line'><span class="cm">     * removed from the table.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="kt">void</span> <span class="nf">recordRemoval</span><span class="o">(</span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">m</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>Entry为HashMap的静态内部类,它的对象包括了键key、值value、下一个Entry结点next以及hash值.table数组下的链表就是由一个个Entry结点组成的.</strong></font></p>
+
+<h2>计算添加元素的位置</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//传入的参数h为插入元素键的hash函数值,h = key.hashCode()</span>
+</span><span class='line'><span class="c1">//由哈希码计算hash值(桶的位置)</span>
+</span><span class='line'><span class="kd">static</span> <span class="kt">int</span> <span class="nf">hash</span><span class="o">(</span><span class="kt">int</span> <span class="n">h</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">// This function ensures that hashCodes that differ only by</span>
+</span><span class='line'>    <span class="c1">// constant multiples at each bit position have a bounded</span>
+</span><span class='line'>    <span class="c1">// number of collisions (approximately 8 at default load factor).</span>
+</span><span class='line'>    <span class="c1">//&quot;&gt;&gt;&gt;&quot;无符号右移,不管正负，高位都添0</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//扰动函数</span>
+</span><span class='line'>    <span class="n">h</span> <span class="o">^=</span> <span class="o">(</span><span class="n">h</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">20</span><span class="o">)</span> <span class="o">^</span> <span class="o">(</span><span class="n">h</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">12</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">h</span> <span class="o">^</span> <span class="o">(</span><span class="n">h</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">7</span><span class="o">)</span> <span class="o">^</span> <span class="o">(</span><span class="n">h</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">4</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//参数为上面hash函数的返回值,和table数组的长度</span>
+</span><span class='line'><span class="c1">//计算在table数组中存储Entry对象的精确的索引(数组下标)</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">static</span> <span class="kt">int</span> <span class="nf">indexFor</span><span class="o">(</span><span class="kt">int</span> <span class="n">h</span><span class="o">,</span> <span class="kt">int</span> <span class="n">length</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">h</span> <span class="o">&amp;</span> <span class="o">(</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+<h2>存储元素——put函数</h2>
+
+<p><font color=#0000CD><strong>put函数源码</strong></font></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * 参数为键和值</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">V</span> <span class="nf">put</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//若“key为null”，则将该键值对添加到table[0]中</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">key</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">putForNullKey</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//若“key不为null”，则计算该key的哈希值，然后将其添加到该哈希值对应的链表中</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">hash</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//先根据key的hash值得到这个元素在数组中的位置(即下标)</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">indexFor</span><span class="o">(</span><span class="n">hash</span><span class="o">,</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//如果这个元素所在的位子上已经存放有其他元素了，</span>
+</span><span class='line'>    <span class="c1">//那么在同一个位子上的元素将以链表的形式存放，新加入的放在链头，最先加入的放在链尾</span>
+</span><span class='line'>    <span class="c1">//如果i索引处的Entry不为null,通过循环不断遍历e元素的下一个元素</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">i</span><span class="o">];</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">Object</span> <span class="n">k</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//不同的key(键)可能hash值(冲突),他们会以链表的形式来存储</span>
+</span><span class='line'>        <span class="c1">//如果向hashmap中加入相同的key(键);相同的键不仅有相同的hash值</span>
+</span><span class='line'>        <span class="c1">//equals方法的返回值也为true;加入相同的key(键),则用新的键值替换旧的键值,</span>
+</span><span class='line'>        <span class="c1">//并返回旧的旧值</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">hash</span> <span class="o">&amp;&amp;</span> <span class="o">((</span><span class="n">k</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">)</span> <span class="o">==</span> <span class="n">key</span> <span class="o">||</span> <span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">k</span><span class="o">)))</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span><span class="c1">//旧的键值</span>
+</span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span><span class="c1">//用新的值替换旧的值</span>
+</span><span class='line'>            <span class="n">e</span><span class="o">.</span><span class="na">recordAccess</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 如果i索引处的Entry为null,表明该索引位置还没放其他元素,直接把Entry对象放在改索引处</span>
+</span><span class='line'>    <span class="n">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 将key、value添加到i索引处,桶索引及entry数组的下标</span>
+</span><span class='line'>    <span class="n">addEntry</span><span class="o">(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#FF0000><strong>put函数原理:当我们想一个HashMap中添加一对key-value时，系统首先会计算key的hash值，然后根据hash值确认在table中存储的位置。
+    若该位置没有元素，则直接插入新结点。否则迭代该处元素链表并依此比较其key的hash值。 </strong></font><br>
+<font color=#FF0000><strong>如果两个hash值相等且key值相等(e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))),则用新的Entry的value覆盖原来节点的value。</strong></font><br>
+<font color=#FF0000><strong>如果两个hash值相等但key值不等 ，则将该节点插入该链表的链头 </strong></font><br></p>
+
+<p><font color=#0000CD><strong>添加Entry结点——addEntry函数源码</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//参数依次为hash值、键key、值value、table数组下标bucketIndex</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="nf">addEntry</span><span class="o">(</span><span class="kt">int</span> <span class="n">hash</span><span class="o">,</span> <span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">value</span><span class="o">,</span> <span class="kt">int</span> <span class="n">bucketIndex</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//将当前结点设置为新加入结点的下一个结点</span>
+</span><span class='line'>    <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//Entry构造函数的参数依次为hash值，键key，值value，下一个结点e</span>
+</span><span class='line'>    <span class="c1">//将新结点存储在table数组下标为bucketIndex处.</span>
+</span><span class='line'>    <span class="n">table</span><span class="o">[</span><span class="n">bucketIndex</span><span class="o">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Entry</span><span class="o">&lt;&gt;(</span><span class="n">hash</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//加入新键值对后大小超过了阈值，则要对hashmap进行扩容</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">size</span><span class="o">++</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//调用resize函数将HashMap扩容1倍</span>
+</span><span class='line'>        <span class="n">resize</span><span class="o">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>addEntry中，对当前要添加的结点都是作为链表的头结点存储在table数组的下标bucketIndex处，对于该处已经有的结点或已经形成的结点链表则要连接在新加入的结点后面.</strong></font><br></p>
+
+<p><font color=#0000CD><strong>HashMap添加键为null的处理函数putForNullKey</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kd">private</span> <span class="n">V</span> <span class="nf">putForNullKey</span><span class="o">(</span><span class="n">V</span> <span class="n">value</span><span class="o">)</span> <span class="c1">//专门处理键为null的情况</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="c1">//如果key是null，会被存储到table[0]，因为null的hash值总是0</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//只遍历table[0]为链表头的链表</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">key</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>             <span class="o">{</span>
+</span><span class='line'>                <span class="n">V</span> <span class="n">oldValue</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span><span class="c1">//用新的值替换旧的值</span>
+</span><span class='line'>                <span class="n">e</span><span class="o">.</span><span class="na">recordAccess</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="k">return</span> <span class="n">oldValue</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">modCount</span><span class="o">++;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">//添加新结点</span>
+</span><span class='line'>        <span class="c1">//hash值为0,键为null,值为value，table数组下标为0</span>
+</span><span class='line'>        <span class="n">addEntry</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">value</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><font color=#0000CD><strong>对于键key为null的情况由putForNullKey函数专门处理</strong></font><br>
+<font color=#0000CD><strong>对于键为null的结点只可能存储在table[0]处或table[0]为链表头的链表上。如果table[0]的值为null，说明table[0]处还没有
+    存入结点。可以直接将该null键新建的结点存储在table[0]即可。</strong></font><br>
+<font color=#0000CD><strong>如果table[0]处的值不为null，说明该处已经存储有结点或结点形成的链表。table[0]处不止存储有键为null的结点，还可能有别的键不为null的结点.</strong></font><br>
+<font color=#0000CD><strong>如果先存入的是键为null的结点后存入的是键不为null的结点，那么键为null的结点可能在链表的中间，所有此时要遍历table[0]的链表。如果此链表中 有键为null的结点，更新该结点的处null键所对应的值即可。如果遍历完链表没有找到键为null的结点，那么就要将键为null的新结点作为链表头存储在
+    table[0]处了，原来的链表结点都加在新结点后面。</strong></font><br></p>
+
+<p><font color=#0000CD><strong>HashMap中可以存入键为null的键值对，但只能存入一个这样的键值对，而且位置是在table[0]处。 </strong></font><br></p>
+
+<h2>读取元素——get函数</h2>
+
+<p><font color=#0000CD><strong>get函数源码</strong></font><br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kd">public</span> <span class="n">V</span> <span class="nf">get</span><span class="o">(</span><span class="n">Object</span> <span class="n">key</span><span class="o">)</span> <span class="c1">//返回指定键所映射的值</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">key</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nf">getForNullKey</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">hash</span> <span class="o">=</span> <span class="n">hash</span><span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">());</span><span class="c1">//计算键的hash值</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// indexFor()用来计算要获取的Entry对象在table数组中的精确的位置(table数组下标)</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">indexFor</span><span class="o">(</span><span class="n">hash</span><span class="o">,</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">)];</span> <span class="n">e</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span>  <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">next</span><span class="o">)</span> <span class="c1">//现在计算后得到位置的桶上找，如果没找到再在以该桶为链表头的链表上找</span>
+</span><span class='line'>        <span class="o">{</span>
+</span><span class='line'>            <span class="n">Object</span> <span class="n">k</span><span class="o">;</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span> <span class="o">==</span> <span class="n">hash</span> <span class="o">&amp;&amp;</span> <span class="o">((</span><span class="n">k</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">key</span><span class="o">)</span> <span class="o">==</span> <span class="n">key</span> <span class="o">||</span> <span class="n">key</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">k</span><span class="o">)))</span>
+</span><span class='line'>                <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>删除元素——remove函数</h2>
+
+<p><font color=#0000CD><strong>给定键key,可以删除HashMap对象中的键值对</strong></font><br></p>
+
+<pre><code>public V remove(Object key) 
+{
+    Entry&lt;K,V&gt; e = removeEntryForKey(key);
+    return (e == null ? null : e.value);
+}
+
+final Entry&lt;K,V&gt; removeEntryForKey(Object key) 
+{
+    int hash = (key == null) ? 0 : hash(key.hashCode());
+
+    int i = indexFor(hash, table.length);//计算其数组下标
+
+    Entry&lt;K,V&gt; prev = table[i];
+
+    Entry&lt;K,V&gt; e = prev;
+
+    while (e != null) 
+    {
+        Entry&lt;K,V&gt; next = e.next;
+        Object k;
+
+        if (e.hash == hash &amp;&amp; ((k = e.key) == key || (key != null &amp;&amp; key.equals(k)))) 
+        {
+            modCount++;
+
+            size--;
+
+            if (prev == e)
+            {
+                table[i] = next;
+            }
+            else
+            {
+                prev.next = next;
+            }
+
+            e.recordRemoval(this);
+
+            return e;
+        }
+
+        prev = e;
+        e = next;
+    }
+
+    return e;
+}
+</code></pre>
+
+<h2>HashMap扩容</h2>
+
+<p><font color=#0000CD><strong>使用put函数向HashMap的对象中添加结点时，如果存储的键-值对个数大于等于阈值threshold时，会调用resize函数对当前HashMap对象进行扩容。一次扩容是将table数组的大小增长1倍.</strong></font><br></p>
+
+<pre><code>void resize(int newCapacity)//hashmap扩容,重新hash
+{
+    Entry[] oldTable = table;
+
+    int oldCapacity = oldTable.length;
+
+    //如果旧的容量已经是MAXIMUM_CAPACITY,则传入新的大小之后也不会重新扩容
+    //已经到可以支持的最大容量
+    //只是将旧的阈值改为Integer.MAX_VALUE
+
+    if (oldCapacity == MAXIMUM_CAPACITY)
+     {
+        //增大阈值，阈值太大可能造成冲突增多
+        threshold = Integer.MAX_VALUE;
+
+        return;
+    }
+
+    //新的table数组
+    Entry[] newTable = new Entry[newCapacity];
+
+    //将旧table数组的结点全部转移到新的table数组中
+    transfer(newTable);
+
+    table = newTable;
+
+    threshold = (int)(newCapacity * loadFactor);
+}
+</code></pre>
+
+<p><font color=#0000CD><strong>transfer函数将旧tables数组中的所有结点转移到新的table数组中.</strong></font><br></p>
+
+<pre><code>//将旧数组中的entry转移到新数组中
+void transfer(Entry[] newTable)
+{
+    Entry[] src = table;//旧table数组
+
+    int newCapacity = newTable.length;
+
+    for (int j = 0; j &lt; src.length; j++) 
+    {
+        Entry&lt;K,V&gt; e = src[j];
+
+        if (e != null) 
+        {
+            src[j] = null;
+
+            //处理结点链表
+            do 
+            {
+                Entry&lt;K,V&gt; next = e.next;
+
+                //重新计算数组下标
+                int i = indexFor(e.hash, newCapacity);
+
+                e.next = newTable[i];
+
+                newTable[i] = e;
+
+                e = next;
+            } while (e != null);
+        }
+    }
+}
+</code></pre>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/17/java-cheat-sheet/">Java-cheat-sheet</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-17T19:14:33+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:14 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Java语言的"编译期"其实是一段"不确定"的操作过程,因为它可能指以下几个:<br>
+1. 前端编译器，把<em>.java文件转变为</em>.class文件的过程;<br>
+2. 虚拟机的后端运行期编译器(JIT编译器)把字节码转变为机器码的过程;<br>
+3. 使用静态提前编译器(AOT编译器)直接把*.java文件编译成本地机器代码的过程;<br></p>
+
+<h2>Java访问权限修饰词:<br></h2>
+
+<h3>类的访问控制</h3>
+
+<p>类访问的含义是：若一个类(类A)访问另一个类(类B)时，其所指类A有以下3中操作:<br>
+1. 在类A中创建类B的对象;<br>
+2. 使用类B中某些方法和成员变量;<br>
+3. 继承类B;<br></p>
+
+<p>类的访问权限有两种，分别是：<br>
+1. 公有级别访问(public)<br>
+2. 默认访问级别 (可看作包访问)<br></p>
+
+<h3>类的成员访问控制<br></h3>
+
+<ol>
+<li>public：被public修饰的方法或者变量,所有其他类，无论该类属于那个包，均能访问该成员 <br></li>
+<li>默认访问权限(包访问权限): 对同一个包中的类，默认类型相当于public,而对于包外的类则相当于private <br></li>
+<li>protected 如果一个类的方法或者变量被protected修饰，对于同一个包的类，这个类的方法或变量是可以被访问的。对于不同包的类，只有继承于该类的类才可以访问到该类的方法或者变量<br></li>
+<li>private：如果一个类的方法或者变量被private修饰，那么这个类的方法或者变量只能在该类本身中被访问，及其不能被该成员所在类之外的任何类中的代码访问.</li>
+</ol>
+
+
+<h2>final关键字<br></h2>
+
+<p>用final修饰变量的基本含义是,改变量一旦被显示初始化之后其值就不能再被修改. 但对基本类型和引用类型要区别理解.<br></p>
+
+<p>对于基本类型,final使其数值恒定不变<br>
+对于引用类型,final使改引用恒定不变，即一旦引用被初始化指向一个对象，就无法再把它改为指向另一个对象;但是,被指向对象本身却是可以修改的.<br></p>
+
+<p><strong>空白final</strong><br>
+待写部分</p>
+
+<p><strong>final参数</strong><br>
+Java允许在参数列表中以声明的方式将参数指明为final,这意味着无法再方法中更改参数引用所指向的对象.</p>
+
+<p><strong>final修饰方法</strong><br>
+把方法锁定,以防止任何继承类修改它的含义.这确保了在继承中使方法行为保持不变,并且不会被覆盖(override).</p>
+
+<p><strong>final修饰类</strong><br>
+final类禁止继承,所以final类中所有方法都隐式指定为final的，因为无法覆盖(override)它们.</p>
+
+<h2>static关键字<br></h2>
+
+<p>static关键字只能修饰成员.</p>
+
+<ol>
+<li><p>static方法</p></li>
+<li><p>static变量</p></li>
+<li><p>static代码块</p></li>
+</ol>
+
+
+<h2>java接口</h2>
+
+<h3>java接口定义</h3>
+
+<p>&lt;访问限制修饰符> [abstract] interface &lt;接口名><br>
+{<br>
+<br>
+}<br></p>
+
+<ol>
+<li>其中访问限制修饰符与类的访问限制修饰符相同,可以是public或不写(即默认包访问权限),<br>
+ 使用public修饰的接口必须必须接口名是在与其同名的文件中(与public 类一样).<br></li>
+<li>[abstract]可选，可写可不写，如果不写，系统在进行编译时也会自动加上，也就是说接口一定是抽象的<br></li>
+</ol>
+
+
+<p><strong>接口不能有构造函数</strong><br></p>
+
+<p><font color=#FF0000>因为接口声明中隐含了abstract，所以不能用final关键字来修饰接口.</font><br></p>
+
+<h3>java接口中的成员变量:<br></h3>
+
+<p><font color=#FF0000>接口也可以包含域(成员变量)，但是这些域隐式地是static和final的</font><br>
+<font color=#FF0000>可以在接口中不必显示地使用public,static,final关键字，及时不使用这些修饰符,
+    编译时也会为其自动加上.</font><br>
+<font color=#FF0000>接口中的变量隐含是"public static final"的</font><br></p>
+
+<h3>java接口中的方法:<br></h3>
+
+<ol>
+<li>所有接口方法隐含都是公有的(public)和抽象的(abstract)，不需要显示声明;<br></li>
+<li>接口方法一定不能是静态的(static)，也一定不能是final的；也不能用public修饰符之外的其他访问限制符进行修饰;
+也就是说，<font color=#FF0000>要给接口中的方法写修饰符,只能写public和abstract</font><br></li>
+</ol>
+
+
+<h3>Java接口常用方法：<br></h3>
+
+<ol>
+<li>单方法接口 <br>
+一个单方法接口中只有一个方法<br></li>
+<li>标识接口 <br>
+标识接口是没有任何方法和属性的接口.标识接口不对实现它的任何类有任何语义上的要求,它仅仅表明实现它的类属于一个特定的类型.<br>
+标识接口在java语言中有一些很著名的应用,比如java.io.Serializable便是标识接口.<br>
+java jdk7中java.io.Serializable接口源代码<br></li>
+</ol>
+
+
+<figure class='code'><figcaption><span>java.io.Serializable.java</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">;</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Serializable</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>3.常量接口<br>
+所谓常量接口，是指用Java接口来声明一些常量，然后由实现这些接口的类使用这些常量.<br>
+<img src="/images/java2.jpg">
+凡是实现了这个接口的Java类都会自动继承这些常量，并且都可以像使用自己的常量一样使用这些常量<br>
+<font color=#FF0000>不过实际使用中不建议这样使用常量接口</font><br></p>
+
+<h2>抽象类<br></h2>
+
+<p>参考资料:<br>
+1. <a href="http://www.cnblogs.com/dolphin0520/p/3799052.html">http://www.cnblogs.com/dolphin0520/p/3799052.html</a><br></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/17/leetcode61-rotate-list-linkedlist/">Leetcode61 Rotate List [LinkedList]</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-17T16:24:07+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:24 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>给定一个单链表，和非负整数k,将单链表的后k个结点翻转到链表的左边;</p>
+
+<p>例如:</p>
+
+<p>给定 1->2->3->4->5->6->NULL and k = 2,<br>
+返回 5->6->1->2->3->4->NULL.</p>
+
+<p><font color=#FF0000>需注意的一点是k的值可能比链表的长度还要大</font><br></p>
+
+<p>例如:</p>
+
+<p>给定 1->2->3->4->5->6->NULL and k = 14,<br>
+返回 5->6->1->2->3->4->NULL.</p>
+
+<p><font color=#FF0000>Difficulty: Medium</font><br></p>
+
+<p><img src="/images/61.jpg"></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">LinkedList</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">T61_RotateList</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">ListNode</span> <span class="nf">rotateRight</span><span class="o">(</span><span class="n">ListNode</span> <span class="n">head</span><span class="o">,</span> <span class="kt">int</span> <span class="n">k</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">head</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="n">head</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">dummy</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="n">Integer</span><span class="o">.</span><span class="na">MIN_VALUE</span><span class="o">);</span><span class="c1">//哨兵</span>
+</span><span class='line'>      <span class="n">dummy</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">fast</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">slow</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">cusor</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">countnode</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span><span class="c1">//链表长度</span>
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">cusor</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">countnode</span><span class="o">++;</span>
+</span><span class='line'>          <span class="n">cusor</span> <span class="o">=</span> <span class="n">cusor</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">k</span> <span class="o">%</span> <span class="n">countnode</span><span class="o">;</span><span class="c1">//k的值可能比链表的长度要大，要先求余</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">while</span><span class="o">(--</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//使fast指针指向顺数第(k%countnode)个结点的下一个结点</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">fast</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>          <span class="n">fast</span> <span class="o">=</span> <span class="n">fast</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">fast</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span> <span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">fast</span><span class="o">.</span><span class="na">next</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span><span class="c1">//快慢指针使slow指向倒数第(k%countnode)个结点的前一个结点</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">fast</span> <span class="o">=</span> <span class="n">fast</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>          <span class="n">slow</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>              
+</span><span class='line'>      <span class="n">fast</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">dummy</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">slow</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>        <span class="k">return</span> <span class="n">dummy</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">//  test</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="n">T61_RotateList</span> <span class="n">tt61</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">T61_RotateList</span><span class="o">();</span>
+</span><span class='line'>      <span class="c1">//建链表 1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;6-&gt;null</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">head</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">two</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">head</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">two</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">three</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">two</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">three</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">four</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">4</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">three</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">four</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">five</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">5</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">four</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">five</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">six</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ListNode</span><span class="o">(</span><span class="mi">6</span><span class="o">);</span>
+</span><span class='line'>      <span class="n">five</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">six</span><span class="o">;</span>
+</span><span class='line'>      <span class="n">six</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">k</span>  <span class="o">=</span> <span class="mi">14</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">ListNode</span> <span class="n">result</span> <span class="o">=</span> <span class="n">tt61</span><span class="o">.</span><span class="na">rotateRight</span><span class="o">(</span><span class="n">head</span><span class="o">,</span> <span class="n">k</span><span class="o">);</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span><span class="c1">//打印</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">result</span><span class="o">.</span><span class="na">val</span> <span class="o">+</span><span class="s">&quot;-&gt;&quot;</span><span class="o">);</span>
+</span><span class='line'>          <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>运行时间:</p>
+
+<p><img src="/images/61_2.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/16/leetcode63-unique-paths-ii-dp/">Leetcode63 Unique Paths II [DP]</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-16T21:05:09+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:05 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>给定一个二维数组,从最左上的点到最最右下的点一共有多少条不同的路径，只能向下和向右移动.
+其中二维数组中值有1和0,1表示该处为障碍,0可以通行</p>
+
+<p>例如：<br>
+[<br>
+  [0,0,0],<br>
+  [0,1,0],<br>
+  [0,0,0]<br>
+]<br>
+有2条不同路径<br></p>
+
+<p><font color=#FF0000>Difficulty: Medium</font><br>
+<img src="/images/63.jpg"></p>
+
+<p>分析:
+可采用动态规划的方法，状态转移方程为f[i][j] = f[i-1][j] + f[i][j-1];<br>
+即到(i,j)点路径的种类，由到(i-1,j)点和到(i,j-1)点路径数量的和.<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">DP</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">T63_UniquePathsII</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">uniquePathsWithObstacles</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">grid</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">row</span><span class="o">][</span><span class="n">col</span><span class="o">];</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="o">)</span> <span class="n">f</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">row</span> <span class="o">;</span> <span class="n">i</span><span class="o">++</span> <span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">col</span> <span class="o">;</span> <span class="n">j</span><span class="o">++)</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span><span class="c1">//障碍</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//起点</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//第一行</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">)</span><span class="c1">//第一列</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">];</span>
+</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>              <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+</span> <span class="n">f</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span><span class="c1">//来自上边或左边</span>
+</span><span class='line'>          <span class="o">}</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">f</span><span class="o">[</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="c1">//    test</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
+</span><span class='line'>      <span class="n">T63_UniquePathsII</span> <span class="n">t63</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">T63_UniquePathsII</span><span class="o">();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">grid</span> <span class="o">=</span> <span class="o">{</span>  <span class="o">{</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">},</span>
+</span><span class='line'>                        <span class="o">{</span><span class="mi">0</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">0</span><span class="o">},</span>
+</span><span class='line'>                        <span class="o">{</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">,</span><span class="mi">0</span><span class="o">}};</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">grid2</span> <span class="o">=</span> <span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t63</span><span class="o">.</span><span class="na">uniquePathsWithObstacles</span><span class="o">(</span><span class="n">grid</span><span class="o">));</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>运行时间:
+<img src="/images/63_2.jpg"></p>
+
+<p>代码简化，但运行时间更长</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">uniquePathsWithObstacles</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">grid</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">mark</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">row</span><span class="o">][</span><span class="n">col</span><span class="o">];</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="o">)</span> <span class="n">mark</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">row</span> <span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">col</span> <span class="o">;</span> <span class="o">++</span><span class="n">j</span><span class="o">)</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">grid</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span><span class="c1">//此处是障碍</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">else</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="c1">//某一个cell有2种可能到达，从上面来，以及从左边来，</span>
+</span><span class='line'>                  <span class="c1">//只需要把每一个cell的可能数计算好，并且把它们相加即可</span>
+</span><span class='line'>                  <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//左边来</span>
+</span><span class='line'>                  <span class="o">{</span>
+</span><span class='line'>                      <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">j</span><span class="o">];</span>
+</span><span class='line'>                  <span class="o">}</span>
+</span><span class='line'>                  
+</span><span class='line'>                  <span class="k">if</span><span class="o">(</span><span class="n">j</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//上面来</span>
+</span><span class='line'>                  <span class="o">{</span>
+</span><span class='line'>                      <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">+=</span> <span class="n">mark</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>                  <span class="o">}</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>          <span class="o">}</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>        <span class="k">return</span> <span class="n">mark</span><span class="o">[</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="o">][</span><span class="n">col</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>运行时间:</p>
+
+<p><img src="/images/63_3.jpg"></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -834,890 +2230,6 @@ Given target = 5, return true.</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode54-spiral-matrix-array/">Leetcode54 Spiral Matrix [Array]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:50:47+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:50 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Given a matrix of m x n elements (m rows, n columns), return all elements of the matrix in spiral order.</p>
-
-<p>For example,
-Given the following matrix:</p>
-
-<p>[
- [ 1, 2, 3 ],
- [ 4, 5, 6 ],
- [ 7, 8, 9 ]
-]
-You should return [1,2,3,6,9,8,7,4,5].</p>
-
-<p>Difficulty: Medium</p>
-
-<p><img src="/images/54.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-<span class='line-number'>79</span>
-<span class='line-number'>80</span>
-<span class='line-number'>81</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">Array</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SpiralMatrix_T54</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="nf">spiralOrder</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">matrix</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">matrix</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">rowBegin</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">rowEnd</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">colBegin</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">colEnd</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'><span class="c1">//       先向右遍历，一行遍历完，rowBegin加1 Step1;</span>
-</span><span class='line'><span class="c1">//       再向下遍历，一列遍历完，colEnd减1   Step2;</span>
-</span><span class='line'><span class="c1">//       再向左遍历，一行遍历完，rowEnd减1   Step3;</span>
-</span><span class='line'><span class="c1">//       再向上遍历，一列遍历完，colBegin加1 Step4;</span>
-</span><span class='line'><span class="c1">//       然后重复上面4步，直到二维数组全部遍历完.</span>
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">rowBegin</span> <span class="o">&lt;=</span> <span class="n">rowEnd</span> <span class="o">&amp;&amp;</span> <span class="n">colBegin</span> <span class="o">&lt;=</span> <span class="n">colEnd</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="c1">//向右</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">r</span> <span class="o">=</span> <span class="n">colBegin</span> <span class="o">;</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="n">colEnd</span> <span class="o">;</span> <span class="n">r</span><span class="o">++)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">result</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">matrix</span><span class="o">[</span><span class="n">rowBegin</span><span class="o">][</span><span class="n">r</span><span class="o">]);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">rowBegin</span><span class="o">++;</span><span class="c1">//一行遍历完</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="c1">//向下</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">d</span> <span class="o">=</span> <span class="n">rowBegin</span> <span class="o">;</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="n">rowEnd</span> <span class="o">;</span> <span class="n">d</span><span class="o">++)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">result</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">matrix</span><span class="o">[</span><span class="n">d</span><span class="o">][</span><span class="n">colEnd</span><span class="o">]);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">colEnd</span><span class="o">--;</span><span class="c1">//一列遍历完</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="c1">//向左</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">rowBegin</span> <span class="o">&lt;=</span> <span class="n">rowEnd</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">l</span> <span class="o">=</span> <span class="n">colEnd</span> <span class="o">;</span> <span class="n">l</span> <span class="o">&gt;=</span> <span class="n">colBegin</span> <span class="o">;</span> <span class="n">l</span><span class="o">--)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">result</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">matrix</span><span class="o">[</span><span class="n">rowEnd</span><span class="o">][</span><span class="n">l</span><span class="o">]);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">rowEnd</span><span class="o">--;</span><span class="c1">//一行遍历完</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="c1">//向上</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">colBegin</span> <span class="o">&lt;=</span> <span class="n">colEnd</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">u</span> <span class="o">=</span> <span class="n">rowEnd</span> <span class="o">;</span> <span class="n">u</span> <span class="o">&gt;=</span> <span class="n">rowBegin</span> <span class="o">;</span> <span class="n">u</span><span class="o">--)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">result</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">matrix</span><span class="o">[</span><span class="n">u</span><span class="o">][</span><span class="n">colBegin</span><span class="o">]);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">colBegin</span><span class="o">++;</span><span class="c1">//一列遍历完</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">SpiralMatrix_T54</span> <span class="n">t54</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">SpiralMatrix_T54</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">matrix</span> <span class="o">=</span> <span class="o">{</span>
-</span><span class='line'>                          <span class="o">{</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span> <span class="o">},</span>
-</span><span class='line'>                          <span class="o">{</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">6</span> <span class="o">},</span>
-</span><span class='line'>                          <span class="o">{</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">9</span> <span class="o">}</span>
-</span><span class='line'>                        <span class="o">};</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">t54</span><span class="o">.</span><span class="na">spiralOrder</span><span class="o">(</span><span class="n">matrix</span><span class="o">);</span>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">result</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="s">&quot; &quot;</span><span class="o">);</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果:
-<img src="/images/54_2.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode74-search-a-2d-matrix-binarysearch/">Leetcode74 Search a 2D Matrix [BinarySearch]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:49:40+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:49 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Write an efficient algorithm that searches for a value in an m x n matrix. This matrix has the following properties:</p>
-
-<p>Integers in each row are sorted from left to right.
-The first integer of each row is greater than the last integer of the previous row.
-For example,</p>
-
-<p>Consider the following matrix:</p>
-
-<p>[
-  [1,   3,  5,  7],
-  [10, 11, 16, 20],
-  [23, 30, 34, 50]
-]
-Given target = 3, return true.</p>
-
-<p>Difficulty: Medium</p>
-
-<p><img src="/images/74.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">BinarySearch</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Search2DMatrix_T74</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">searchMatrix</span><span class="o">(</span><span class="kt">int</span><span class="o">[][]</span> <span class="n">matrix</span><span class="o">,</span> <span class="kt">int</span> <span class="n">target</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">length</span><span class="o">;</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">matrix</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">||</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="o">)</span> <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">row</span> <span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">BinarySearch</span><span class="o">(</span><span class="n">matrix</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">,</span> <span class="n">target</span><span class="o">);</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">ret</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">ret</span> <span class="o">==</span> <span class="o">-</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="k">else</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">BinarySearch</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">a</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">key</span><span class="o">)</span><span class="c1">//二分查找模板2JDK版</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="kt">int</span> <span class="n">low</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>        <span class="kt">int</span> <span class="n">high</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="k">while</span> <span class="o">(</span><span class="n">low</span> <span class="o">&lt;=</span> <span class="n">high</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">{</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">mid</span> <span class="o">=</span> <span class="o">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="o">)</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">midVal</span> <span class="o">=</span> <span class="n">a</span><span class="o">[</span><span class="n">mid</span><span class="o">];</span>
-</span><span class='line'>
-</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">midVal</span> <span class="o">&lt;</span> <span class="n">key</span><span class="o">)</span>
-</span><span class='line'>                <span class="n">low</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">midVal</span> <span class="o">&gt;</span> <span class="n">key</span><span class="o">)</span>
-</span><span class='line'>                <span class="n">high</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">else</span>
-</span><span class='line'>                <span class="k">return</span> <span class="n">mid</span><span class="o">;</span> <span class="c1">// key found</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>        <span class="k">return</span> <span class="o">-(</span><span class="n">low</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>  <span class="c1">// key not found.</span>
-</span><span class='line'><span class="c1">//   如果它包含在数组中，则返回搜索键的索引；否则返回 (-(插入点) - 1)。插入点 被定义为将键插入数组的那一点：</span>
-</span><span class='line'><span class="c1">//   即第一个大于此键的元素索引，如果数组中的所有元素都小于指定的键，则为 a.length。</span>
-</span><span class='line'><span class="c1">//   注意，这保证了当且仅当此键被找到时，返回的值将 &gt;= 0。</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">Search2DMatrix_T74</span> <span class="n">t74</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Search2DMatrix_T74</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">matrix</span> <span class="o">=</span> <span class="o">{</span>
-</span><span class='line'>              
-</span><span class='line'>                <span class="o">{</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">3</span><span class="o">,</span>  <span class="mi">5</span><span class="o">,</span>  <span class="mi">7</span><span class="o">},</span>
-</span><span class='line'>                <span class="o">{</span><span class="mi">10</span><span class="o">,</span> <span class="mi">11</span><span class="o">,</span> <span class="mi">16</span><span class="o">,</span> <span class="mi">20</span><span class="o">},</span>
-</span><span class='line'>                <span class="o">{</span><span class="mi">23</span><span class="o">,</span> <span class="mi">30</span><span class="o">,</span> <span class="mi">34</span><span class="o">,</span> <span class="mi">50</span><span class="o">}</span>
-</span><span class='line'>      <span class="o">};</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">target</span> <span class="o">=</span> <span class="mi">9</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t74</span><span class="o">.</span><span class="na">searchMatrix</span><span class="o">(</span><span class="n">matrix</span><span class="o">,</span> <span class="n">target</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果:
-<img src="/images/74_2.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode168-excel-sheet-column-title-math/">Leetcode168 Excel Sheet Column Title [Math]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:43:14+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:43 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Given a positive integer, return its corresponding column title as appear in an Excel sheet.</p>
-
-<p>For example:</p>
-
-<pre><code>1 -&gt; A
-2 -&gt; B
-3 -&gt; C
-...
-26 -&gt; Z
-27 -&gt; AA
-28 -&gt; AB 
-</code></pre>
-
-<p>Difficulty: Easy</p>
-
-<p><img src="/images/168.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">Math</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ExcelSheetColumnTitle_T168</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'><span class="c1">//   ---------------------方案一---------------------------</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="nf">convertToTitle</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="n">StringBuffer</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuffer</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="n">n</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="mi">26</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">m</span> <span class="o">%</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="c1">//注意被26时，left不应该为0 ，而应该为26  1-&gt;A , 26-&gt;Z</span>
-</span><span class='line'>          <span class="o">{</span>    
-</span><span class='line'>              <span class="n">left</span> <span class="o">=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">m</span> <span class="o">-=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">((</span><span class="kt">char</span><span class="o">)(</span><span class="n">left</span> <span class="o">+</span> <span class="mi">64</span><span class="o">));</span>
-</span><span class='line'>          <span class="n">m</span> <span class="o">=</span> <span class="n">m</span> <span class="o">/</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">m</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span><span class="c1">//m为0时，不用添加</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">((</span><span class="kt">char</span><span class="o">)(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">64</span><span class="o">));</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">reverse</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//---------------------方案二---------------------------</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="nf">convertToTitle2</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="n">StringBuilder</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="o">--</span><span class="n">n</span><span class="o">;</span><span class="c1">//1-&gt;A</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="n">result</span><span class="o">.</span><span class="na">insert</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="o">(</span><span class="kt">char</span><span class="o">)(</span><span class="sc">&#39;A&#39;</span> <span class="o">+</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">26</span> <span class="o">));</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="n">n</span> <span class="o">/=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="n">ExcelSheetColumnTitle_T168</span> <span class="n">t168</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ExcelSheetColumnTitle_T168</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">52</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t168</span><span class="o">.</span><span class="na">convertToTitle2</span><span class="o">(</span><span class="n">n</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode171-excel-sheet-column-number-math/">Leetcode171 Excel Sheet Column Number [Math]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:42:34+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:42 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Related to question Excel Sheet Column Title</p>
-
-<p>Given a column title as appear in an Excel sheet, return its corresponding column number.</p>
-
-<p>For example:</p>
-
-<pre><code>A -&gt; 1
-B -&gt; 2
-C -&gt; 3
-...
-Z -&gt; 26
-AA -&gt; 27
-AB -&gt; 28 
-</code></pre>
-
-<p>Difficulty: Easy</p>
-
-<p><img src="/images/171.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">Math</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ExcelSheetColumnNumber</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">titleToNumber</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="c1">//&#39;A&#39; = 65 &#39;Z&#39;= 90 </span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">multibase</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">len</span><span class="o">-</span><span class="mi">1</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">;</span> <span class="o">--</span><span class="n">i</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">sum</span> <span class="o">+=</span> <span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="mi">64</span><span class="o">)*</span><span class="n">multibase</span><span class="o">;</span>
-</span><span class='line'>          <span class="n">multibase</span> <span class="o">*=</span> <span class="mi">26</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>        <span class="k">return</span> <span class="n">sum</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">ExcelSheetColumnNumber</span> <span class="n">escn</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ExcelSheetColumnNumber</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">String</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;AB&quot;</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">escn</span><span class="o">.</span><span class="na">titleToNumber</span><span class="o">(</span><span class="n">s</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/15/leetcode227-basic-calculator-ii-string/">Leetcode227 Basic Calculator II [String]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-15T15:16:46+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:16 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Implement a basic calculator to evaluate a simple expression string.</p>
-
-<p>The expression string contains only non-negative integers, +, -, *, / operators and empty spaces . The integer division should truncate toward zero.</p>
-
-<p>You may assume that the given expression is always valid.</p>
-
-<p>Some examples:
-&ldquo;3+2*2&rdquo; = 7
-&ldquo; 3/2 &rdquo; = 1
-&ldquo; 3+5 / 2 &rdquo; = 5
-Note: Do not use the eval built-in library function.</p>
-
-<p>Difficulty: Medium</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-<span class='line-number'>76</span>
-<span class='line-number'>77</span>
-<span class='line-number'>78</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">String</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Stack</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BasicCalculatorII_T227</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">calculate</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">len</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'><span class="c1">//       用一个栈来求</span>
-</span><span class='line'>      <span class="n">Stack</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Stack</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>      <span class="kt">char</span> <span class="n">sign</span> <span class="o">=</span> <span class="sc">&#39;+&#39;</span><span class="o">;</span><span class="c1">//运算符,初始化为+</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span> <span class="o">;</span> <span class="n">i</span><span class="o">++</span> <span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)))</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="o">);</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">i</span> <span class="o">!=</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="c1">//如果最后是减号 和一个数结束，要特殊处理</span>
-</span><span class='line'>                  <span class="k">continue</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="k">if</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">!=</span> <span class="sc">&#39; &#39;</span> <span class="o">||</span> <span class="n">i</span> <span class="o">==</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">sign</span> <span class="o">==</span> <span class="sc">&#39;+&#39;</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">stack</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="n">num</span><span class="o">);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">sign</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">stack</span><span class="o">.</span><span class="na">push</span><span class="o">(-</span><span class="n">num</span><span class="o">);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">sign</span> <span class="o">==</span> <span class="sc">&#39;*&#39;</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">stack</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="n">stack</span><span class="o">.</span><span class="na">pop</span><span class="o">()</span> <span class="o">*</span> <span class="n">num</span> <span class="o">);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">sign</span> <span class="o">==</span> <span class="sc">&#39;/&#39;</span><span class="o">)</span>
-</span><span class='line'>              <span class="o">{</span>
-</span><span class='line'>                  <span class="n">stack</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="n">stack</span><span class="o">.</span><span class="na">pop</span><span class="o">()</span> <span class="o">/</span> <span class="n">num</span> <span class="o">);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="n">sign</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span><span class="c1">//下次运算的运算符</span>
-</span><span class='line'>              <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>          
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">num</span><span class="o">;</span><span class="c1">//最后一个字符为数字时，则最后的数并没有入栈</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">stack</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">result</span> <span class="o">+=</span> <span class="n">i</span><span class="o">;</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//    test</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">BasicCalculatorII_T227</span> <span class="n">t227</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">BasicCalculatorII_T227</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">String</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;3+2*2&quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;3+5 / 2 &quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s3</span> <span class="o">=</span> <span class="s">&quot; 3/2 &quot;</span><span class="o">;</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">s4</span> <span class="o">=</span> <span class="s">&quot;0-2147483647&quot;</span><span class="o">;</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">t227</span><span class="o">.</span><span class="na">calculate</span><span class="o">(</span><span class="n">s4</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行结果:
-<img src="/images/227.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/8">&larr; Older</a>
@@ -1735,23 +2247,23 @@ Note: Do not use the eval built-in library function.</p>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/07/27/iterator-design-pattern/">一天一设计模式之迭代器模式[19]</a>
+        <a href="/blog/2016/07/27/effective-java-21/">[Effective Java]第21条:用函数对象表示策略</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/26/linkedhashmap/">LinkedHashMap源码分析</a>
+        <a href="/blog/2016/07/27/java-generic/">Java泛型</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/25/concurrenthashmap/">ConcurrentHashMap源码分析</a>
+        <a href="/blog/2016/07/27/java-serializable/">Java序列化</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/25/hashtable/">Hashtable源码分析</a>
+        <a href="/blog/2016/07/27/java-iterator/">Java迭代器</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/22/memento-design-pattern/">一天一设计模式之备忘录模式[18]</a>
+        <a href="/blog/2016/07/27/template-method-design-pattern/">一天一设计模式之模板方法模式[20]</a>
       </li>
     
   </ul>

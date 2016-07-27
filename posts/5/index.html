@@ -75,6 +75,1123 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2016/06/07/solidjavacode43/">建议43:避免对象的浅拷贝</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-07T16:46:03+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:46 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/23/lintcode417-valid-number/">Lintcode417 有效数字</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-23T20:26:52+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>8:26 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>题目:给定一个字符串，验证其是否为数字<br></p>
+
+<p>例子:<br>
+&ldquo;0&rdquo; => true <br>
+&ldquo; 0.1 &rdquo; => true <br>
+&ldquo;abc&rdquo; => false <br>
+&ldquo;1 a&rdquo; => false <br>
+&ldquo;2e10&rdquo; => true <br></p>
+
+<p>解题思路:使用有限状态自动机解题.<br></p>
+
+<p>1.整数:<br></p>
+
+<p><img src="/images/lintcode417_1.jpg"></p>
+
+<p>该有限自动机(DFA)有s1,s2,s3三个状态。s1为起始状态,s3为合法结束状态.<br>
+如果输入字符串最后停在状态s3(同心圆),则该字符串表示的数字时合法的.<br>
+如果输入字符串最后没有停在状态s3(同心圆),则该字符串是非法的.<br>
+如果输入的字符串出现了未在DFA中表示的字符,则跳到错误状态，表示该字符串不合法.<br></p>
+
+<p>2.整数和小数<br></p>
+
+<p><img src="/images/lintcode417_2.jpg"></p>
+
+<p>需注意,&ldquo;.3"或"3."都是合法的小数(分别表示0.3和3.0)，但单独一个”.”符号则是非法的。</p>
+
+<p>3.整数、小数和科学计数法<br></p>
+
+<p><img src="/images/lintcode417_3.jpg"></p>
+
+<p>表示有限状态自动机的方法有很多，可以用一个二维数组，数组中存储的是相应的输入所应该跳转到的状态位置。或者是用函数表示法，每个状态用一个函数表示，状态的转移用函数的调用表示.<br></p>
+
+<p>解法一:使用函数表示<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+<span class='line-number'>180</span>
+<span class='line-number'>181</span>
+<span class='line-number'>182</span>
+<span class='line-number'>183</span>
+<span class='line-number'>184</span>
+<span class='line-number'>185</span>
+<span class='line-number'>186</span>
+<span class='line-number'>187</span>
+<span class='line-number'>188</span>
+<span class='line-number'>189</span>
+<span class='line-number'>190</span>
+<span class='line-number'>191</span>
+<span class='line-number'>192</span>
+<span class='line-number'>193</span>
+<span class='line-number'>194</span>
+<span class='line-number'>195</span>
+<span class='line-number'>196</span>
+<span class='line-number'>197</span>
+<span class='line-number'>198</span>
+<span class='line-number'>199</span>
+<span class='line-number'>200</span>
+<span class='line-number'>201</span>
+<span class='line-number'>202</span>
+<span class='line-number'>203</span>
+<span class='line-number'>204</span>
+<span class='line-number'>205</span>
+<span class='line-number'>206</span>
+<span class='line-number'>207</span>
+<span class='line-number'>208</span>
+<span class='line-number'>209</span>
+<span class='line-number'>210</span>
+<span class='line-number'>211</span>
+<span class='line-number'>212</span>
+<span class='line-number'>213</span>
+<span class='line-number'>214</span>
+<span class='line-number'>215</span>
+<span class='line-number'>216</span>
+<span class='line-number'>217</span>
+<span class='line-number'>218</span>
+<span class='line-number'>219</span>
+<span class='line-number'>220</span>
+<span class='line-number'>221</span>
+<span class='line-number'>222</span>
+<span class='line-number'>223</span>
+<span class='line-number'>224</span>
+<span class='line-number'>225</span>
+<span class='line-number'>226</span>
+<span class='line-number'>227</span>
+<span class='line-number'>228</span>
+<span class='line-number'>229</span>
+<span class='line-number'>230</span>
+<span class='line-number'>231</span>
+<span class='line-number'>232</span>
+<span class='line-number'>233</span>
+<span class='line-number'>234</span>
+<span class='line-number'>235</span>
+<span class='line-number'>236</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//用有限自动机解题DFA</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ValidNumber</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isNumber</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">state1</span><span class="o">(</span><span class="n">s</span> <span class="o">,</span> <span class="mi">0</span><span class="o">);</span><span class="c1">//进入起始状态state 1</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state1</span><span class="o">(</span><span class="n">String</span> <span class="n">s1</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index1</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//处理空格</span>
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">index1</span> <span class="o">&lt;</span> <span class="n">s1</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">s1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index1</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">index1</span><span class="o">++;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//在state1结束 即全部为空格</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">index1</span> <span class="o">==</span> <span class="n">s1</span><span class="o">.</span><span class="na">length</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//转到state 2</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index1</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;+&#39;</span> <span class="o">||</span> <span class="n">s1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index1</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state2</span><span class="o">(</span><span class="n">s1</span><span class="o">,</span><span class="n">index1</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//转到state 3</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index1</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state3</span><span class="o">(</span><span class="n">s1</span><span class="o">,</span> <span class="n">index1</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//转到state 4</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">s1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index1</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state4</span><span class="o">(</span><span class="n">s1</span><span class="o">,</span> <span class="n">index1</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//不合法字符</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state2</span><span class="o">(</span><span class="n">String</span> <span class="n">s2</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index2</span><span class="o">)</span><span class="c1">//+或-符号转到state2</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//在state2结束 不合法</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(++</span><span class="n">index2</span> <span class="o">==</span> <span class="n">s2</span><span class="o">.</span><span class="na">length</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//遇数字转到state 3</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s2</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index2</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state3</span><span class="o">(</span><span class="n">s2</span><span class="o">,</span> <span class="n">index2</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//遇小数点转到state 4</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">s2</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index2</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state4</span><span class="o">(</span><span class="n">s2</span> <span class="o">,</span> <span class="n">index2</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//不合法字符</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state3</span><span class="o">(</span><span class="n">String</span> <span class="n">s3</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index3</span><span class="o">)</span><span class="c1">//数字转到state3</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="n">index3</span><span class="o">++;</span>
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">index3</span> <span class="o">&lt;</span> <span class="n">s3</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index3</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">index3</span><span class="o">++;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//在state3结束合法</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">index3</span> <span class="o">==</span> <span class="n">s3</span><span class="o">.</span><span class="na">length</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//遇小数点转到state 5</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index3</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state5</span><span class="o">(</span><span class="n">s3</span><span class="o">,</span> <span class="n">index3</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//遇科学计数法e转到state 6</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index3</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;e&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state6</span><span class="o">(</span><span class="n">s3</span> <span class="o">,</span> <span class="n">index3</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//遇空格转到state 9</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">s3</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index3</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state9</span><span class="o">(</span><span class="n">s3</span> <span class="o">,</span> <span class="n">index3</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//不合法字符</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state4</span><span class="o">(</span><span class="n">String</span> <span class="n">s4</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index4</span><span class="o">)</span><span class="c1">//&quot;.&quot;转到state4</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="c1">////在state4结束不合法</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(++</span><span class="n">index4</span> <span class="o">==</span> <span class="n">s4</span><span class="o">.</span><span class="na">length</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//遇数字转到state 5</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s4</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index4</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state5</span><span class="o">(</span><span class="n">s4</span> <span class="o">,</span> <span class="n">index4</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//不合法字符</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state5</span><span class="o">(</span><span class="n">String</span> <span class="n">s5</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index5</span><span class="o">)</span><span class="c1">//数字转达state 5</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="n">index5</span><span class="o">++;</span>
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">index5</span> <span class="o">&lt;</span> <span class="n">s5</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s5</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index5</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">index5</span><span class="o">++;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//在state5结束合法</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">index5</span> <span class="o">==</span> <span class="n">s5</span><span class="o">.</span><span class="na">length</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//遇科学计数法e转到state 6</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s5</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index5</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;e&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state6</span><span class="o">(</span><span class="n">s5</span> <span class="o">,</span> <span class="n">index5</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//遇空格转到state 9</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">s5</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index5</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state9</span><span class="o">(</span><span class="n">s5</span> <span class="o">,</span> <span class="n">index5</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="c1">//不合法字符</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state6</span><span class="o">(</span><span class="n">String</span> <span class="n">s6</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index6</span><span class="o">)</span><span class="c1">//遇科学计数法e转到state 6</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="c1">//在state6结束不合法</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(++</span><span class="n">index6</span> <span class="o">==</span> <span class="n">s6</span><span class="o">.</span><span class="na">length</span><span class="o">())</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s6</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index6</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;+&#39;</span> <span class="o">||</span> <span class="n">s6</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index6</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state7</span><span class="o">(</span><span class="n">s6</span> <span class="o">,</span> <span class="n">index6</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s6</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index6</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state8</span><span class="o">(</span><span class="n">s6</span> <span class="o">,</span> <span class="n">index6</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state7</span><span class="o">(</span><span class="n">String</span> <span class="n">s7</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index7</span><span class="o">)</span><span class="c1">//遇+/-转到state 7</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(++</span><span class="n">index7</span> <span class="o">==</span> <span class="n">s7</span><span class="o">.</span><span class="na">length</span><span class="o">())</span><span class="c1">//在state7结束 false</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s7</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index7</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state8</span><span class="o">(</span> <span class="n">s7</span> <span class="o">,</span> <span class="n">index7</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state8</span><span class="o">(</span><span class="n">String</span> <span class="n">s8</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index8</span><span class="o">)</span><span class="c1">//遇数字转到state 8</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="n">index8</span><span class="o">++;</span>
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">index8</span> <span class="o">&lt;</span> <span class="n">s8</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">s8</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index8</span><span class="o">)))</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">index8</span><span class="o">++;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">index8</span> <span class="o">==</span> <span class="n">s8</span><span class="o">.</span><span class="na">length</span><span class="o">())</span><span class="c1">//在state8结束 true;</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">s8</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index8</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="nf">state9</span><span class="o">(</span><span class="n">s8</span> <span class="o">,</span> <span class="n">index8</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">state9</span><span class="o">(</span><span class="n">String</span> <span class="n">s9</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index9</span><span class="o">)</span><span class="c1">//遇空格转到state 9</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="n">index9</span><span class="o">++;</span>
+</span><span class='line'>      <span class="k">while</span><span class="o">(</span><span class="n">index9</span> <span class="o">&lt;</span> <span class="n">s9</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">s9</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">index9</span><span class="o">)</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">index9</span><span class="o">++;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">index9</span> <span class="o">==</span> <span class="n">s9</span><span class="o">.</span><span class="na">length</span><span class="o">())</span><span class="c1">//在state9结束 true;</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>解法二:使用二维数组表示<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">//用有限自动机解题DFA</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ValidNumber2</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="kd">enum</span> <span class="n">Type</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>        <span class="n">INVALID</span><span class="o">,</span>    <span class="c1">// 0</span>
+</span><span class='line'>        <span class="n">SPACE</span><span class="o">,</span>      <span class="c1">// 1</span>
+</span><span class='line'>        <span class="n">SIGN</span><span class="o">,</span>       <span class="c1">// 2</span>
+</span><span class='line'>        <span class="n">DIGIT</span><span class="o">,</span>      <span class="c1">// 3</span>
+</span><span class='line'>        <span class="n">DOT</span><span class="o">,</span>        <span class="c1">// 4</span>
+</span><span class='line'>        <span class="n">EXPONENT</span><span class="o">,</span>   <span class="c1">// 5</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isNumber</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span><span class="o">[][]</span> <span class="n">stateTable</span> <span class="o">=</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="c1">//INVALID SPACE SIGN DIGIT DOT EXPONMENT</span>
+</span><span class='line'>             <span class="c1">//所在列   0    1      2    3    4     5</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">0</span><span class="o">,</span>     <span class="mi">1</span><span class="o">,</span>   <span class="mi">2</span><span class="o">,</span>   <span class="mi">3</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 0</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>    <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">2</span><span class="o">,</span>   <span class="mi">3</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 1</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">8</span><span class="o">,</span>    <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">2</span><span class="o">,</span>   <span class="mi">4</span><span class="o">,</span>    <span class="mi">5</span><span class="o">},</span> <span class="c1">//state 2</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>    <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">4</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 3</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">8</span><span class="o">,</span>    <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">4</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>    <span class="mi">5</span><span class="o">},</span> <span class="c1">//state 4</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>     <span class="mi">6</span><span class="o">,</span>   <span class="mi">7</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 5</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>    <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">7</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 6</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">8</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">7</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 7</span>
+</span><span class='line'>                  <span class="o">{-</span><span class="mi">1</span><span class="o">,</span>   <span class="mi">8</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>  <span class="o">-</span><span class="mi">1</span><span class="o">,</span>   <span class="o">-</span><span class="mi">1</span><span class="o">},</span> <span class="c1">//state 8</span>
+</span><span class='line'>          <span class="o">};</span>
+</span><span class='line'>          
+</span><span class='line'>          <span class="kt">int</span> <span class="n">state</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span><span class="c1">//其实状态state0</span>
+</span><span class='line'>          
+</span><span class='line'>          
+</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="n">Type</span> <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">INVALID</span><span class="o">;</span>
+</span><span class='line'>              <span class="kt">char</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">tmp</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">SPACE</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">tmp</span> <span class="o">==</span> <span class="sc">&#39;+&#39;</span> <span class="o">||</span> <span class="n">tmp</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">SIGN</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">Character</span><span class="o">.</span><span class="na">isDigit</span><span class="o">(</span><span class="n">tmp</span><span class="o">))</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">DIGIT</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">tmp</span> <span class="o">==</span> <span class="sc">&#39;.&#39;</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">DOT</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">tmp</span> <span class="o">==</span> <span class="sc">&#39;e&#39;</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">EXPONENT</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="k">else</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="n">type</span> <span class="o">=</span> <span class="n">Type</span><span class="o">.</span><span class="na">INVALID</span><span class="o">;</span><span class="c1">//不合法字符</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="c1">//ordinal()返回此枚举常量的序数</span>
+</span><span class='line'>              <span class="n">state</span> <span class="o">=</span> <span class="n">stateTable</span><span class="o">[</span><span class="n">state</span><span class="o">][</span><span class="n">type</span><span class="o">.</span><span class="na">ordinal</span><span class="o">()];</span><span class="c1">//转移到下一个状态</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span><span class="n">state</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span>
+</span><span class='line'>              <span class="o">{</span>
+</span><span class='line'>                  <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>          <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">state</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">||</span> <span class="n">state</span> <span class="o">==</span> <span class="mi">4</span> <span class="o">||</span> <span class="n">state</span> <span class="o">==</span> <span class="mi">7</span> <span class="o">||</span> <span class="n">state</span> <span class="o">==</span> <span class="mi">8</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>测试数据:<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">testIsNumber</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;0&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt1</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong1&quot;</span><span class="o">,</span> <span class="n">expt1</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s1</span><span class="o">));</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot; 0.1 &quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt2</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong2&quot;</span><span class="o">,</span> <span class="n">expt2</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s2</span><span class="o">));</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">String</span> <span class="n">s3</span> <span class="o">=</span> <span class="s">&quot;abc&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt3</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong3&quot;</span><span class="o">,</span> <span class="n">expt3</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s3</span><span class="o">));</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">String</span> <span class="n">s4</span> <span class="o">=</span> <span class="s">&quot;1 a&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt4</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong4&quot;</span><span class="o">,</span> <span class="n">expt4</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s4</span><span class="o">));</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">String</span> <span class="n">s5</span> <span class="o">=</span> <span class="s">&quot;2e10&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt5</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong5&quot;</span><span class="o">,</span> <span class="n">expt5</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s5</span><span class="o">));</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">String</span> <span class="n">s6</span> <span class="o">=</span> <span class="s">&quot;.3&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt6</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong6&quot;</span><span class="o">,</span> <span class="n">expt6</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s6</span><span class="o">));</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">String</span> <span class="n">s7</span> <span class="o">=</span> <span class="s">&quot;3.&quot;</span><span class="o">;</span>
+</span><span class='line'>  <span class="kt">boolean</span> <span class="n">expt7</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>  <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="s">&quot;Wrong7&quot;</span><span class="o">,</span> <span class="n">expt7</span><span class="o">,</span> <span class="n">vn</span><span class="o">.</span><span class="na">isNumber</span><span class="o">(</span><span class="n">s7</span><span class="o">));</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/23/lintcode130-heapsort/">Lintcode130 堆排序</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-23T16:00:59+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>4:00 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>题目是给出一个整数数组，堆化操作就是把它变成一个最小堆数组;<br></p>
+
+<p>改为堆排序<br>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">hypo</span><span class="o">.</span><span class="na">Sort</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/**</span>
+</span><span class='line'><span class="cm"> * 堆排序</span>
+</span><span class='line'><span class="cm"> */</span>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Heap_130</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">//建最小堆</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">build_min_heap</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">A</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">heapsize</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">heapsize</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="o">;</span> <span class="n">i</span><span class="o">--)</span><span class="c1">//数组下标规定从1开始  </span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">min_heapify</span><span class="o">(</span><span class="n">A</span> <span class="o">,</span> <span class="n">i</span> <span class="o">,</span><span class="n">heapsize</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//保持最小堆性质</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">min_heapify</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">A</span> <span class="o">,</span> <span class="kt">int</span> <span class="n">index</span>  <span class="o">,</span> <span class="kt">int</span> <span class="n">heapsize</span><span class="o">)</span><span class="c1">//数组下标规定从1开始</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">index</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">right</span> <span class="o">=</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">minindex</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">&lt;=</span> <span class="n">heapsize</span> <span class="o">&amp;&amp;</span> <span class="n">A</span><span class="o">[</span><span class="n">left</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">A</span><span class="o">[</span><span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="o">])</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">minindex</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">right</span> <span class="o">&lt;=</span> <span class="n">heapsize</span> <span class="o">&amp;&amp;</span> <span class="n">A</span><span class="o">[</span><span class="n">right</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">A</span><span class="o">[</span><span class="n">minindex</span><span class="o">-</span><span class="mi">1</span><span class="o">])</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">minindex</span> <span class="o">=</span> <span class="n">right</span><span class="o">;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">minindex</span> <span class="o">!=</span> <span class="n">index</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="kt">int</span> <span class="n">temp</span> <span class="o">=</span> <span class="n">A</span><span class="o">[</span><span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>          <span class="n">A</span><span class="o">[</span><span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">[</span><span class="n">minindex</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>          <span class="n">A</span><span class="o">[</span><span class="n">minindex</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">temp</span><span class="o">;</span>
+</span><span class='line'>          <span class="n">min_heapify</span><span class="o">(</span><span class="n">A</span> <span class="o">,</span> <span class="n">minindex</span> <span class="o">,</span> <span class="n">heapsize</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//堆排序.(最小堆是从大到小) 如果要从小到大可先建最大堆.</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">heapsort</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">A</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="n">build_min_heap</span><span class="o">(</span><span class="n">A</span><span class="o">);</span><span class="c1">//先建最小堆</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="kt">int</span> <span class="n">heapsize</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//一趟排好一个元素,排好的元素从最小堆中去除.</span>
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">heapsize</span> <span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> 
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="c1">//交换A[1]与A[i] 该表示是数组下标从1开始</span>
+</span><span class='line'>          <span class="kt">int</span> <span class="n">temp</span> <span class="o">=</span> <span class="n">A</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">];</span>
+</span><span class='line'>          <span class="n">A</span><span class="o">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span>
+</span><span class='line'>          
+</span><span class='line'>          <span class="n">A</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="n">temp</span><span class="o">;</span>
+</span><span class='line'>          
+</span><span class='line'>          <span class="n">heapsize</span><span class="o">--;</span>
+</span><span class='line'>          
+</span><span class='line'>          <span class="c1">//注意这个地方堆已经变小,下一步堆调整不包括已经排好序的元素.</span>
+</span><span class='line'>          <span class="n">min_heapify</span><span class="o">(</span><span class="n">A</span> <span class="o">,</span> <span class="mi">1</span> <span class="o">,</span> <span class="n">heapsize</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span><span class="o">[]</span> <span class="n">A</span> <span class="o">=</span> <span class="o">{</span><span class="mi">2</span><span class="o">,</span><span class="mi">3</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="o">,</span><span class="mi">5</span><span class="o">};</span>
+</span><span class='line'>      <span class="n">Heap_130</span><span class="o">.</span><span class="na">heapsort</span><span class="o">(</span><span class="n">A</span><span class="o">);</span>
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span> <span class="o">:</span> <span class="n">A</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">n</span><span class="o">+</span><span class="s">&quot; &quot;</span><span class="o">);</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/23/lintcode124-longest-consecutive-sequence/">Lintcode124 最长连续序列</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-23T14:22:48+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>2:22 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>给定一个未排序的整数数组，找出最长连续序列的长度。<br></p>
+
+<p>说明<br>
+要求你的算法复杂度为O(n)</p>
+
+<p>样例<br>
+给出数组[100, 4, 200, 1, 3, 2]，这个最长的连续序列是 [1, 2, 3, 4]，返回所求长度 4</p>
+
+<p>解题思路里还是有并查集的思想在里面.<br>
+1.如果HashMap含有该键,说明某个连续序列中已经包含该键，不用处理;<br>
+2.如果HashMap不含该键,分四种情况处理:<br>
+        //四种情况  并union<br>
+        //A.与左右相连的连续序列合并成一个序列, 如   左:234  右:678  插5   max=3+3+1<br>
+        //B.与左边相连的连续序列合并成一个序列, 如   左:234  右:     插5   max=3+1<br>
+        //C.与右边相连的连续序列合并成一个序列, 如   左：    右:678  插5   max=3+1<br>
+        //D.新建一个连续序列,如                      左:     右:     插5   max=1<br></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>   <span class="kd">private</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">longestConsecutive</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">num</span><span class="o">)</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="c1">//&lt;键值,连续序列长度&gt;</span>
+</span><span class='line'>      <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span><span class="n">Integer</span><span class="o">&gt;();</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span> <span class="o">:</span> <span class="n">num</span><span class="o">)</span>
+</span><span class='line'>      <span class="o">{</span>
+</span><span class='line'>          <span class="k">if</span><span class="o">(!</span><span class="n">map</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">n</span><span class="o">))</span><span class="c1">//查 find</span>
+</span><span class='line'>          <span class="o">{</span>
+</span><span class='line'>              <span class="c1">//由连续序列的最左边和最右边记录当前连续序列的长度.</span>
+</span><span class='line'>              <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">?</span> <span class="n">map</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">:</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>              <span class="kt">int</span> <span class="n">right</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="o">)</span> <span class="o">?</span> <span class="n">map</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="o">)</span> <span class="o">:</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="kt">int</span> <span class="n">max</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">max</span><span class="o">);</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="n">result</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">result</span><span class="o">,</span> <span class="n">max</span><span class="o">);</span>
+</span><span class='line'>              
+</span><span class='line'>              <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">left</span><span class="o">,</span> <span class="n">max</span><span class="o">);</span>
+</span><span class='line'>              <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">right</span> <span class="o">,</span> <span class="n">max</span><span class="o">);</span>
+</span><span class='line'>          <span class="o">}</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/22/decorator/">设计模式之装饰器模式</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-22T19:10:35+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>7:10 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>//TODO</p>
+
+<h2>1.意图<br></h2>
+
+<p>动态地给一个对象添加一些额外的职责。就增加功能来说，Decorator模式相比生成子类更为灵活.<br></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2016/04/22/java-io/">Java IO整体框架</a></h1>
     
     
@@ -801,468 +1918,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/04/12/java-class-lifecycle/">Java类型生命周期</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-04-12T16:26:50+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:26 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java虚拟机通过装载、连接和初始化一个Java类型，使该类型可以被正在运行的Java程序所使用。其中，
-装载就是把二进制形式的Java类型读入Java虚拟机中；<br>
-连接就是把这种已经读入虚拟机的二进制形式的类型数据合并到虚拟机的运行时状态中;<br></p>
-
-<p>连接阶段分为三个子步骤——验证、准备和解析<br>
-验证步骤确保了Java类型数据格式正确并且适于Java虚拟机使用;<br>
-准备步骤则负责为该类型分配它所需的内存，比如为它的类变量分配内存;<br>
-解析步骤则负责把常量池中的符号引用转换为直接引用;<br></p>
-
-<p>初始化阶段，都将为类变量赋以适当的初始值.<br></p>
-
-<p><img src="/images/jcc1.jpg"></p>
-
-<h2>java类的初始化 <br></h2>
-
-<p>Java虚拟机规范严格定义了类的初始化时机<br>
-所有的Java虚拟机实现必须在每个类或接口首次主动使用时初始化，以下六种情形符合主动使用的要求:<br>
-<img src="/images/jcc2.jpg"></p>
-
-<h2>Java类的装载 <br></h2>
-
-<p><img src="/images/jcc3.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/30/java-memory-leak/">Java内存泄露</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-30T18:37:49+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:37 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java语言中虽然有垃圾收集机制，但仍然可能存在内存泄露的情况.<br></p>
-
-<h2>什么是内存泄露<br></h2>
-
-<p>内存泄露的定义:对象已经没有被应用程序使用，但是垃圾回收器没办法移除它们，因为它们还在被引用着.<br>
-要先理解一下无用对象和未被引用对象.</p>
-
-<p><img src="/images/jml_1.jpg"></p>
-
-<p>上图中未被引用对象会被垃圾回收器回收，而被引用对象却不会.未被引用的对象当然是不再被使用的对象，因为没有对象再引用它;
-而无用对象却不全是未被引用对象,其中还有被引用的.这种情况将导致内存泄露.<br></p>
-
-<h2>为什么会发生内存泄露<br></h2>
-
-<p>来先看看下面的例子，为什么会发生内存泄漏。下面这个例子中，A对象引用B对象，A对象的生命周期（t1-t4）比B对象的生命周期（t2-t3）长的多。当B对象没有被应用程序使用之后，A对象仍然在引用着B对象。这样，垃圾回收器就没办法将B对象从内存中移除，从而导致内存问题，因为如果A引用更多这样的对象，那将有更多的未被引用对象存在，并消耗内存空间。<br></p>
-
-<p>B对象也可能会持有许多其他的对象，那这些对象同样也不会被垃圾回收器回收。所有这些没在使用的对象将持续的消耗之前分配的内存空间。<br></p>
-
-<p><img src="/images/jml_2.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/25/leetcode43-multiply-strings-string/">Leetcode43 Multiply Strings[String]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-25T22:26:25+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:26 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这其实是一道大数相乘的题目<br>
-这个要注意一个小技巧:即nums[i]*nums[j]产生的积在[i+j,i+j+1]位上，如下图<br>
-<img src="/images/jc43.jpg"></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">tencent</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.Scanner</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BigNumberMultiply</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">String</span> <span class="nf">mulitply</span><span class="o">(</span><span class="n">String</span> <span class="n">num1</span> <span class="o">,</span> <span class="n">String</span> <span class="n">num2</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="n">num1</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
-</span><span class='line'>      <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">num2</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="kt">int</span> <span class="n">p</span><span class="o">[]</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">m</span><span class="o">+</span><span class="n">n</span><span class="o">];</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">StringBuffer</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">StringBuffer</span><span class="o">(</span><span class="n">m</span><span class="o">+</span><span class="n">n</span><span class="o">);</span>
-</span><span class='line'>      
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">i</span><span class="o">--)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">;</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">;</span> <span class="n">j</span><span class="o">--)</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="kt">int</span> <span class="n">index1</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="o">;</span>
-</span><span class='line'>              <span class="kt">int</span> <span class="n">index2</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="o">(</span><span class="n">num1</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="o">)</span> <span class="o">*</span> <span class="o">(</span><span class="n">num2</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">j</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="o">);</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="n">sum</span> <span class="o">+=</span> <span class="n">p</span><span class="o">[</span><span class="n">index2</span><span class="o">];</span>
-</span><span class='line'>              
-</span><span class='line'>              <span class="n">p</span><span class="o">[</span><span class="n">index1</span><span class="o">]</span> <span class="o">+=</span> <span class="n">sum</span> <span class="o">/</span> <span class="mi">10</span><span class="o">;</span>
-</span><span class='line'>              <span class="n">p</span><span class="o">[</span><span class="n">index2</span><span class="o">]</span> <span class="o">=</span> <span class="n">sum</span> <span class="o">%</span> <span class="mi">10</span><span class="o">;</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">p</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="c1">//得到的数组p可能是从0开始的，这个0要去掉</span>
-</span><span class='line'>          <span class="c1">//注意StringBuffer的length()方法是返回StringBuffer中已有字符的个数.</span>
-</span><span class='line'>          <span class="k">if</span><span class="o">(!(</span><span class="n">result</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">))</span>
-</span><span class='line'>          <span class="o">{</span>
-</span><span class='line'>              <span class="n">result</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
-</span><span class='line'>          <span class="o">}</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="c1">// TODO Auto-generated method stub</span>
-</span><span class='line'>      <span class="n">Scanner</span> <span class="n">scan</span>  <span class="o">=</span> <span class="k">new</span> <span class="nf">Scanner</span><span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">in</span><span class="o">);</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">num1</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
-</span><span class='line'>      <span class="n">String</span> <span class="n">num2</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
-</span><span class='line'>      
-</span><span class='line'>      <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">BigNumberMultiply</span><span class="o">.</span><span class="na">mulitply</span><span class="o">(</span><span class="n">num1</span><span class="o">,</span> <span class="n">num2</span><span class="o">));</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><img src="/images/jc43_2.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/24/java-puzzlers/">Java Puzzlers读书笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-24T21:11:35+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:11 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>//TODO</p>
-
-<h2>解惑3：长整形相除<br></h2>
-
-<p><img src="/images/jp3.jpg"></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/24/java-singleton/">Java单例模式深入解析</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-24T14:23:33+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:23 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>作为对象的创建模式，单例模式确保某一个类只有一个实例，而且自行实例化并向整个系统提供这个实例。这个类称为单例类.</p>
-
-<p>单例模式有以下特点:<br>
-1. 单例类只能有一个实例<br>
-2. 单例类必须自己创建自己的唯一的实例<br>
-3. 单例类必须给所有其他对象提供这一个实例.<br></p>
-
-<h3>最简单的单例类</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">DP1_4</span><span class="o">.</span><span class="na">Singleton</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">EagerSingleton</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">EagerSingleton</span> <span class="n">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EagerSingleton</span><span class="o">();</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//私有构造函数</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="nf">EagerSingleton</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//静态工厂方法</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">EagerSingleton</span> <span class="nf">getInstance</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">instance</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>在这个类被加载时，静态变量instance会被初始化，此时类的私有构造函数会被调用。此时，单例类的唯一实例就别创建出来了.<br>
-Java语言中单例类的一个重要特点是类的构造函数是私有的，从而避免外界利用构造函数直接创建出任意多的实例。<br>
-值得注意的是，由于构造函数是私有的，因此该类不能被继承.<br>
-<font color=#FF0000>注意类的静态变量当且仅当类初次加载时会被初始化，所以EagerSingleton类中的instance静态变量只会在类加载时初始化一次，
-即只会产生一个对象,而且这个对象一定会产生出来.</font><br></p>
-
-<h3>lazy loaded单例类</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">DP1_4</span><span class="o">.</span><span class="na">Singleton</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">LazySingleton</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">LazySingleton</span> <span class="n">instance</span><span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//私有构造方法</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="nf">LazySingleton</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//静态工厂方法</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">LazySingleton</span> <span class="nf">getInstance</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">instance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">LazySingleton</span><span class="o">();</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">instance</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>代码的变化有两处——首先，把instance初始化为null，直到第一次使用的时候通过判断是否为null来创建对象。因为创建过程不在声明处，所以那个final的修饰必须去掉。<br>
-要使用LazySingleton，调用getInstance()方法。第一次的时候发现instance是null，然后就新建一个对象，返回出去；第二次再使用的时候，因为这个instance是static的，所以已经不是null了，因此不会再创建对象，直接将其返回。<br>
-这个过程就成为lazy loaded，也就是迟加载——直到使用的时候才进行加载.<br></p>
-
-<h3>同步的单例类</h3>
-
-<p>线程A希望使用LazySingleton，调用getInstance()方法。因为是第一次调用，A就发现instance是null的，于是它开始创建实例，就在这个时候，CPU发生时间片切换，线程B开始执行，它要使用LazySingleton，调用getInstance()方法，同样检测到instance是null——注意，这是在A检测完之后切换的，也就是说A并没有来得及创建对象——因此B开始创建。B创建完成后，切换到A继续执行，因为它已经检测完了，所以A不会再检测一遍，它会直接创建对象。这样，线程A和B各自拥有一个LazySingleton的对象——单例失败.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kn">package</span> <span class="n">DP1_4</span><span class="o">.</span><span class="na">Singleton</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SynchronizedSingleton</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="kd">static</span> <span class="n">SynchronizedSingleton</span> <span class="n">instance</span><span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//私有构造方法</span>
-</span><span class='line'>  <span class="kd">private</span> <span class="nf">SynchronizedSingleton</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="c1">//加synchronized关键字的静态工厂方法</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="n">SynchronizedSingleton</span> <span class="nf">getInstance</span><span class="o">()</span>
-</span><span class='line'>  <span class="o">{</span>
-</span><span class='line'>      <span class="k">if</span><span class="o">(</span><span class="n">instance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>      <span class="o">{</span>
-</span><span class='line'>          <span class="n">instance</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">SynchronizedSingleton</span><span class="o">();</span>
-</span><span class='line'>      <span class="o">}</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">instance</span><span class="o">;</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>给getInstance方法加上synchronzied方法，一个线程必须等待另一个线程创建完后才能调用该方法，这时单例类的对象已经产生，再判断instance == null就会失败，保证了单例的唯一性.<br></p>
-
-<h3>同步单例类性能提升</h3>
-
-<p>参考资料:<br>
-1. <a href="http://devbean.blog.51cto.com/448512/203501">http://devbean.blog.51cto.com/448512/203501</a><br></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -1280,23 +1935,23 @@ Java语言中单例类的一个重要特点是类的构造函数是私有的，�
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/07/27/iterator-design-pattern/">一天一设计模式之迭代器模式[19]</a>
+        <a href="/blog/2016/07/27/effective-java-21/">[Effective Java]第21条:用函数对象表示策略</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/26/linkedhashmap/">LinkedHashMap源码分析</a>
+        <a href="/blog/2016/07/27/java-generic/">Java泛型</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/25/concurrenthashmap/">ConcurrentHashMap源码分析</a>
+        <a href="/blog/2016/07/27/java-serializable/">Java序列化</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/25/hashtable/">Hashtable源码分析</a>
+        <a href="/blog/2016/07/27/java-iterator/">Java迭代器</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/22/memento-design-pattern/">一天一设计模式之备忘录模式[18]</a>
+        <a href="/blog/2016/07/27/template-method-design-pattern/">一天一设计模式之模板方法模式[20]</a>
       </li>
     
   </ul>
