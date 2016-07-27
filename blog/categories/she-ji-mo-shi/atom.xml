@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | regenthypo's Blog]]></title>
   <link href="http://www.regenthypo.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://www.regenthypo.com/"/>
-  <updated>2016-07-26T21:47:36+08:00</updated>
+  <updated>2016-07-27T13:24:15+08:00</updated>
   <id>http://www.regenthypo.com/</id>
   <author>
     <name><![CDATA[regenthypo]]></name>
@@ -12,6 +12,356 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一天一设计模式之迭代器模式[19]]]></title>
+    <link href="http://www.regenthypo.com/blog/2016/07/27/iterator-design-pattern/"/>
+    <updated>2016-07-27T12:10:54+08:00</updated>
+    <id>http://www.regenthypo.com/blog/2016/07/27/iterator-design-pattern</id>
+    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[对象行为模式]</strong></font></p>
+
+<p><font color=#FF0000><strong>提供一种方法顺序访问一个集合对象中各个元素，而又不需暴露该对象的内部表示.</strong></font></p>
+
+<p><strong>迭代器模式结构</strong><br>
+<img src="/images/iteratordp1.jpg"></p>
+
+<p><strong>迭代器模式角色</strong><br>
+<img src="/images/iteratordp2.jpg"></p>
+
+<p><font color=#0000CD><strong>迭代器模式代码——白箱集合</strong></font></p>
+
+<pre><code class="java">/**
+ *  抽象集合角色 
+ */
+public abstract class Aggregate
+{
+    /**
+     * 工厂方法，返回一个迭代子对象
+     */
+    public Iterator createIterator()
+    {
+        return null;
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  具体集合角色 
+ */
+public class ConcreteAggregate extends Aggregate
+{
+    private Object[] objs = {"Monk Tang" , 
+            "Moneky" , "Pigsy",
+            "Sandy" , "Horse"};
+
+    /**
+     * 工厂方法，返回一个迭代子对象
+     */
+    @Override
+    public Iterator createIterator()
+    {
+        return new ConcreteIterator(this);
+    }
+
+    /**
+     *  取值方法：向外界提供集合元素
+     */
+    public Object getElement(int index)
+    {
+        if(index &lt; objs.length)
+        {
+            return objs[index];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     *  取值方法：向外界提供集合大小 
+     */
+    public int size()
+    {
+        return objs.length;
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  抽象迭代子角色 
+ */
+public interface Iterator
+{
+    /**
+     *  迭代方法 ， 返回到第一个元素 
+     */
+    void first();
+
+    /**
+     *  迭代方法 ， 移动到下一个元素 
+     */
+    void next();
+
+    /**
+     *  迭代方法 ，是否是最后一个元素 
+     */
+    boolean isDone();
+
+    /**
+     *  迭代方法 ， 返回当前元素
+     */
+    Object currentItem();
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  具体迭代子角色 
+ */
+public class ConcreteIterator implements Iterator
+{
+    private ConcreteAggregate agg;
+    private int index = 0;
+    private int size = 0;
+    /**
+     * 构造函数
+     */
+    public ConcreteIterator(ConcreteAggregate agg)
+    {
+        this.agg = agg;
+        size = agg.size();
+        index = 0;
+    }
+
+    /**
+     *  迭代方法 ， 返回到第一个元素 
+     */
+    @Override
+    public void first()
+    {
+        index = 0;
+    }
+
+    /**
+     *  迭代方法 ， 移动到下一个元素 
+     */
+    @Override
+    public void next()
+    {
+        if(index &lt; size)
+        {
+            index++;
+        }
+    }
+
+    /**
+     *  迭代方法 ，是否是最后一个元素 
+     */
+    @Override
+    public boolean isDone()
+    {
+        return (index &gt;= size);
+    }
+
+    /**
+     *  迭代方法 ， 返回当前元素
+     */
+    @Override
+    public Object currentItem()
+    {
+        return agg.getElement(index);
+    }
+}
+</code></pre>
+
+<pre><code class="java">//测试
+public class Client
+{
+    private Iterator it;
+    private Aggregate agg = new ConcreteAggregate();
+
+    public void operation()
+    {
+        it = agg.createIterator();
+
+        while(!it.isDone())
+        {
+            System.out.println(it.currentItem().toString());
+
+            it.next();
+        }
+    }
+
+    public static void main(String[] args)
+    {
+        Client client = new Client();
+
+        client.operation();
+    }
+}
+</code></pre>
+
+<p><font color=#0000CD><strong>迭代器模式代码——黑箱集合</strong></font></p>
+
+<pre><code class="java">/**
+ *  抽象集合角色 
+ */
+public abstract class Aggregate
+{
+    /**
+     * 工厂方法，返回一个迭代子对象
+     */
+    public abstract Iterator createIterator();
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  具体集合角色 
+ */
+public class ConcreteAggregate extends Aggregate
+{
+    private Object[] objs = {"Monk Tang" , 
+            "Moneky" , "Pigsy",
+            "Sandy" , "Horse"};
+
+    /**
+     * 工厂方法，返回一个迭代子对象
+     */
+    @Override
+    public Iterator createIterator()
+    {
+        return new ConcreteIterator();
+    }
+
+    /**
+     *  取值方法：向外界提供集合元素
+     */
+    public Object getElement(int index)
+    {
+        if(index &lt; objs.length)
+        {
+            return objs[index];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     *  取值方法：向外界提供集合大小 
+     */
+    public int size()
+    {
+        return objs.length;
+    }
+
+    /**
+     *  内部类   具体迭代子角色 
+     */
+    private class ConcreteIterator implements Iterator
+    {
+        private int currentIndex = 0;
+        /**
+         *  迭代方法 ， 返回到第一个元素 
+         */
+        @Override
+        public void first()
+        {
+            currentIndex = 0;
+        }
+
+        /**
+         *  迭代方法 ， 移动到下一个元素 
+         */
+        @Override
+        public void next()
+        {
+            if(currentIndex &lt; objs.length)
+            {
+                currentIndex++;
+            }
+        }
+
+        /**
+         *  迭代方法 ，是否是最后一个元素 
+         */
+        @Override
+        public boolean isDone()
+        {
+            return (currentIndex == objs.length);
+        }
+
+        /**
+         *  迭代方法 ， 返回当前元素
+         */
+        @Override
+        public Object currentItem()
+        {
+            return objs[currentIndex];
+        }
+    }
+}
+</code></pre>
+
+<pre><code class="java">/**
+ *  抽象迭代子角色 
+ */
+public interface Iterator
+{
+    /**
+     *  迭代方法 ， 返回到第一个元素 
+     */
+    void first();
+
+    /**
+     *  迭代方法 ， 移动到下一个元素 
+     */
+    void next();
+
+    /**
+     *  迭代方法 ，是否是最后一个元素 
+     */
+    boolean isDone();
+
+    /**
+     *  迭代方法 ， 返回当前元素
+     */
+    Object currentItem();
+}
+</code></pre>
+
+<pre><code class="java">//测试
+public class Client
+{
+    private Iterator it;
+    private Aggregate agg = new ConcreteAggregate();
+
+    public void operation()
+    {
+        it = agg.createIterator();
+
+        while(!it.isDone())
+        {
+            System.out.println(it.currentItem().toString());
+
+            it.next();
+        }
+    }
+
+    public static void main(String[] args)
+    {
+        Client client = new Client();
+
+        client.operation();
+    }
+}
+</code></pre>
+
+<p><font color=#0000CD><strong>迭代器模式优缺点</strong></font><br>
+<img src="/images/iteratordp3.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一天一设计模式之备忘录模式[18]]]></title>
@@ -941,281 +1291,6 @@ public class ConcreteObserver implements Observer
 
 <p><strong>观察者模式优缺点</strong><br>
 <img src="/images/observerdp4.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[一天一设计模式之装饰模式[14]]]></title>
-    <link href="http://www.regenthypo.com/blog/2016/07/20/decorator-design-pattern/"/>
-    <updated>2016-07-20T21:01:14+08:00</updated>
-    <id>http://www.regenthypo.com/blog/2016/07/20/decorator-design-pattern</id>
-    <content type="html"><![CDATA[<p><font color=#FF0000><strong>[结构型模式]</strong></font></p>
-
-<p><font color=#FF0000><strong>动态地给一个对象添加一些额外的职责。就增加功能来说，装饰模式相比生成子类更为灵活.</strong></font></p>
-
-<p><font color=#FF0000><strong>别名:包装器 Wrapper</strong></font></p>
-
-<p><strong>装饰模式结构</strong><br>
-<img src="/images/decoratordp1.jpg"></p>
-
-<p><strong>装饰模式的角色</strong><br>
-<img src="/images/decoratordp2.jpg"></p>
-
-<p><strong>装饰模式代码</strong></p>
-
-<p><strong>抽象组件</strong><br>
-<code>java
-/**
- *  抽象构件角色
- */
-public interface Component
-{
-    public void sampleOperation();
-}
-</code></p>
-
-<p><strong>具体组件</strong><br>
-<code>java
-/**
- *  具体构件角色
- *  可以给具体组件上添加各种装饰
- */
-public class ConcreteComponent implements Component
-{   
-    @Override
-    public void sampleOperation()
-    {
-        System.out.println("具体组件");
-    }
-}
-</code></p>
-
-<p><strong>装饰角色</strong><br>
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
-</span><span class='line'> <span class="o">*</span>  <span class="n">装饰角色</span>
-</span><span class='line'> <span class="o">*</span>
-</span><span class='line'> <span class="o">*</span>  <span class="n">装饰角色类实现组件接口</span><span class="o">,</span><span class="n">与具体组件类之间是聚合关系</span><span class="o">.</span>
-</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Decorator</span> <span class="kd">implements</span> <span class="n">Component</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">Component</span> <span class="n">component</span><span class="o">;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//装饰角色类和组件类之间是聚合关系</span>
-</span><span class='line'><span class="c1">//有参构造函数</span>
-</span><span class='line'><span class="kd">public</span> <span class="nf">Decorator</span><span class="o">(</span><span class="n">Component</span> <span class="n">component</span><span class="o">)</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="k">this</span><span class="o">.</span><span class="na">component</span> <span class="o">=</span> <span class="n">component</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//无参构造函数</span>
-</span><span class='line'><span class="kd">public</span> <span class="nf">Decorator</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">//实现抽象组件的方法</span>
-</span><span class='line'><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">sampleOperation</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">component</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p><strong>具体装饰A</strong><br>
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
-</span><span class='line'> <span class="o">*</span>  <span class="n">具体装饰角色</span>
-</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteDecoratorA</span> <span class="kd">extends</span> <span class="n">Decorator</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="c1">//与组件之间是聚合关系</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="nf">ConcreteDecoratorA</span><span class="o">(</span><span class="n">Component</span> <span class="n">component</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="kd">super</span><span class="o">(</span><span class="n">component</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">sampleOperation</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;给组件添加装饰A&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p><strong>具体装饰B</strong><br>
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;*</span>
-</span><span class='line'> <span class="o">*</span>  <span class="n">具体装饰角色</span>
-</span><span class='line'> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteDecoratorB</span> <span class="kd">extends</span> <span class="n">Decorator</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="c1">//与组件之间是聚合关系</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="nf">ConcreteDecoratorB</span><span class="o">(</span><span class="n">Component</span> <span class="n">component</span><span class="o">)</span>
-</span><span class='line'>    <span class="o">{</span>
-</span><span class='line'>        <span class="kd">super</span><span class="o">(</span><span class="n">component</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nd">@Override</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">sampleOperation</span><span class="o">()</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">super</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;给组件添加装饰B&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p><strong>测试类</strong><br>
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">mytest</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Component</span> <span class="n">c</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteComponent</span><span class="o">();</span><span class="c1">//没有装饰的组件&lt;/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Component</span> <span class="n">d</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteDecoratorA</span><span class="o">(</span><span class="n">c</span><span class="o">);</span><span class="c1">//添加了一个装饰A的组件</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Component</span> <span class="n">e</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteDecoratorB</span><span class="o">(</span><span class="n">d</span><span class="o">);</span><span class="c1">//添加了装饰A和装饰B的组件</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>    <span class="n">c</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;---------------------&quot;</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">d</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;---------------------&quot;</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">e</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;---------------------&quot;</span><span class="o">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">Component</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ConcreteDecoratorB</span><span class="o">(</span><span class="k">new</span> <span class="nf">ConcreteDecoratorA</span><span class="o">(</span><span class="k">new</span> <span class="nf">ConcreteComponent</span><span class="o">()));</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">f</span><span class="o">.</span><span class="na">sampleOperation</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;---------------------&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p><strong>运行结果</strong><br>
-<img src="/images/decoratordp3.jpg"></p>
-
-<p><strong>装饰模式优点</strong><br>
-<img src="/images/decoratordp4.jpg"></p>
-
-<p><strong>装饰模式缺点</strong><br>
-<img src="/images/decoratordp5.jpg"></p>
 ]]></content>
   </entry>
   
