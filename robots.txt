@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://regenthypo.com/sitemap.xml 
+Sitemap: www.li-haibo.com/sitemap.xml 
