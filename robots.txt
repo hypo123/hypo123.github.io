@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://www.regenthypo.com/sitemap.xml 
+Sitemap: hypo123.github.io/sitemap.xml 
